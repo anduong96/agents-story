@@ -118,19 +118,20 @@ impl Floor {
             grid[y][lounge_w as usize] = CellType::Wall;
         }
 
-        // Doors on the horizontal divider (4 cells wide each)
+        // Doors on the horizontal divider (8 cells wide each)
+        let door_w: usize = 8;
         let lounge_left_door_x: u16 = 2;
-        for i in 0..4 {
+        for i in 0..door_w {
             grid[workspace_h as usize][lounge_left_door_x as usize + i] = CellType::Door;
         }
 
-        let lounge_right_door_x: u16 = lounge_w - 5;
-        for i in 0..4 {
+        let lounge_right_door_x: u16 = lounge_w - door_w as u16 - 1;
+        for i in 0..door_w {
             grid[workspace_h as usize][lounge_right_door_x as usize + i] = CellType::Door;
         }
 
-        let ceo_door_x: u16 = lounge_w + ceo_w / 2 - 1;
-        for i in 0..4 {
+        let ceo_door_x: u16 = lounge_w + ceo_w / 2 - door_w as u16 / 2;
+        for i in 0..door_w {
             grid[workspace_h as usize][ceo_door_x as usize + i] = CellType::Door;
         }
 
@@ -416,7 +417,7 @@ impl Floor {
             let dx = door.x as usize;
             let dy = door.y as usize;
             if dy < self.grid.len() {
-                for i in 0..4 {
+                for i in 0..8 {
                     if dx + i < self.width as usize {
                         self.grid[dy][dx + i] = CellType::Door;
                     }
