@@ -459,8 +459,8 @@ impl<'a> FloorView<'a> {
             agent.sprite_color.to_color()
         };
 
-        // Render agent as a 2-char name tag with colored background
-        let tag: String = agent.name.chars().take(2).collect::<String>().to_uppercase();
+        // Render agent as a padded name tag: " AB " with colored background
+        let tag: String = format!(" {} ", agent.name.chars().take(2).collect::<String>().to_uppercase());
         let style = Style::default().fg(color).bg(sprites::NAME_TAG_BG);
 
         let sy = area.y + ay;
