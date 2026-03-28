@@ -153,6 +153,39 @@ fn render(frame: &mut Frame, app: &mut App) {
     // 4. Agent panel (stateful widget)
     let agent_panel = AgentPanel::new(&app.state.agents);
     frame.render_stateful_widget(agent_panel, panel_area, &mut app.agent_panel);
+
+    // 5. Help overlay (rendered on top of everything)
+    if app.show_help {
+        let help_text = vec![
+            "╔═══════════════════════════════════════╗",
+            "║          Agents Story — Help          ║",
+            "╠═══════════════════════════════════════╣",
+            "║  q / Ctrl+C    Quit                   ║",
+            "║  j / ↓         Select next agent      ║",
+            "║  k / ↑         Select previous agent  ║",
+            "║  Enter         Expand/collapse agent   ║",
+            "║  Tab           Cycle focus             ║",
+            "║  1 / 2 / 3     Focus room              ║",
+            "║  ?             Toggle this help         ║",
+            "╚═══════════════════════════════════════╝",
+        ];
+        let help_width = 43u16;
+        let help_height = help_text.len() as u16;
+        let hx = size.width.saturating_sub(help_width) / 2;
+        let hy = size.height.saturating_sub(help_height) / 2;
+
+        for (i, line) in help_text.iter().enumerate() {
+            let y = hy + i as u16;
+            if y < size.bottom() {
+                frame.buffer_mut().set_string(
+                    hx, y, line,
+                    ratatui::style::Style::default()
+                        .fg(ratatui::style::Color::White)
+                        .bg(ratatui::style::Color::Rgb(30, 30, 40)),
+                );
+            }
+        }
+    }
 }
 
 fn render_bubbles(frame: &mut Frame, app: &App, floor_area: Rect) {
