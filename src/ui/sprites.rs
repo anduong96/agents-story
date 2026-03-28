@@ -51,17 +51,17 @@ pub const PING_PONG_TABLE: [[&str; 6]; 2] = [
 
 pub const PING_PONG_COLOR: Color = Color::Rgb(0, 128, 0);
 
-// Room wall/door colors
-pub const WALL_COLOR: Color = Color::Rgb(70, 70, 85);            // darker for contrast
-pub const DOOR_COLOR: Color = Color::Rgb(160, 110, 55);          // warmer door
+// Room wall/door colors — Kairosoft uses LIGHT cream/beige walls, not dark gray
+pub const WALL_COLOR: Color = Color::Rgb(190, 185, 170);     // cream/beige walls
+pub const DOOR_COLOR: Color = Color::Rgb(180, 130, 70);      // warm wood door
 
 // Monitor/desk colors
 pub const MONITOR_COLOR: Color = Color::Rgb(60, 180, 255);
 pub const MONITOR_FLICKER_COLOR: Color = Color::Rgb(40, 140, 200);
 
-// Desk sprite colors
-pub const DESK_FRAME_COLOR: Color = Color::Rgb(35, 35, 40);
-pub const DESK_SCREEN_OFF_COLOR: Color = Color::Rgb(30, 30, 35);
+// Desk sprite colors — dark monitor frame on bright wood desk
+pub const DESK_FRAME_COLOR: Color = Color::Rgb(50, 50, 55);       // dark monitor bezel
+pub const DESK_SCREEN_OFF_COLOR: Color = Color::Rgb(35, 40, 50);  // dark blue-gray off screen
 
 // Desk variants — continuous screens, no dividers between monitors
 // 1 monitor (4w × 3h):
@@ -82,67 +82,85 @@ pub const DESK3_ROW1: [char; 10] = ['│', '▓', '▓', '▓', '▓', '▓', '�
 pub const DESK3_ROW2: [char; 10] = ['└', '─', '─', '─', '┬', '─', '─', '─', '─', '┘'];
 pub const DESK3_SCREEN_COLS: &[usize] = &[1, 2, 3, 4, 5, 6, 7, 8];
 
-// Workspace floor (rich amber/caramel wood planks)
-pub const WORKSPACE_FLOOR_FG_EVEN: Color = Color::Rgb(90, 70, 40);
-pub const WORKSPACE_FLOOR_BG_EVEN: Color = Color::Rgb(65, 50, 30);
-pub const WORKSPACE_FLOOR_BG_ODD: Color = Color::Rgb(55, 42, 25);
-pub const WORKSPACE_FLOOR_CHAR_EVEN: char = '─';
+// Workspace floor — warm caramel/tan wood planks (BRIGHT, like Kairosoft)
+pub const WORKSPACE_FLOOR_FG_EVEN: Color = Color::Rgb(170, 130, 80);   // visible wood grain
+pub const WORKSPACE_FLOOR_BG_EVEN: Color = Color::Rgb(150, 115, 70);   // warm caramel
+pub const WORKSPACE_FLOOR_BG_ODD: Color = Color::Rgb(140, 105, 65);    // slightly darker plank
+pub const WORKSPACE_FLOOR_CHAR_EVEN: char = '━';   // thicker line for wood plank look
 pub const WORKSPACE_FLOOR_CHAR_ODD: char = ' ';
 
-// Lounge floor (cooler gray concrete)
-pub const LOUNGE_FLOOR_FG_EVEN: Color = Color::Rgb(95, 95, 100);
-pub const LOUNGE_FLOOR_BG_EVEN: Color = Color::Rgb(75, 75, 82);
-pub const LOUNGE_FLOOR_BG_ODD: Color = Color::Rgb(65, 65, 72);
+// Lounge floor — lighter warm gray (like carpet/tile)
+pub const LOUNGE_FLOOR_FG_EVEN: Color = Color::Rgb(160, 155, 145);
+pub const LOUNGE_FLOOR_BG_EVEN: Color = Color::Rgb(140, 135, 125);
+pub const LOUNGE_FLOOR_BG_ODD: Color = Color::Rgb(130, 125, 118);
 pub const LOUNGE_FLOOR_CHAR_EVEN: char = '·';
 pub const LOUNGE_FLOOR_CHAR_ODD: char = ' ';
 
-// CEO floor (darker blue)
-pub const CEO_FLOOR_FG_EVEN: Color = Color::Rgb(50, 50, 90);
-pub const CEO_FLOOR_BG_EVEN: Color = Color::Rgb(30, 30, 60);
-pub const CEO_FLOOR_BG_ODD: Color = Color::Rgb(25, 25, 50);
-pub const CEO_FLOOR_CHAR_EVEN: char = '─';
+// CEO floor — rich dark blue carpet
+pub const CEO_FLOOR_FG_EVEN: Color = Color::Rgb(70, 75, 120);
+pub const CEO_FLOOR_BG_EVEN: Color = Color::Rgb(55, 58, 95);
+pub const CEO_FLOOR_BG_ODD: Color = Color::Rgb(48, 50, 85);
+pub const CEO_FLOOR_CHAR_EVEN: char = '·';
 pub const CEO_FLOOR_CHAR_ODD: char = ' ';
 
-// Pink/magenta divider
-pub const DIVIDER_COLOR: Color = Color::Rgb(230, 150, 180);
-pub const DIVIDER_BG: Color = Color::Rgb(180, 100, 140);
+// Pink/magenta divider — bright and fun
+pub const DIVIDER_COLOR: Color = Color::Rgb(240, 170, 200);
+pub const DIVIDER_BG: Color = Color::Rgb(200, 130, 165);
 pub const DIVIDER_CHAR: char = '░';
 
-// Decorative elements
-pub const PLANT_COLOR: Color = Color::Rgb(80, 190, 60);
+// Decorative elements — bright and visible
+pub const PLANT_COLOR: Color = Color::Rgb(60, 200, 60);
 pub const PLANT_CHAR: char = '♣';
-pub const SPARKLE_COLOR: Color = Color::Rgb(200, 200, 100);
+pub const SPARKLE_COLOR: Color = Color::Rgb(230, 220, 120);
 pub const SPARKLE_CHAR: char = '✦';
 
-// Vibrant screen pixel colors (Kairosoft style — rainbow of bright colors)
+// Vibrant screen pixel colors (Kairosoft-style rainbow)
 pub const SCREEN_PIXELS: [Color; 10] = [
-    Color::Rgb(255, 120, 150),  // pink
-    Color::Rgb(120, 220, 120),  // green
-    Color::Rgb(100, 180, 255),  // blue
-    Color::Rgb(255, 200, 80),   // yellow/gold
-    Color::Rgb(255, 140, 60),   // orange
-    Color::Rgb(180, 130, 255),  // purple
-    Color::Rgb(80, 220, 220),   // cyan
-    Color::Rgb(255, 100, 100),  // red
-    Color::Rgb(200, 255, 150),  // lime
-    Color::Rgb(255, 180, 220),  // light pink
+    Color::Rgb(255, 100, 130),   // pink
+    Color::Rgb(100, 220, 100),   // green
+    Color::Rgb(80, 160, 255),    // blue
+    Color::Rgb(255, 210, 60),    // yellow/gold
+    Color::Rgb(255, 150, 50),    // orange
+    Color::Rgb(190, 120, 255),   // purple
+    Color::Rgb(60, 220, 220),    // cyan
+    Color::Rgb(255, 85, 85),     // red
+    Color::Rgb(180, 255, 130),   // lime
+    Color::Rgb(255, 170, 210),   // light pink
 ];
 
-// Lounge furniture
-pub const COUCH_COLOR: Color = Color::Rgb(160, 100, 50);     // warm brown
-pub const COUCH_FRAME_COLOR: Color = Color::Rgb(120, 75, 35); // darker brown frame
-pub const COFFEE_TABLE_COLOR: Color = Color::Rgb(140, 90, 45);
-pub const VENDING_MACHINE_COLOR: Color = Color::Rgb(80, 130, 200);  // blue
-pub const VENDING_LIGHT_COLOR: Color = Color::Rgb(120, 200, 120);   // green light
+// Lounge furniture — warm, inviting Kairosoft colors
+pub const COUCH_COLOR: Color = Color::Rgb(180, 120, 60);       // warm leather brown
+pub const COUCH_FRAME_COLOR: Color = Color::Rgb(140, 90, 45);  // darker wood frame
+pub const COFFEE_TABLE_COLOR: Color = Color::Rgb(160, 110, 55);
+pub const VENDING_MACHINE_COLOR: Color = Color::Rgb(100, 150, 220);   // cheerful blue
+pub const VENDING_LIGHT_COLOR: Color = Color::Rgb(140, 220, 140);     // bright green
 
-// CEO office furniture
-pub const CEO_DESK_COLOR: Color = Color::Rgb(140, 90, 45);        // rich brown desk
-pub const CEO_CHAIR_COLOR: Color = Color::Rgb(60, 60, 65);        // dark chair
-pub const BULLETIN_BOARD_COLOR: Color = Color::Rgb(180, 140, 80); // cork board
+// CEO office — premium feel
+pub const CEO_DESK_COLOR: Color = Color::Rgb(160, 105, 55);
+pub const CEO_CHAIR_COLOR: Color = Color::Rgb(70, 70, 75);
+pub const BULLETIN_BOARD_COLOR: Color = Color::Rgb(200, 165, 100);    // bright cork
 pub const BULLETIN_PIN_COLORS: [Color; 4] = [
-    Color::Rgb(255, 80, 80),   // red pin
-    Color::Rgb(80, 200, 80),   // green pin
-    Color::Rgb(80, 140, 255),  // blue pin
-    Color::Rgb(255, 220, 60),  // yellow pin
+    Color::Rgb(255, 70, 70),     // red
+    Color::Rgb(70, 210, 70),     // green
+    Color::Rgb(70, 130, 255),    // blue
+    Color::Rgb(255, 230, 50),    // yellow
 ];
-pub const CEO_FRAME_COLOR: Color = Color::Rgb(200, 180, 50);   // gold frame
+pub const CEO_FRAME_COLOR: Color = Color::Rgb(220, 200, 60);   // gold frame
+
+// Lightweight status indicators (replace heavy chat bubbles)
+pub const STATUS_WORKING: char = '⚙';
+pub const STATUS_IDLE: char = '○';
+pub const STATUS_ERROR: char = '!';
+pub const STATUS_FINISHED: char = '✓';
+pub const STATUS_SPAWNING: char = '◆';
+pub const STATUS_TOOL_READ: char = '◇';
+pub const STATUS_TOOL_EDIT: char = '✎';
+pub const STATUS_TOOL_BASH: char = '▸';
+pub const STATUS_TOOL_SEARCH: char = '◎';
+
+pub const STATUS_WORKING_COLOR: Color = Color::Rgb(100, 255, 100);   // bright green
+pub const STATUS_IDLE_COLOR: Color = Color::Rgb(180, 180, 180);      // gray
+pub const STATUS_ERROR_COLOR: Color = Color::Rgb(255, 80, 80);       // red
+pub const STATUS_FINISHED_COLOR: Color = Color::Rgb(100, 200, 255);  // cyan
+pub const STATUS_SPAWNING_COLOR: Color = Color::Rgb(255, 220, 80);   // yellow
+pub const STATUS_TOOL_COLOR: Color = Color::Rgb(255, 200, 100);      // warm yellow
