@@ -63,12 +63,8 @@ pub const DESK2_SCREEN_COLS: &[usize] = &[1, 2, 3, 4, 5];
 // Workspace floor — solid warm caramel
 pub const WORKSPACE_FLOOR_BG_EVEN: Color = Color::Rgb(150, 115, 70);
 
-// Lounge floor — soft felt carpet texture (uniform, no stripes)
-pub const LOUNGE_FLOOR_FG_EVEN: Color = Color::Rgb(130, 145, 130);  // muted sage green felt
+// Lounge floor — solid sage green
 pub const LOUNGE_FLOOR_BG_EVEN: Color = Color::Rgb(110, 125, 110);
-pub const LOUNGE_FLOOR_BG_ODD: Color = Color::Rgb(110, 125, 110);   // same as even — no stripes
-pub const LOUNGE_FLOOR_CHAR_EVEN: char = '░';  // felt/carpet texture
-pub const LOUNGE_FLOOR_CHAR_ODD: char = '░';
 
 // CEO floor — rich dark blue carpet
 pub const CEO_FLOOR_FG_EVEN: Color = Color::Rgb(70, 75, 120);

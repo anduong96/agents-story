@@ -59,11 +59,7 @@ fn floor_texture(floor: &Floor, gx: usize, gy: usize) -> (char, Color, Color) {
     if gy < workspace_h {
         (' ', sprites::WORKSPACE_FLOOR_BG_EVEN, sprites::WORKSPACE_FLOOR_BG_EVEN)
     } else if gx < lounge_w {
-        if gy % 2 == 0 {
-            (sprites::LOUNGE_FLOOR_CHAR_EVEN, sprites::LOUNGE_FLOOR_FG_EVEN, sprites::LOUNGE_FLOOR_BG_EVEN)
-        } else {
-            (sprites::LOUNGE_FLOOR_CHAR_ODD, sprites::LOUNGE_FLOOR_BG_ODD, sprites::LOUNGE_FLOOR_BG_ODD)
-        }
+        (' ', sprites::LOUNGE_FLOOR_BG_EVEN, sprites::LOUNGE_FLOOR_BG_EVEN)
     } else {
         if gy % 2 == 0 {
             (sprites::CEO_FLOOR_CHAR_EVEN, sprites::CEO_FLOOR_FG_EVEN, sprites::CEO_FLOOR_BG_EVEN)
