@@ -36,23 +36,6 @@ impl<'a> FloorView<'a> {
     }
 }
 
-/// Returns a textured floor cell with slight color variation for Kairosoft-style warmth.
-/// Returns (char, fg, bg) where the bg has subtle per-tile variation.
-fn textured_floor_cell(floor: &Floor, x: usize, y: usize) -> (char, Color, Color) {
-    let base_bg = floor_bg(floor, x, y);
-    // Add subtle checkerboard texture
-    let offset = if (x + y) % 2 == 0 { 5i16 } else { -3i16 };
-    let bg = match base_bg {
-        Color::Rgb(r, g, b) => Color::Rgb(
-            (r as i16 + offset).clamp(0, 255) as u8,
-            (g as i16 + offset).clamp(0, 255) as u8,
-            (b as i16 + offset).clamp(0, 255) as u8,
-        ),
-        other => other,
-    };
-    (' ', Color::Reset, bg)
-}
-
 /// Returns (top_color, bottom_color) for a half-block screen pixel.
 /// Each cell shows TWO colors via ▀ (fg=top, bg=bottom), doubling visual detail.
 fn screen_pixel_colors(desk_x: u16, desk_y: u16, col: usize, occupied: bool) -> (Color, Color) {
@@ -125,7 +108,6 @@ impl<'a> Widget for FloorView<'a> {
                 }
 
                 let cell_type = floor.grid[gy][gx];
-                let bg = floor_bg(floor, gx, gy);
 
                 // Determine highlight override for border cells
                 let highlight_bg = if let Some(ref room) = self.highlighted_room {
@@ -364,9 +346,7 @@ impl<'a> FloorView<'a> {
             });
 
             let (row0, row1, row2, screen_cols): (&[char], &[char], &[char], &[usize]) = match desk.variant {
-                DeskVariant::Single => (&sprites::DESK1_ROW0, &sprites::DESK1_ROW1, &sprites::DESK1_ROW2, sprites::DESK1_SCREEN_COLS),
-                DeskVariant::Dual   => (&sprites::DESK2_ROW0, &sprites::DESK2_ROW1, &sprites::DESK2_ROW2, sprites::DESK2_SCREEN_COLS),
-                DeskVariant::Triple => (&sprites::DESK3_ROW0, &sprites::DESK3_ROW1, &sprites::DESK3_ROW2, sprites::DESK3_SCREEN_COLS),
+                DeskVariant::Dual => (&sprites::DESK2_ROW0, &sprites::DESK2_ROW1, &sprites::DESK2_ROW2, sprites::DESK2_SCREEN_COLS),
             };
 
             let rows: [(&[char], u16); 3] = [(row0, 0), (row1, 1), (row2, 2)];

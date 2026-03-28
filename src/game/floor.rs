@@ -19,35 +19,19 @@ pub enum CellType {
 }
 
 pub const MIN_DESKS: usize = 0;
-pub const DESK_MAX_WIDTH: u16 = 7;
 pub const DESK_HEIGHT: u16 = 3;
 pub const DESK_SPACING_X: u16 = 9;
 pub const DESK_SPACING_Y: u16 = 5;
-pub const DESK_START_X: u16 = 3;
-pub const DESK_START_Y: u16 = 2;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DeskVariant {
-    Single,
     Dual,
-    Triple,
 }
 
 impl DeskVariant {
     pub fn width(self) -> u16 {
         match self {
-            DeskVariant::Single => 4,
             DeskVariant::Dual => 7,
-            DeskVariant::Triple => 10,
-        }
-    }
-
-    pub fn random() -> Self {
-        let r = rand::random::<u8>() % 10;
-        match r {
-            0..=2 => DeskVariant::Single,
-            3..=6 => DeskVariant::Dual,
-            _ => DeskVariant::Triple,
         }
     }
 }
@@ -337,7 +321,6 @@ impl Floor {
 
         // Center vertically in workspace
         let total_h = rows * DESK_SPACING_Y;
-        let workspace_inner = self.workspace.3.saturating_sub(2);
 
         // Grow workspace if needed
         while total_h + 2 > self.workspace.3.saturating_sub(2) {

@@ -38,6 +38,11 @@ cargo run -- --demo    # Demo mode with synthetic agents
 ./demo.sh              # Hot reload demo (installs cargo-watch)
 ```
 
+## Code Quality
+
+- **Always clean up dead code** — run `cargo build` and fix all warnings before committing. No unused constants, functions, variables, or imports.
+- **Run `cargo test`** before committing to ensure nothing is broken.
+
 ## Testing
 
 ```bash

@@ -6,17 +6,6 @@ use ratatui::style::Color;
 pub const CEO_COLOR: Color = Color::Rgb(255, 215, 0); // Gold
 pub const NAME_TAG_BG: Color = Color::Rgb(40, 40, 45); // dark badge background
 
-// Floor decorations
-pub const RUG_COLOR_1: Color = Color::Rgb(160, 60, 60);   // warm red rug
-pub const RUG_COLOR_2: Color = Color::Rgb(140, 50, 50);   // darker red rug stripe
-pub const BOOKSHELF_COLOR: Color = Color::Rgb(120, 90, 50);  // wood
-pub const BOOKSHELF_BOOKS: [Color; 4] = [
-    Color::Rgb(200, 80, 80),   // red book
-    Color::Rgb(80, 140, 200),  // blue book
-    Color::Rgb(80, 180, 80),   // green book
-    Color::Rgb(220, 200, 80),  // yellow book
-];
-
 // Monitor sprite — 2 cells wide × 2 tall
 #[allow(dead_code)]
 pub struct MonitorSprite {
@@ -61,22 +50,11 @@ pub const DESK_SCREEN_OFF_COLOR: Color = Color::Rgb(35, 40, 50);  // dark blue-g
 
 // Desk variants — clean boxes, no stand/line
 // 1 monitor (4w × 3h):
-pub const DESK1_ROW0: [char; 4] = ['┌', '─', '─', '┐'];
-pub const DESK1_ROW1: [char; 4] = ['│', '▓', '▓', '│'];
-pub const DESK1_ROW2: [char; 4] = ['└', '─', '─', '┘'];
-pub const DESK1_SCREEN_COLS: &[usize] = &[1, 2];
-
-// 2 monitors (7w × 3h):
+// Desk sprite (7w × 3h):
 pub const DESK2_ROW0: [char; 7] = ['┌', '─', '─', '─', '─', '─', '┐'];
 pub const DESK2_ROW1: [char; 7] = ['│', '▓', '▓', '▓', '▓', '▓', '│'];
 pub const DESK2_ROW2: [char; 7] = ['└', '─', '─', '─', '─', '─', '┘'];
 pub const DESK2_SCREEN_COLS: &[usize] = &[1, 2, 3, 4, 5];
-
-// 3 monitors (10w × 3h):
-pub const DESK3_ROW0: [char; 10] = ['┌', '─', '─', '─', '─', '─', '─', '─', '─', '┐'];
-pub const DESK3_ROW1: [char; 10] = ['│', '▓', '▓', '▓', '▓', '▓', '▓', '▓', '▓', '│'];
-pub const DESK3_ROW2: [char; 10] = ['└', '─', '─', '─', '─', '─', '─', '─', '─', '┘'];
-pub const DESK3_SCREEN_COLS: &[usize] = &[1, 2, 3, 4, 5, 6, 7, 8];
 
 // Workspace floor — warm caramel/tan wood planks (BRIGHT, like Kairosoft)
 pub const WORKSPACE_FLOOR_FG_EVEN: Color = Color::Rgb(170, 130, 80);   // visible wood grain
@@ -98,17 +76,6 @@ pub const CEO_FLOOR_BG_EVEN: Color = Color::Rgb(55, 58, 95);
 pub const CEO_FLOOR_BG_ODD: Color = Color::Rgb(48, 50, 85);
 pub const CEO_FLOOR_CHAR_EVEN: char = '·';
 pub const CEO_FLOOR_CHAR_ODD: char = ' ';
-
-// Pink/magenta divider — bright and fun
-pub const DIVIDER_COLOR: Color = Color::Rgb(240, 170, 200);
-pub const DIVIDER_BG: Color = Color::Rgb(200, 130, 165);
-pub const DIVIDER_CHAR: char = '░';
-
-// Decorative elements — bright and visible
-pub const PLANT_COLOR: Color = Color::Rgb(60, 200, 60);
-pub const PLANT_CHAR: char = '♣';
-pub const SPARKLE_COLOR: Color = Color::Rgb(230, 220, 120);
-pub const SPARKLE_CHAR: char = '✦';
 
 // Vibrant screen pixel colors (Kairosoft-style rainbow)
 pub const SCREEN_PIXELS: [Color; 10] = [
@@ -132,8 +99,6 @@ pub const VENDING_MACHINE_COLOR: Color = Color::Rgb(100, 150, 220);   // cheerfu
 pub const VENDING_LIGHT_COLOR: Color = Color::Rgb(140, 220, 140);     // bright green
 
 // CEO office — premium feel
-pub const CEO_DESK_COLOR: Color = Color::Rgb(160, 105, 55);
-pub const CEO_CHAIR_COLOR: Color = Color::Rgb(70, 70, 75);
 pub const BULLETIN_BOARD_COLOR: Color = Color::Rgb(200, 165, 100);    // bright cork
 pub const BULLETIN_PIN_COLORS: [Color; 4] = [
     Color::Rgb(255, 70, 70),     // red
@@ -141,8 +106,6 @@ pub const BULLETIN_PIN_COLORS: [Color; 4] = [
     Color::Rgb(70, 130, 255),    // blue
     Color::Rgb(255, 230, 50),    // yellow
 ];
-pub const CEO_FRAME_COLOR: Color = Color::Rgb(220, 200, 60);   // gold frame
-
 // Lightweight status indicators (replace heavy chat bubbles)
 pub const STATUS_WORKING: char = '⚙';
 pub const STATUS_IDLE: char = '○';
