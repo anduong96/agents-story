@@ -18,10 +18,10 @@ pub enum CellType {
     BulletinBoard,
 }
 
-pub const MIN_DESKS: usize = 4;
-pub const DESK_MAX_WIDTH: u16 = 10;
+pub const MIN_DESKS: usize = 0;
+pub const DESK_MAX_WIDTH: u16 = 7;
 pub const DESK_HEIGHT: u16 = 3;
-pub const DESK_SPACING_X: u16 = 12;
+pub const DESK_SPACING_X: u16 = 9;
 pub const DESK_SPACING_Y: u16 = 5;
 pub const DESK_START_X: u16 = 3;
 pub const DESK_START_Y: u16 = 2;
@@ -282,15 +282,12 @@ impl Floor {
                 return Some(i);
             }
         }
-        // All full — grow a new row and assign from it
-        self.add_desk_row();
-        for (i, desk) in self.desks.iter_mut().enumerate() {
-            if !desk.occupied {
-                desk.occupied = true;
-                return Some(i);
-            }
+        // All occupied — add one new desk and assign it
+        let idx = self.add_single_desk();
+        if let Some(i) = idx {
+            self.desks[i].occupied = true;
         }
-        if !self.desks.is_empty() { Some(0) } else { None }
+        idx
     }
 
     pub fn free_desk(&mut self, index: usize) {
@@ -302,71 +299,82 @@ impl Floor {
 
     pub fn ensure_minimum_desks(&mut self) {
         while self.desks.len() < MIN_DESKS {
-            self.add_desk_row();
+            self.add_single_desk();
         }
     }
 
-    /// Returns (desks_per_row, start_x) for a centered row of desks.
+    /// Returns (max_per_row, start_x) for centered desk placement.
     fn centered_row_params(&self) -> (u16, u16) {
-        let usable_w = self.width.saturating_sub(2); // exclude walls
+        let usable_w = self.width.saturating_sub(2);
         let max_per_row = (usable_w / DESK_SPACING_X).max(1);
         let total_w = max_per_row * DESK_SPACING_X;
         let start_x = 1 + (usable_w.saturating_sub(total_w)) / 2;
         (max_per_row, start_x)
     }
 
-    pub fn add_desk_row(&mut self) {
-        // Determine vertical position: center rows in workspace
-        let existing_rows = if self.desks.is_empty() {
+    /// Add a single desk at the next available slot. Returns its index.
+    fn add_single_desk(&mut self) -> Option<usize> {
+        let (max_per_row, start_x) = self.centered_row_params();
+        let desks_in_current_row = if self.desks.is_empty() {
             0u16
         } else {
-            let first_y = self.desks[0].desk_y;
             let last_y = self.desks.last().unwrap().desk_y;
-            (last_y - first_y) / DESK_SPACING_Y + 1
+            self.desks.iter().filter(|d| d.desk_y == last_y).count() as u16
         };
 
-        let total_rows = existing_rows + 1;
-        let total_height = total_rows * DESK_SPACING_Y;
-        let workspace_inner = self.workspace.3.saturating_sub(2); // exclude top/bottom walls
+        // Determine position: next slot in current row, or start a new row
+        let (dx, dy) = if self.desks.is_empty() {
+            // First desk: center in workspace
+            let y = DESK_START_Y;
+            (start_x, y)
+        } else if desks_in_current_row < max_per_row {
+            // Add to current row
+            let last = self.desks.last().unwrap();
+            let next_x = last.desk_x + DESK_SPACING_X;
+            if next_x + DESK_MAX_WIDTH < self.width - 1 {
+                (next_x, last.desk_y)
+            } else {
+                // Row full, start new row
+                let next_y = last.desk_y + DESK_SPACING_Y;
+                (start_x, next_y)
+            }
+        } else {
+            // Start new row
+            let last = self.desks.last().unwrap();
+            let next_y = last.desk_y + DESK_SPACING_Y;
+            (start_x, next_y)
+        };
 
         // Grow workspace if needed
-        if total_height + 2 > workspace_inner {
+        if dy + DESK_HEIGHT >= self.workspace.3 - 1 {
             self.grow_workspace(DESK_SPACING_Y);
         }
 
-        // Center all rows vertically
-        let workspace_inner = self.workspace.3.saturating_sub(2);
-        let vert_start = 1 + workspace_inner.saturating_sub(total_height) / 2;
-        let next_y = vert_start + existing_rows * DESK_SPACING_Y;
+        let variant = DeskVariant::Dual; // all desks same width
+        let w = variant.width();
 
-        let (max_per_row, start_x) = self.centered_row_params();
-
-        let mut count = 0u16;
-        let mut dx = start_x;
-        while count < max_per_row && dx + DESK_MAX_WIDTH < self.width - 1 {
-            let variant = DeskVariant::random();
-            let w = variant.width();
-            for row in 0..DESK_HEIGHT {
-                for col in 0..w {
-                    let gy = (next_y + row) as usize;
-                    let gx = (dx + col) as usize;
-                    if gy < self.height as usize && gx < self.width as usize {
-                        self.grid[gy][gx] = CellType::Desk;
-                    }
+        // Mark grid cells
+        for row in 0..DESK_HEIGHT {
+            for col in 0..w {
+                let gy = (dy + row) as usize;
+                let gx = (dx + col) as usize;
+                if gy < self.height as usize && gx < self.width as usize {
+                    self.grid[gy][gx] = CellType::Desk;
                 }
             }
-            self.desks.push(DeskSlot {
-                desk_x: dx,
-                desk_y: next_y,
-                chair_x: dx + w / 2,
-                chair_y: next_y + DESK_HEIGHT,
-                occupied: false,
-                agent_color: None,
-                variant,
-            });
-            dx += DESK_SPACING_X;
-            count += 1;
         }
+
+        self.desks.push(DeskSlot {
+            desk_x: dx,
+            desk_y: dy,
+            chair_x: dx + w / 2,
+            chair_y: dy + DESK_HEIGHT,
+            occupied: false,
+            agent_color: None,
+            variant,
+        });
+
+        Some(self.desks.len() - 1)
     }
 
     fn grow_workspace(&mut self, extra_rows: u16) {
