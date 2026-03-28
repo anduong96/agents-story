@@ -35,6 +35,10 @@ pub const PING_PONG_TABLE: [[&str; 6]; 2] = [
 pub const PING_PONG_COLOR: Color = Color::Rgb(0, 128, 0);
 pub const PING_PONG_NET_COLOR: Color = Color::Rgb(220, 220, 220);
 
+// Lounge TV
+pub const TV_FRAME_COLOR: Color = Color::Rgb(40, 40, 45);
+pub const TV_SCREEN_COLOR: Color = Color::Rgb(60, 120, 200);
+
 // Room wall/door colors — Kairosoft uses LIGHT cream/beige walls, not dark gray
 pub const WALL_COLOR: Color = Color::Rgb(190, 185, 170);     // cream/beige walls
 pub const DOOR_COLOR: Color = Color::Rgb(180, 130, 70);      // warm wood door

@@ -10,6 +10,7 @@ pub enum CellType {
     Monitor,
     PingPongTable,
     PingPongNet,
+    TV,
     CeoDesk,
     CeoMonitor,
     Couch,
@@ -168,6 +169,19 @@ impl Floor {
         for cx in couch1_x..couch1_x + 6 {
             if (couch1_y as usize) < height as usize && (cx as usize) < lounge_w as usize {
                 grid[couch1_y as usize][cx as usize] = CellType::Couch;
+            }
+        }
+
+        // Large TV: 10×2, centered on top wall of lounge
+        let tv_w: u16 = 10;
+        let tv_h: u16 = 2;
+        let tv_x = lounge_w / 2 - tv_w / 2;
+        let tv_y = workspace_h + 2;
+        for ty in tv_y..tv_y + tv_h {
+            for tx in tv_x..tv_x + tv_w {
+                if (ty as usize) < height as usize && (tx as usize) < lounge_w as usize {
+                    grid[ty as usize][tx as usize] = CellType::TV;
+                }
             }
         }
 
