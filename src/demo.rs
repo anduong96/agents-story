@@ -103,6 +103,57 @@ pub async fn run_demo(tx: mpsc::Sender<ReaderMessage>) {
     )
     .await;
 
+    // (10000ms) AgentSpawn: agent-04
+    sleep(Duration::from_millis(500)).await;
+    send(
+        &tx,
+        session_id,
+        StreamEvent::AgentSpawn {
+            agent_id: "agent-04".to_string(),
+            name: "Update docs".to_string(),
+            description: "Updates API documentation for auth endpoints".to_string(),
+        },
+    )
+    .await;
+
+    // (10500ms) AgentSpawn: agent-05
+    sleep(Duration::from_millis(500)).await;
+    send(
+        &tx,
+        session_id,
+        StreamEvent::AgentSpawn {
+            agent_id: "agent-05".to_string(),
+            name: "Refactor DB".to_string(),
+            description: "Refactors database queries for session storage".to_string(),
+        },
+    )
+    .await;
+
+    // (10700ms) ToolUse: Grep (agent-05 searching)
+    sleep(Duration::from_millis(200)).await;
+    send(
+        &tx,
+        session_id,
+        StreamEvent::ToolUse {
+            tool: "Grep".to_string(),
+            args_hint: Some("session_store".to_string()),
+        },
+    )
+    .await;
+
+    // (11000ms) AgentSpawn: agent-06
+    sleep(Duration::from_millis(300)).await;
+    send(
+        &tx,
+        session_id,
+        StreamEvent::AgentSpawn {
+            agent_id: "agent-06".to_string(),
+            name: "Add logging".to_string(),
+            description: "Adds structured logging to auth flow".to_string(),
+        },
+    )
+    .await;
+
     // (11500ms) AgentResult: agent-01
     sleep(Duration::from_millis(2000)).await;
     send(
@@ -172,19 +223,52 @@ pub async fn run_demo(tx: mpsc::Sender<ReaderMessage>) {
     )
     .await;
 
-    // (23500ms) StatsUpdate (same timestamp as AgentResult: agent-03)
+    // (24500ms) AgentResult: agent-04
+    sleep(Duration::from_millis(1000)).await;
     send(
         &tx,
         session_id,
-        StreamEvent::StatsUpdate {
-            input_tokens: 28400,
-            output_tokens: 7200,
-            cost: 0.87,
+        StreamEvent::AgentResult {
+            agent_id: "agent-04".to_string(),
         },
     )
     .await;
 
-    // (28500ms) SessionEnded
+    // (26500ms) AgentResult: agent-05
+    sleep(Duration::from_millis(2000)).await;
+    send(
+        &tx,
+        session_id,
+        StreamEvent::AgentResult {
+            agent_id: "agent-05".to_string(),
+        },
+    )
+    .await;
+
+    // (27500ms) AgentResult: agent-06
+    sleep(Duration::from_millis(1000)).await;
+    send(
+        &tx,
+        session_id,
+        StreamEvent::AgentResult {
+            agent_id: "agent-06".to_string(),
+        },
+    )
+    .await;
+
+    // (27500ms) StatsUpdate
+    send(
+        &tx,
+        session_id,
+        StreamEvent::StatsUpdate {
+            input_tokens: 52000,
+            output_tokens: 14800,
+            cost: 1.64,
+        },
+    )
+    .await;
+
+    // (32500ms) SessionEnded
     sleep(Duration::from_millis(5000)).await;
     let _ = tx
         .send(ReaderMessage::SessionEnded {
