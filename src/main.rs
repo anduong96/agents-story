@@ -274,6 +274,7 @@ fn handle_stream_event(app: &mut App, session_id: &str, event: StreamEvent) {
             // Assign a desk and compute the path from the nearest door to the desk.
             if let Some(desk_idx) = app.state.floor.assign_desk() {
                 agent.assigned_desk = Some(desk_idx);
+                app.state.floor.desks[desk_idx].agent_color = Some(agent.sprite_color);
                 let desk = &app.state.floor.desks[desk_idx];
                 let target_x = desk.chair_x;
                 let target_y = desk.chair_y;

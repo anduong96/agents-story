@@ -6,7 +6,7 @@ use ratatui::{
 };
 
 use crate::game::agent::{AgentStatus, Direction, Room};
-use crate::game::floor::{CellType, Floor};
+use crate::game::floor::{CellType, DeskVariant, Floor};
 use crate::game::state::GameState;
 use crate::ui::sprites;
 
@@ -36,18 +36,67 @@ impl<'a> FloorView<'a> {
     }
 }
 
-/// Returns the background color for the given grid cell based on which room it's in.
-fn room_bg_at(floor: &Floor, x: usize, y: usize) -> Color {
-    let workspace_h = floor.workspace.3 as usize; // height of workspace
-    let lounge_w = floor.lounge.2 as usize;       // width of lounge
+/// Returns a textured floor cell with slight color variation for Kairosoft-style warmth.
+/// Returns (char, fg, bg) where the bg has subtle per-tile variation.
+fn textured_floor_cell(floor: &Floor, x: usize, y: usize) -> (char, Color, Color) {
+    let base_bg = floor_bg(floor, x, y);
+    // Add subtle checkerboard texture
+    let offset = if (x + y) % 2 == 0 { 5i16 } else { -3i16 };
+    let bg = match base_bg {
+        Color::Rgb(r, g, b) => Color::Rgb(
+            (r as i16 + offset).clamp(0, 255) as u8,
+            (g as i16 + offset).clamp(0, 255) as u8,
+            (b as i16 + offset).clamp(0, 255) as u8,
+        ),
+        other => other,
+    };
+    (' ', Color::Reset, bg)
+}
 
-    if y < workspace_h {
-        sprites::WORKSPACE_BG
-    } else if x < lounge_w {
-        sprites::LOUNGE_BG
-    } else {
-        sprites::CEO_BG
+/// Returns (top_color, bottom_color) for a half-block screen pixel.
+/// Each cell shows TWO colors via ▀ (fg=top, bg=bottom), doubling visual detail.
+fn screen_pixel_colors(desk_x: u16, desk_y: u16, col: usize, occupied: bool) -> (Color, Color) {
+    if !occupied {
+        let off = sprites::DESK_SCREEN_OFF_COLOR;
+        // Slight variation even when off
+        let dim = Color::Rgb(25, 25, 30);
+        return if (desk_x as usize + col) % 2 == 0 { (off, dim) } else { (dim, off) };
     }
+    let len = sprites::SCREEN_PIXELS.len();
+    let h1 = (desk_x as usize * 7 + desk_y as usize * 13 + col * 31) % len;
+    let h2 = (desk_x as usize * 11 + desk_y as usize * 23 + col * 17 + 3) % len;
+    (sprites::SCREEN_PIXELS[h1], sprites::SCREEN_PIXELS[h2])
+}
+
+/// Returns (char, fg, bg) for textured floor at the given grid position.
+fn floor_texture(floor: &Floor, gx: usize, gy: usize) -> (char, Color, Color) {
+    let workspace_h = floor.workspace.3 as usize;
+    let lounge_w = floor.lounge.2 as usize;
+
+    if gy < workspace_h {
+        if gy % 2 == 0 {
+            (sprites::WORKSPACE_FLOOR_CHAR_EVEN, sprites::WORKSPACE_FLOOR_FG_EVEN, sprites::WORKSPACE_FLOOR_BG_EVEN)
+        } else {
+            (sprites::WORKSPACE_FLOOR_CHAR_ODD, sprites::WORKSPACE_FLOOR_BG_ODD, sprites::WORKSPACE_FLOOR_BG_ODD)
+        }
+    } else if gx < lounge_w {
+        if gy % 2 == 0 {
+            (sprites::LOUNGE_FLOOR_CHAR_EVEN, sprites::LOUNGE_FLOOR_FG_EVEN, sprites::LOUNGE_FLOOR_BG_EVEN)
+        } else {
+            (sprites::LOUNGE_FLOOR_CHAR_ODD, sprites::LOUNGE_FLOOR_BG_ODD, sprites::LOUNGE_FLOOR_BG_ODD)
+        }
+    } else {
+        if gy % 2 == 0 {
+            (sprites::CEO_FLOOR_CHAR_EVEN, sprites::CEO_FLOOR_FG_EVEN, sprites::CEO_FLOOR_BG_EVEN)
+        } else {
+            (sprites::CEO_FLOOR_CHAR_ODD, sprites::CEO_FLOOR_BG_ODD, sprites::CEO_FLOOR_BG_ODD)
+        }
+    }
+}
+
+fn floor_bg(floor: &Floor, gx: usize, gy: usize) -> Color {
+    let (_, _, bg) = floor_texture(floor, gx, gy);
+    bg
 }
 
 /// Returns whether a cell is on the border of the given room rect (x, y, w, h).
@@ -76,7 +125,7 @@ impl<'a> Widget for FloorView<'a> {
                 }
 
                 let cell_type = floor.grid[gy][gx];
-                let bg = room_bg_at(floor, gx, gy);
+                let bg = floor_bg(floor, gx, gy);
 
                 // Determine highlight override for border cells
                 let highlight_bg = if let Some(ref room) = self.highlighted_room {
@@ -94,22 +143,32 @@ impl<'a> Widget for FloorView<'a> {
                     None
                 };
 
+                let bg = floor_bg(floor, gx, gy);
                 let (ch, fg, actual_bg) = match cell_type {
                     CellType::Wall => ('│', sprites::WALL_COLOR, Color::Reset),
                     CellType::Door => ('▒', sprites::DOOR_COLOR, Color::Reset),
-                    CellType::Desk => ('▄', sprites::DESK_COLOR, Color::Reset),
-                    CellType::Monitor => ('▓', sprites::MONITOR_COLOR, bg),
-                    CellType::CeoDesk => ('▄', Color::Rgb(180, 120, 60), sprites::CEO_BG),
+                    CellType::Desk | CellType::Monitor => {
+                        let (tc, tf, tb) = floor_texture(floor, gx, gy);
+                        (tc, tf, tb)
+                    }
+                    CellType::CeoDesk => ('▄', Color::Rgb(180, 120, 60), floor_bg(floor, gx, gy)),
                     CellType::CeoMonitor => {
                         let monitor_fg = if (self.tick % 60) < 30 {
                             sprites::MONITOR_COLOR
                         } else {
                             sprites::MONITOR_FLICKER_COLOR
                         };
-                        ('▓', monitor_fg, sprites::CEO_BG)
+                        ('▓', monitor_fg, floor_bg(floor, gx, gy))
                     }
                     CellType::PingPongTable => ('▒', sprites::PING_PONG_COLOR, bg),
-                    CellType::Empty => (' ', Color::Reset, bg),
+                    CellType::Couch => ('█', sprites::COUCH_COLOR, bg),
+                    CellType::CoffeeTable => ('▬', sprites::COFFEE_TABLE_COLOR, bg),
+                    CellType::VendingMachine => ('▐', sprites::VENDING_MACHINE_COLOR, bg),
+                    CellType::BulletinBoard => ('▒', sprites::BULLETIN_BOARD_COLOR, bg),
+                    CellType::Empty => {
+                        let (tc, tf, tb) = floor_texture(floor, gx, gy);
+                        (tc, tf, tb)
+                    }
                 };
 
                 let final_bg = highlight_bg.unwrap_or(actual_bg);
@@ -123,6 +182,12 @@ impl<'a> Widget for FloorView<'a> {
 
         // Render room labels
         self.render_room_labels(floor, area, buf);
+
+        // Render detailed desk sprites with multi-color screens
+        self.render_desks(floor, area, buf);
+
+        // Render lounge furniture with detail overlays
+        self.render_lounge_furniture(floor, area, buf);
 
         // Render horizontal wall segments (top/bottom borders use box-drawing chars)
         self.render_horizontal_walls(floor, area, buf);
@@ -267,6 +332,114 @@ impl<'a> FloorView<'a> {
                         c.set_char('─');
                         c.set_style(wall_style);
                     }
+                }
+            }
+        }
+
+        // Vertical divider between lounge and CEO (below the main divider)
+        let lounge_wall_x = area.x + lounge_w;
+        let div_style = Style::default().fg(Color::Rgb(80, 80, 120)).bg(Color::Reset);
+        for gy in (floor.workspace.3 + 1)..floor.height - 1 {
+            let sy = area.y + gy;
+            if sy < area.y + area.height && lounge_wall_x < area.x + area.width {
+                if let Some(c) = buf.cell_mut((lounge_wall_x, sy)) {
+                    c.set_char('│');
+                    c.set_style(div_style);
+                }
+            }
+        }
+        // Bottom junction
+        if let Some(c) = buf.cell_mut((lounge_wall_x, area.y + floor.height - 1)) {
+            c.set_char('┴');
+            c.set_style(div_style);
+        }
+    }
+
+    fn render_desks(&self, floor: &Floor, area: Rect, buf: &mut Buffer) {
+        for desk in &floor.desks {
+            let (row0, row1, row2, screen_cols): (&[char], &[char], &[char], &[usize]) = match desk.variant {
+                DeskVariant::Single => (&sprites::DESK1_ROW0, &sprites::DESK1_ROW1, &sprites::DESK1_ROW2, sprites::DESK1_SCREEN_COLS),
+                DeskVariant::Dual   => (&sprites::DESK2_ROW0, &sprites::DESK2_ROW1, &sprites::DESK2_ROW2, sprites::DESK2_SCREEN_COLS),
+                DeskVariant::Triple => (&sprites::DESK3_ROW0, &sprites::DESK3_ROW1, &sprites::DESK3_ROW2, sprites::DESK3_SCREEN_COLS),
+            };
+
+            let rows: [(&[char], u16); 3] = [(row0, 0), (row1, 1), (row2, 2)];
+            for &(row, row_off) in &rows {
+                let sy = area.y + desk.desk_y + row_off;
+                if sy >= area.y + area.height { continue; }
+                let bg = floor_bg(floor, desk.desk_x as usize, (desk.desk_y + row_off) as usize);
+                for (col, &ch) in row.iter().enumerate() {
+                    let sx = area.x + desk.desk_x + col as u16;
+                    if sx >= area.x + area.width { continue; }
+
+                    if row_off == 1 && screen_cols.contains(&col) {
+                        // Half-block screen pixel: ▀ with fg=top color, bg=bottom color
+                        let (top, bottom) = screen_pixel_colors(desk.desk_x, desk.desk_y, col, desk.occupied);
+                        if let Some(cell) = buf.cell_mut((sx, sy)) {
+                            cell.set_char('▀');
+                            cell.set_style(Style::default().fg(top).bg(bottom));
+                        }
+                    } else {
+                        if let Some(cell) = buf.cell_mut((sx, sy)) {
+                            cell.set_char(ch);
+                            cell.set_style(Style::default().fg(sprites::DESK_FRAME_COLOR).bg(bg));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fn render_lounge_furniture(&self, floor: &Floor, area: Rect, buf: &mut Buffer) {
+        let grid_h = floor.height as usize;
+        let grid_w = floor.width as usize;
+
+        for gy in 0..grid_h {
+            for gx in 0..grid_w {
+                let cell_type = floor.grid[gy][gx];
+                let sx = area.x + gx as u16;
+                let sy = area.y + gy as u16;
+                if sx >= area.x + area.width || sy >= area.y + area.height {
+                    continue;
+                }
+
+                match cell_type {
+                    CellType::Couch => {
+                        // Half-block couch: top=cushion, bottom=frame
+                        if let Some(cell) = buf.cell_mut((sx, sy)) {
+                            cell.set_char('▀');
+                            cell.set_style(
+                                Style::default()
+                                    .fg(sprites::COUCH_COLOR)
+                                    .bg(sprites::COUCH_FRAME_COLOR),
+                            );
+                        }
+                    }
+                    CellType::VendingMachine => {
+                        // Half-block vending: top=body, bottom=light strip
+                        if let Some(cell) = buf.cell_mut((sx, sy)) {
+                            cell.set_char('▀');
+                            cell.set_style(
+                                Style::default()
+                                    .fg(sprites::VENDING_MACHINE_COLOR)
+                                    .bg(sprites::VENDING_LIGHT_COLOR),
+                            );
+                        }
+                    }
+                    CellType::BulletinBoard => {
+                        // Half-block bulletin: two different pin colors
+                        let pin1 = (gx * 3 + gy * 7) % 4;
+                        let pin2 = (gx * 5 + gy * 11 + 1) % 4;
+                        if let Some(cell) = buf.cell_mut((sx, sy)) {
+                            cell.set_char('▀');
+                            cell.set_style(
+                                Style::default()
+                                    .fg(sprites::BULLETIN_PIN_COLORS[pin1])
+                                    .bg(sprites::BULLETIN_PIN_COLORS[pin2]),
+                            );
+                        }
+                    }
+                    _ => {}
                 }
             }
         }

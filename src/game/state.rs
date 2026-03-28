@@ -49,8 +49,10 @@ pub struct GameState {
 
 impl GameState {
     pub fn new(width: u16, height: u16) -> Self {
+        let mut floor = Floor::generate(width, height);
+        floor.ensure_minimum_desks();
         GameState {
-            floor: Floor::generate(width, height),
+            floor,
             agents: Vec::new(),
             stats: Stats::default(),
             ceo_status: CeoStatus::Idle,
