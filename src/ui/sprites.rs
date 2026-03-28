@@ -1,27 +1,21 @@
 use ratatui::style::Color;
 
-// Agent sprite — 2 cells wide × 2 cells tall using braille characters
-pub struct Sprite {
-    pub top: [&'static str; 2],
-    pub bottom: [&'static str; 2],
-}
-
-pub const AGENT_RIGHT: Sprite = Sprite {
-    top: ["⣿", "⣷"],
-    bottom: ["⣿", "⣿"],
-};
-
-pub const AGENT_LEFT: Sprite = Sprite {
-    top: ["⣾", "⣿"],
-    bottom: ["⣿", "⣿"],
-};
-
-pub const CEO_SPRITE: Sprite = Sprite {
-    top: ["⣿", "⣷"],
-    bottom: ["⣿", "⣿"],
-};
+// Agents are rendered as name tags (2-3 letter abbreviation in agent color)
+// No sprite struct needed — render_agent handles it directly.
 
 pub const CEO_COLOR: Color = Color::Rgb(255, 215, 0); // Gold
+pub const NAME_TAG_BG: Color = Color::Rgb(40, 40, 45); // dark badge background
+
+// Floor decorations
+pub const RUG_COLOR_1: Color = Color::Rgb(160, 60, 60);   // warm red rug
+pub const RUG_COLOR_2: Color = Color::Rgb(140, 50, 50);   // darker red rug stripe
+pub const BOOKSHELF_COLOR: Color = Color::Rgb(120, 90, 50);  // wood
+pub const BOOKSHELF_BOOKS: [Color; 4] = [
+    Color::Rgb(200, 80, 80),   // red book
+    Color::Rgb(80, 140, 200),  // blue book
+    Color::Rgb(80, 180, 80),   // green book
+    Color::Rgb(220, 200, 80),  // yellow book
+];
 
 // Monitor sprite — 2 cells wide × 2 tall
 #[allow(dead_code)]

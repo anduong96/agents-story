@@ -5,7 +5,7 @@ use ratatui::{
     widgets::Widget,
 };
 
-use crate::game::agent::{AgentStatus, Direction, Room};
+use crate::game::agent::{AgentStatus, Room};
 use crate::game::floor::{CellType, DeskVariant, Floor};
 use crate::game::state::GameState;
 use crate::ui::sprites;
@@ -449,64 +449,43 @@ impl<'a> FloorView<'a> {
         let ax = agent.position.0 as u16;
         let ay = agent.position.1 as u16;
 
-        let sprite = match agent.facing {
-            Direction::Right => &sprites::AGENT_RIGHT,
-            Direction::Left => &sprites::AGENT_LEFT,
-        };
-
         let color = if agent.status == AgentStatus::Error {
             Color::Red
         } else {
             agent.sprite_color.to_color()
         };
 
-        let style = Style::default().fg(color);
+        // Render agent as a 2-char name tag with colored background
+        let tag: String = agent.name.chars().take(2).collect::<String>().to_uppercase();
+        let style = Style::default().fg(color).bg(sprites::NAME_TAG_BG);
 
-        // Top row: 2 cells wide
-        let rows = [sprite.top, sprite.bottom];
-        for (row_offset, row) in rows.iter().enumerate() {
-            let sy = area.y + ay + row_offset as u16;
-            if sy >= area.y + area.height {
-                continue;
-            }
-            for (col_offset, ch_str) in row.iter().enumerate() {
-                let sx = area.x + ax + col_offset as u16;
-                if sx >= area.x + area.width {
-                    continue;
-                }
-                if let Some(cell) = buf.cell_mut((sx, sy)) {
-                    // Use the first char of the string (braille chars are single Unicode codepoints)
-                    if let Some(ch) = ch_str.chars().next() {
-                        cell.set_char(ch);
-                        cell.set_style(style);
-                    }
-                }
+        let sy = area.y + ay;
+        if sy >= area.y + area.height { return; }
+
+        for (i, ch) in tag.chars().enumerate() {
+            let sx = area.x + ax + i as u16;
+            if sx >= area.x + area.width { continue; }
+            if let Some(cell) = buf.cell_mut((sx, sy)) {
+                cell.set_char(ch);
+                cell.set_style(style);
             }
         }
     }
 
-    fn render_ceo(&self, floor: &Floor, area: Rect, buf: &mut Buffer) {
-        let (cx, cy) = floor.ceo_chair;
-        let sprite = &sprites::CEO_SPRITE;
-        let style = Style::default().fg(sprites::CEO_COLOR);
+    fn render_ceo(&self, _floor: &Floor, area: Rect, buf: &mut Buffer) {
+        let (cx, cy) = self.state.floor.ceo_chair;
+        let style = Style::default().fg(sprites::CEO_COLOR).bg(sprites::NAME_TAG_BG);
+        let tag = "CEO";
 
-        let rows = [sprite.top, sprite.bottom];
-        for (row_offset, row) in rows.iter().enumerate() {
-            let sy = area.y + cy + row_offset as u16;
-            if sy >= area.y + area.height {
-                continue;
-            }
-            for (col_offset, ch_str) in row.iter().enumerate() {
-                let sx = area.x + cx + col_offset as u16;
-                if sx >= area.x + area.width {
-                    continue;
-                }
-                if let Some(cell) = buf.cell_mut((sx, sy)) {
-                    if let Some(ch) = ch_str.chars().next() {
-                        cell.set_char(ch);
-                        cell.set_style(style);
-                    }
-                }
+        let sy = area.y + cy;
+        if sy >= area.y + area.height { return; }
+
+        for (i, ch) in tag.chars().enumerate() {
+            let sx = area.x + cx + i as u16;
+            if sx >= area.x + area.width { continue; }
+            if let Some(cell) = buf.cell_mut((sx, sy)) {
+                cell.set_char(ch);
+                cell.set_style(style);
             }
         }
     }
