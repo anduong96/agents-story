@@ -53,27 +53,27 @@ pub const DOOR_COLOR: Color = Color::Rgb(180, 130, 70);      // warm wood door
 pub const MONITOR_COLOR: Color = Color::Rgb(60, 180, 255);
 pub const MONITOR_FLICKER_COLOR: Color = Color::Rgb(40, 140, 200);
 
-// Desk sprite colors — dark monitor frame on bright wood desk
-pub const DESK_FRAME_COLOR: Color = Color::Rgb(50, 50, 55);       // dark monitor bezel
+// Desk sprite colors — contrasting gray-blue frame, distinct from wood floor
+pub const DESK_FRAME_COLOR: Color = Color::Rgb(80, 85, 100);      // blue-gray monitor bezel
 pub const DESK_SCREEN_OFF_COLOR: Color = Color::Rgb(35, 40, 50);  // dark blue-gray off screen
 
-// Desk variants — continuous screens, no dividers between monitors
+// Desk variants — clean boxes, no stand/line
 // 1 monitor (4w × 3h):
 pub const DESK1_ROW0: [char; 4] = ['┌', '─', '─', '┐'];
 pub const DESK1_ROW1: [char; 4] = ['│', '▓', '▓', '│'];
-pub const DESK1_ROW2: [char; 4] = ['└', '─', '┬', '┘'];
+pub const DESK1_ROW2: [char; 4] = ['└', '─', '─', '┘'];
 pub const DESK1_SCREEN_COLS: &[usize] = &[1, 2];
 
-// 2 monitors (7w × 3h) — continuous wide screen:
+// 2 monitors (7w × 3h):
 pub const DESK2_ROW0: [char; 7] = ['┌', '─', '─', '─', '─', '─', '┐'];
 pub const DESK2_ROW1: [char; 7] = ['│', '▓', '▓', '▓', '▓', '▓', '│'];
-pub const DESK2_ROW2: [char; 7] = ['└', '─', '─', '┬', '─', '─', '┘'];
+pub const DESK2_ROW2: [char; 7] = ['└', '─', '─', '─', '─', '─', '┘'];
 pub const DESK2_SCREEN_COLS: &[usize] = &[1, 2, 3, 4, 5];
 
-// 3 monitors (10w × 3h) — continuous ultra-wide screen:
+// 3 monitors (10w × 3h):
 pub const DESK3_ROW0: [char; 10] = ['┌', '─', '─', '─', '─', '─', '─', '─', '─', '┐'];
 pub const DESK3_ROW1: [char; 10] = ['│', '▓', '▓', '▓', '▓', '▓', '▓', '▓', '▓', '│'];
-pub const DESK3_ROW2: [char; 10] = ['└', '─', '─', '─', '┬', '─', '─', '─', '─', '┘'];
+pub const DESK3_ROW2: [char; 10] = ['└', '─', '─', '─', '─', '─', '─', '─', '─', '┘'];
 pub const DESK3_SCREEN_COLS: &[usize] = &[1, 2, 3, 4, 5, 6, 7, 8];
 
 // Workspace floor — warm caramel/tan wood planks (BRIGHT, like Kairosoft)
