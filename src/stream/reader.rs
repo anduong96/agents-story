@@ -7,18 +7,21 @@ use tokio::task::JoinHandle;
 use crate::stream::protocol::{parse_line, StreamEvent};
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum ReaderMessage {
     Event { session_id: String, event: StreamEvent },
     SessionEnded { session_id: String },
     ReaderError { session_id: String, error: String },
 }
 
+#[allow(dead_code)]
 pub struct SessionReader {
     pub session_id: String,
     pub path: PathBuf,
 }
 
 impl SessionReader {
+    #[allow(dead_code)]
     pub fn new(session_id: impl Into<String>, path: PathBuf) -> Self {
         Self {
             session_id: session_id.into(),
@@ -26,6 +29,7 @@ impl SessionReader {
         }
     }
 
+    #[allow(dead_code)]
     pub fn spawn(self, tx: mpsc::Sender<ReaderMessage>) -> JoinHandle<()> {
         tokio::spawn(async move {
             let file = match File::open(&self.path).await {

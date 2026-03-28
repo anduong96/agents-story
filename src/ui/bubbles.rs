@@ -34,6 +34,12 @@ pub struct BubbleManager {
     pub max_visible: usize,
 }
 
+impl Default for BubbleManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl BubbleManager {
     pub fn new() -> Self {
         Self {
@@ -106,11 +112,13 @@ impl BubbleManager {
         self.add_bubble_text(agent_id, text);
     }
 
+    #[allow(dead_code)]
     pub fn trigger_lounge_arrival(&mut self, agent_id: impl Into<String>) {
         const POOL: &[&str] = &["ping pong?", "nice", "chill", "ahh"];
         self.add_bubble(agent_id.into(), POOL);
     }
 
+    #[allow(dead_code)]
     pub fn trigger_long_task(&mut self, agent_id: impl Into<String>) {
         const POOL: &[&str] = &["still going...", "almost...", "deep in it", "hang on"];
         self.add_bubble(agent_id.into(), POOL);

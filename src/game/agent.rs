@@ -1,6 +1,7 @@
 use ratatui::style::Color;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum AgentStatus {
     Working,
     Idle,
@@ -26,13 +27,21 @@ pub enum Direction {
 pub struct SpriteColor(pub u8);
 
 impl SpriteColor {
+    #[allow(dead_code)]
     pub const GREEN: SpriteColor = SpriteColor(0);
+    #[allow(dead_code)]
     pub const CYAN: SpriteColor = SpriteColor(1);
+    #[allow(dead_code)]
     pub const MAGENTA: SpriteColor = SpriteColor(2);
+    #[allow(dead_code)]
     pub const YELLOW: SpriteColor = SpriteColor(3);
+    #[allow(dead_code)]
     pub const BLUE: SpriteColor = SpriteColor(4);
+    #[allow(dead_code)]
     pub const RED: SpriteColor = SpriteColor(5);
+    #[allow(dead_code)]
     pub const WHITE: SpriteColor = SpriteColor(6);
+    #[allow(dead_code)]
     pub const ORANGE: SpriteColor = SpriteColor(7);
 
     pub const PALETTE: [Color; 8] = [

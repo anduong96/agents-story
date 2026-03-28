@@ -13,6 +13,7 @@ use crate::game::agent::{Agent, AgentStatus};
 pub struct AgentPanelState {
     pub selected: Option<usize>,
     pub expanded: Option<usize>,
+    #[allow(dead_code)]
     pub scroll_offset: usize,
 }
 

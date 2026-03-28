@@ -4,11 +4,13 @@ use tokio::sync::mpsc;
 use tokio::time::{sleep, Duration};
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum DiscoveryEvent {
     NewSession { session_id: String, path: PathBuf },
     SessionEnded { session_id: String },
 }
 
+#[allow(dead_code)]
 pub async fn discover_sessions(watch_dir: PathBuf, tx: mpsc::Sender<DiscoveryEvent>) {
     let mut known: HashSet<String> = HashSet::new();
 

@@ -24,22 +24,26 @@ pub const CEO_SPRITE: Sprite = Sprite {
 pub const CEO_COLOR: Color = Color::Rgb(255, 215, 0); // Gold
 
 // Monitor sprite — 2 cells wide × 2 tall
+#[allow(dead_code)]
 pub struct MonitorSprite {
     pub top: [&'static str; 2],
     pub bottom: [&'static str; 2],
 }
 
+#[allow(dead_code)]
 pub const MONITOR: MonitorSprite = MonitorSprite {
     top: ["█▓", "▓█"],
     bottom: ["▀▀", "▀▀"],
 };
 
+#[allow(dead_code)]
 pub const MONITOR_FLICKER: MonitorSprite = MonitorSprite {
     top: ["█▒", "▒█"],
     bottom: ["▀▀", "▀▀"],
 };
 
 // Ping pong table: 6 wide × 2 tall
+#[allow(dead_code)]
 pub const PING_PONG_TABLE: [[&str; 6]; 2] = [
     ["▄", "▄", "▄", "▄", "▄", "▄"],
     ["█", "▒", "▒", "▒", "▒", "█"],

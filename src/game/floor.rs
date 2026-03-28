@@ -14,7 +14,9 @@ pub enum CellType {
 
 #[derive(Debug, Clone)]
 pub struct DeskSlot {
+    #[allow(dead_code)]
     pub desk_x: u16,
+    #[allow(dead_code)]
     pub desk_y: u16,
     pub chair_x: u16,
     pub chair_y: u16,
@@ -39,6 +41,7 @@ pub struct Floor {
     pub desks: Vec<DeskSlot>,
     pub doors: Vec<DoorPos>,
     pub ceo_chair: (u16, u16),
+    #[allow(dead_code)]
     pub ping_pong: (u16, u16, u16, u16),
 }
 
@@ -52,21 +55,25 @@ impl Floor {
         let mut grid = vec![vec![CellType::Empty; width as usize]; height as usize];
 
         // Draw outer border walls
+        #[allow(clippy::needless_range_loop)]
         for x in 0..width as usize {
             grid[0][x] = CellType::Wall;
             grid[height as usize - 1][x] = CellType::Wall;
         }
+        #[allow(clippy::needless_range_loop)]
         for y in 0..height as usize {
             grid[y][0] = CellType::Wall;
             grid[y][width as usize - 1] = CellType::Wall;
         }
 
         // Horizontal divider at workspace_h
+        #[allow(clippy::needless_range_loop)]
         for x in 0..width as usize {
             grid[workspace_h as usize][x] = CellType::Wall;
         }
 
         // Vertical divider at lounge_w (only in bottom section)
+        #[allow(clippy::needless_range_loop)]
         for y in workspace_h as usize..height as usize {
             grid[y][lounge_w as usize] = CellType::Wall;
         }

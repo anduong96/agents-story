@@ -16,6 +16,7 @@ pub struct Usage {
     pub input_tokens: Option<u64>,
     pub output_tokens: Option<u64>,
     pub cache_read_input_tokens: Option<u64>,
+    #[allow(dead_code)]
     pub cache_creation_input_tokens: Option<u64>,
 }
 
@@ -23,12 +24,16 @@ pub struct Usage {
 pub struct RawMessage {
     #[serde(rename = "type")]
     pub msg_type: Option<String>,
+    #[allow(dead_code)]
     pub subtype: Option<String>,
     pub session_id: Option<String>,
     pub model: Option<String>,
     pub content_block: Option<ContentBlock>,
+    #[allow(dead_code)]
     pub tool_name: Option<String>,
+    #[allow(dead_code)]
     pub tool_input: Option<Value>,
+    #[allow(dead_code)]
     pub tool_result: Option<Value>,
     pub usage: Option<Usage>,
     pub cost_usd: Option<f64>,
@@ -37,6 +42,7 @@ pub struct RawMessage {
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub enum StreamEvent {
     SessionInit { session_id: String, model: String },
     ToolUse { tool: String, args_hint: Option<String> },
@@ -49,6 +55,7 @@ pub enum StreamEvent {
     Error { message: String },
 }
 
+#[allow(dead_code)]
 pub fn parse_line(line: &str) -> Option<StreamEvent> {
     let trimmed = line.trim();
     if trimmed.is_empty() {

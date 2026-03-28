@@ -29,6 +29,7 @@ impl Default for Stats {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum CeoStatus {
     Idle,
     PromptSent,

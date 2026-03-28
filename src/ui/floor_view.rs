@@ -139,8 +139,8 @@ impl<'a> Widget for FloorView<'a> {
 
 impl<'a> FloorView<'a> {
     fn render_room_labels(&self, floor: &Floor, area: Rect, buf: &mut Buffer) {
-        let divider_y = floor.workspace.3 as u16;
-        let lounge_w = floor.lounge.2 as u16;
+        let divider_y = floor.workspace.3;
+        let lounge_w = floor.lounge.2;
 
         // "Workspace" label — centered horizontally in workspace, one row above divider
         if divider_y > 1 {
@@ -195,9 +195,9 @@ impl<'a> FloorView<'a> {
     fn render_horizontal_walls(&self, floor: &Floor, area: Rect, buf: &mut Buffer) {
         // Top border: ┌─────┐
         let top_y = area.y;
-        let bottom_y = area.y + floor.height as u16 - 1;
+        let bottom_y = area.y + floor.height - 1;
         let left_x = area.x;
-        let right_x = area.x + floor.width as u16 - 1;
+        let right_x = area.x + floor.width - 1;
 
         let wall_style = Style::default().fg(sprites::WALL_COLOR).bg(Color::Reset);
 
@@ -220,7 +220,7 @@ impl<'a> FloorView<'a> {
         }
 
         // Top and bottom horizontal walls
-        for gx in 1..floor.width as u16 - 1 {
+        for gx in 1..floor.width - 1 {
             let sx = area.x + gx;
             if let Some(c) = buf.cell_mut((sx, top_y)) {
                 c.set_char('─');
@@ -234,7 +234,7 @@ impl<'a> FloorView<'a> {
 
         // Horizontal divider row between workspace and lower rooms
         let div_y = area.y + floor.workspace.3;
-        let lounge_w = floor.lounge.2 as u16;
+        let lounge_w = floor.lounge.2;
 
         // Left wall junction
         if let Some(c) = buf.cell_mut((area.x, div_y)) {
@@ -256,7 +256,7 @@ impl<'a> FloorView<'a> {
         }
 
         // Horizontal divider cells (non-wall/door cells become ─)
-        for gx in 1..floor.width as u16 - 1 {
+        for gx in 1..floor.width - 1 {
             let gy = floor.workspace.3 as usize;
             let sx = area.x + gx;
             let sy = div_y;
