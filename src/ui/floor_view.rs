@@ -356,7 +356,12 @@ impl<'a> FloorView<'a> {
     }
 
     fn render_desks(&self, floor: &Floor, area: Rect, buf: &mut Buffer) {
-        for desk in &floor.desks {
+        for (desk_idx, desk) in floor.desks.iter().enumerate() {
+            // Monitor only lights up when agent has arrived (not still walking)
+            let agent_seated = self.state.agents.iter().any(|a| {
+                a.assigned_desk == Some(desk_idx) && !a.is_animating()
+            });
+
             let (row0, row1, row2, screen_cols): (&[char], &[char], &[char], &[usize]) = match desk.variant {
                 DeskVariant::Single => (&sprites::DESK1_ROW0, &sprites::DESK1_ROW1, &sprites::DESK1_ROW2, sprites::DESK1_SCREEN_COLS),
                 DeskVariant::Dual   => (&sprites::DESK2_ROW0, &sprites::DESK2_ROW1, &sprites::DESK2_ROW2, sprites::DESK2_SCREEN_COLS),
@@ -372,7 +377,7 @@ impl<'a> FloorView<'a> {
                     if sx >= area.x + area.width { continue; }
 
                     if row_off == 1 && screen_cols.contains(&col) {
-                        let (top, bottom) = screen_pixel_colors(desk.desk_x, desk.desk_y, col, desk.occupied);
+                        let (top, bottom) = screen_pixel_colors(desk.desk_x, desk.desk_y, col, agent_seated);
                         if let Some(cell) = buf.cell_mut((sx, sy)) {
                             cell.set_char('▀');
                             cell.set_style(Style::default().fg(top).bg(bottom));

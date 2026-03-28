@@ -37,6 +37,17 @@ impl App {
         }
     }
 
+    /// Resize the floor to fill the given pane dimensions.
+    pub fn resize_floor(&mut self, width: u16, height: u16) {
+        if width == self.state.floor.width && height == self.state.floor.height {
+            return;
+        }
+        // Only resize if no agents are active (avoid disrupting pathfinding)
+        if self.state.agents.is_empty() {
+            self.state = GameState::new(width, height);
+        }
+    }
+
     /// Target frames per second: fast when animating, slow when idle.
     pub fn target_fps(&self) -> u64 {
         if self.state.has_animations() || !self.bubbles.bubbles.is_empty() {

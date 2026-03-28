@@ -34,8 +34,8 @@ use ui::stats_bar::StatsBar;
 // Constants
 // ---------------------------------------------------------------------------
 
-const FLOOR_WIDTH: u16 = 80;
-const FLOOR_HEIGHT: u16 = 30;
+const DEFAULT_FLOOR_WIDTH: u16 = 80;
+const DEFAULT_FLOOR_HEIGHT: u16 = 30;
 
 // ---------------------------------------------------------------------------
 // Entry point
@@ -79,7 +79,12 @@ async fn run(
     demo_mode: bool,
     terminal: &mut Terminal<CrosstermBackend<io::Stdout>>,
 ) -> io::Result<()> {
-    let mut app = App::new(FLOOR_WIDTH, FLOOR_HEIGHT);
+    // Get initial terminal size for floor dimensions
+    let term_size = terminal.size()?;
+    let floor_w = term_size.width.max(DEFAULT_FLOOR_WIDTH);
+    let floor_h = (term_size.height as f32 * 0.65) as u16;
+    let floor_h = floor_h.max(DEFAULT_FLOOR_HEIGHT);
+    let mut app = App::new(floor_w, floor_h);
 
     let (tx, mut rx) = mpsc::channel::<ReaderMessage>(256);
 
@@ -136,6 +141,9 @@ fn render(frame: &mut Frame, app: &mut App) {
     let floor_area = chunks[0];
     let stats_area = chunks[1];
     let panel_area = chunks[2];
+
+    // Resize floor to fill available pane
+    app.resize_floor(floor_area.width, floor_area.height);
 
     // 1. Floor view
     let floor_view = FloorView::new(&app.state)
