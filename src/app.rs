@@ -1,0 +1,83 @@
+use std::time::Duration;
+
+use crate::game::agent::{Direction, Room};
+use crate::game::pathfinding::advance_along_path;
+use crate::game::state::GameState;
+use crate::ui::agent_panel::AgentPanelState;
+use crate::ui::bubbles::BubbleManager;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Focus {
+    Floor,
+    AgentPanel,
+}
+
+pub struct App {
+    pub state: GameState,
+    pub agent_panel: AgentPanelState,
+    pub bubbles: BubbleManager,
+    pub focus: Focus,
+    pub highlighted_room: Option<Room>,
+    pub running: bool,
+    pub tick_count: u64,
+    pub show_help: bool,
+}
+
+impl App {
+    pub fn new(floor_width: u16, floor_height: u16) -> Self {
+        App {
+            state: GameState::new(floor_width, floor_height),
+            agent_panel: AgentPanelState::new(),
+            bubbles: BubbleManager::new(),
+            focus: Focus::Floor,
+            highlighted_room: None,
+            running: true,
+            tick_count: 0,
+            show_help: false,
+        }
+    }
+
+    /// Target frames per second: fast when animating, slow when idle.
+    pub fn target_fps(&self) -> u64 {
+        if self.state.has_animations() || !self.bubbles.bubbles.is_empty() {
+            15
+        } else {
+            2
+        }
+    }
+
+    /// Duration of a single frame based on the current target FPS.
+    pub fn frame_duration(&self) -> Duration {
+        Duration::from_millis(1000 / self.target_fps())
+    }
+
+    /// Toggle focus between Floor and AgentPanel.
+    pub fn cycle_focus(&mut self) {
+        self.focus = match self.focus {
+            Focus::Floor => Focus::AgentPanel,
+            Focus::AgentPanel => Focus::Floor,
+        };
+    }
+
+    /// Advance simulation by one tick.
+    pub fn tick(&mut self, delta_secs: f32) {
+        self.tick_count += 1;
+
+        // Advance each agent along its path and update facing direction.
+        for agent in &mut self.state.agents {
+            let prev_x = agent.position.0;
+            advance_along_path(&mut agent.position, &mut agent.path, 4.0, delta_secs);
+            let new_x = agent.position.0;
+
+            // Update facing based on horizontal movement.
+            if new_x > prev_x {
+                agent.facing = Direction::Right;
+            } else if new_x < prev_x {
+                agent.facing = Direction::Left;
+            }
+        }
+
+        self.bubbles.tick();
+        self.state.update_stats();
+    }
+}
