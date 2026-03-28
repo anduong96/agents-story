@@ -85,12 +85,12 @@ pub const WORKSPACE_FLOOR_BG_ODD: Color = Color::Rgb(140, 105, 65);    // slight
 pub const WORKSPACE_FLOOR_CHAR_EVEN: char = '━';   // thicker line for wood plank look
 pub const WORKSPACE_FLOOR_CHAR_ODD: char = ' ';
 
-// Lounge floor — lighter warm gray (like carpet/tile)
-pub const LOUNGE_FLOOR_FG_EVEN: Color = Color::Rgb(160, 155, 145);
-pub const LOUNGE_FLOOR_BG_EVEN: Color = Color::Rgb(140, 135, 125);
-pub const LOUNGE_FLOOR_BG_ODD: Color = Color::Rgb(130, 125, 118);
-pub const LOUNGE_FLOOR_CHAR_EVEN: char = '·';
-pub const LOUNGE_FLOOR_CHAR_ODD: char = ' ';
+// Lounge floor — soft felt carpet texture
+pub const LOUNGE_FLOOR_FG_EVEN: Color = Color::Rgb(130, 145, 130);  // muted sage green felt
+pub const LOUNGE_FLOOR_BG_EVEN: Color = Color::Rgb(110, 125, 110);
+pub const LOUNGE_FLOOR_BG_ODD: Color = Color::Rgb(105, 118, 105);
+pub const LOUNGE_FLOOR_CHAR_EVEN: char = '░';  // felt/carpet texture
+pub const LOUNGE_FLOOR_CHAR_ODD: char = '░';
 
 // CEO floor — rich dark blue carpet
 pub const CEO_FLOOR_FG_EVEN: Color = Color::Rgb(70, 75, 120);
