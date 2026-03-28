@@ -115,6 +115,11 @@ impl<'a> Widget for StatsBar<'a> {
             Style::default().fg(Color::DarkGray),
         );
 
+        let hotkeys = Span::styled(
+            " q:Quit ?:Help Tab:Focus j/k:Nav",
+            Style::default().fg(Color::Rgb(100, 100, 110)),
+        );
+
         let line = Line::from(vec![
             model_span,
             sep.clone(),
@@ -131,6 +136,8 @@ impl<'a> Widget for StatsBar<'a> {
             fps_span,
             sep.clone(),
             ram_span,
+            sep.clone(),
+            hotkeys,
         ]);
 
         line.render(area, buf);
