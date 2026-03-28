@@ -60,10 +60,8 @@ pub const DESK2_ROW1: [char; 7] = ['│', '▓', '▓', '▓', '▓', '▓', '�
 pub const DESK2_ROW2: [char; 7] = ['└', '─', '─', '─', '─', '─', '┘'];
 pub const DESK2_SCREEN_COLS: &[usize] = &[1, 2, 3, 4, 5];
 
-// Workspace floor — warm caramel/tan wood planks (BRIGHT, like Kairosoft)
-pub const WORKSPACE_FLOOR_FG_EVEN: Color = Color::Rgb(170, 130, 80);   // visible wood grain
-pub const WORKSPACE_FLOOR_BG_EVEN: Color = Color::Rgb(150, 115, 70);   // warm caramel
-pub const WORKSPACE_FLOOR_BG_ODD: Color = Color::Rgb(140, 105, 65);    // tile border
+// Workspace floor — solid warm caramel
+pub const WORKSPACE_FLOOR_BG_EVEN: Color = Color::Rgb(150, 115, 70);
 
 // Lounge floor — soft felt carpet texture (uniform, no stripes)
 pub const LOUNGE_FLOOR_FG_EVEN: Color = Color::Rgb(130, 145, 130);  // muted sage green felt
