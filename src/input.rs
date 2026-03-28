@@ -51,15 +51,15 @@ fn handle_key(app: &mut App, key: KeyEvent) {
     // Focus-specific keys.
     match app.focus {
         Focus::AgentPanel => match key.code {
-            KeyCode::Char('j') | KeyCode::Down => app.agent_panel.select_next(),
-            KeyCode::Char('k') | KeyCode::Up => app.agent_panel.select_prev(),
+            KeyCode::Char('j') | KeyCode::Down => app.agent_panel.select_next(app.state.agents.len()),
+            KeyCode::Char('k') | KeyCode::Up => app.agent_panel.select_prev(app.state.agents.len()),
             KeyCode::Enter => app.agent_panel.toggle_expand(),
             _ => {}
         },
         Focus::Floor => match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
                 app.focus = Focus::AgentPanel;
-                app.agent_panel.select_next();
+                app.agent_panel.select_next(app.state.agents.len());
             }
             _ => {}
         },
