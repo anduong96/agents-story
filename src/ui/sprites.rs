@@ -60,11 +60,13 @@ pub const DESK2_ROW1: [char; 7] = ['│', '▓', '▓', '▓', '▓', '▓', '�
 pub const DESK2_ROW2: [char; 7] = ['└', '─', '─', '─', '─', '─', '┘'];
 pub const DESK2_SCREEN_COLS: &[usize] = &[1, 2, 3, 4, 5];
 
-// Workspace floor — solid warm caramel
-pub const WORKSPACE_FLOOR_BG_EVEN: Color = Color::Rgb(150, 115, 70);
+// Workspace floor — two-shade brick pattern
+pub const WORKSPACE_FLOOR_BG_EVEN: Color = Color::Rgb(150, 115, 70);  // lighter brick
+pub const WORKSPACE_FLOOR_BG_ALT: Color = Color::Rgb(140, 105, 62);   // darker brick
 
-// Lounge floor — solid sage green
-pub const LOUNGE_FLOOR_BG_EVEN: Color = Color::Rgb(110, 125, 110);
+// Lounge floor — felt with colon texture
+pub const LOUNGE_FLOOR_FG: Color = Color::Rgb(120, 135, 120);         // dot color
+pub const LOUNGE_FLOOR_BG_EVEN: Color = Color::Rgb(100, 115, 100);    // felt base
 
 // CEO floor — rich dark blue carpet
 pub const CEO_FLOOR_FG_EVEN: Color = Color::Rgb(70, 75, 120);

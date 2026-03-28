@@ -57,9 +57,20 @@ fn floor_texture(floor: &Floor, gx: usize, gy: usize) -> (char, Color, Color) {
     let lounge_w = floor.lounge.2 as usize;
 
     if gy < workspace_h {
-        (' ', sprites::WORKSPACE_FLOOR_BG_EVEN, sprites::WORKSPACE_FLOOR_BG_EVEN)
+        // Brick pattern: 6 wide × 2 tall, offset every other row
+        let tile_w = 6;
+        let tile_h = 2;
+        let row_group = gy / tile_h;
+        let offset = if row_group % 2 == 0 { 0 } else { tile_w / 2 };
+        let tile_idx = ((gx + offset) / tile_w + row_group) % 2;
+        if tile_idx == 0 {
+            (' ', sprites::WORKSPACE_FLOOR_BG_EVEN, sprites::WORKSPACE_FLOOR_BG_EVEN)
+        } else {
+            (' ', sprites::WORKSPACE_FLOOR_BG_ALT, sprites::WORKSPACE_FLOOR_BG_ALT)
+        }
     } else if gx < lounge_w {
-        (' ', sprites::LOUNGE_FLOOR_BG_EVEN, sprites::LOUNGE_FLOOR_BG_EVEN)
+        // Felt texture: colon dots pattern
+        (':', sprites::LOUNGE_FLOOR_FG, sprites::LOUNGE_FLOOR_BG_EVEN)
     } else {
         if gy % 2 == 0 {
             (sprites::CEO_FLOOR_CHAR_EVEN, sprites::CEO_FLOOR_FG_EVEN, sprites::CEO_FLOOR_BG_EVEN)
