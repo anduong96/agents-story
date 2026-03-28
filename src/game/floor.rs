@@ -23,6 +23,7 @@ pub const DESK_MAX_WIDTH: u16 = 7;
 pub const DESK_HEIGHT: u16 = 3;
 pub const DESK_SPACING_X: u16 = 9;
 pub const DESK_SPACING_Y: u16 = 5;
+pub const DESKS_PER_ROW: u16 = 4;  // cap columns for grid layout
 pub const DESK_START_X: u16 = 3;
 pub const DESK_START_Y: u16 = 2;
 
@@ -306,7 +307,8 @@ impl Floor {
     /// Returns (max_per_row, start_x) for centered desk placement.
     fn centered_row_params(&self) -> (u16, u16) {
         let usable_w = self.width.saturating_sub(2);
-        let max_per_row = (usable_w / DESK_SPACING_X).max(1);
+        let fits = (usable_w / DESK_SPACING_X).max(1);
+        let max_per_row = fits.min(DESKS_PER_ROW); // cap for grid shape
         let total_w = max_per_row * DESK_SPACING_X;
         let start_x = 1 + (usable_w.saturating_sub(total_w)) / 2;
         (max_per_row, start_x)
