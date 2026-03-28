@@ -23,7 +23,6 @@ pub const DESK_MAX_WIDTH: u16 = 7;
 pub const DESK_HEIGHT: u16 = 3;
 pub const DESK_SPACING_X: u16 = 9;
 pub const DESK_SPACING_Y: u16 = 5;
-pub const DESKS_PER_ROW: u16 = 4;  // cap columns for grid layout
 pub const DESK_START_X: u16 = 3;
 pub const DESK_START_Y: u16 = 2;
 
@@ -283,12 +282,12 @@ impl Floor {
                 return Some(i);
             }
         }
-        // All occupied — add one new desk and assign it
-        let idx = self.add_single_desk();
-        if let Some(i) = idx {
-            self.desks[i].occupied = true;
-        }
-        idx
+        // All occupied — add one desk and relayout the grid evenly
+        let new_count = self.desks.len() + 1;
+        self.relayout_desks(new_count);
+        let idx = self.desks.len() - 1;
+        self.desks[idx].occupied = true;
+        Some(idx)
     }
 
     pub fn free_desk(&mut self, index: usize) {
@@ -299,84 +298,89 @@ impl Floor {
     }
 
     pub fn ensure_minimum_desks(&mut self) {
-        while self.desks.len() < MIN_DESKS {
-            self.add_single_desk();
+        if self.desks.len() < MIN_DESKS {
+            self.relayout_desks(MIN_DESKS);
         }
     }
 
-    /// Returns (max_per_row, start_x) for centered desk placement.
-    fn centered_row_params(&self) -> (u16, u16) {
-        let usable_w = self.width.saturating_sub(2);
-        let fits = (usable_w / DESK_SPACING_X).max(1);
-        let max_per_row = fits.min(DESKS_PER_ROW); // cap for grid shape
-        let total_w = max_per_row * DESK_SPACING_X;
-        let start_x = 1 + (usable_w.saturating_sub(total_w)) / 2;
-        (max_per_row, start_x)
-    }
-
-    /// Add a single desk at the next available slot. Returns its index.
-    fn add_single_desk(&mut self) -> Option<usize> {
-        let (max_per_row, start_x) = self.centered_row_params();
-        let desks_in_current_row = if self.desks.is_empty() {
-            0u16
-        } else {
-            let last_y = self.desks.last().unwrap().desk_y;
-            self.desks.iter().filter(|d| d.desk_y == last_y).count() as u16
-        };
-
-        // Determine position: next slot in current row, or start a new row
-        let (dx, dy) = if self.desks.is_empty() {
-            // First desk: center in workspace
-            let y = DESK_START_Y;
-            (start_x, y)
-        } else if desks_in_current_row < max_per_row {
-            // Add to current row
-            let last = self.desks.last().unwrap();
-            let next_x = last.desk_x + DESK_SPACING_X;
-            if next_x + DESK_MAX_WIDTH < self.width - 1 {
-                (next_x, last.desk_y)
-            } else {
-                // Row full, start new row
-                let next_y = last.desk_y + DESK_SPACING_Y;
-                (start_x, next_y)
-            }
-        } else {
-            // Start new row
-            let last = self.desks.last().unwrap();
-            let next_y = last.desk_y + DESK_SPACING_Y;
-            (start_x, next_y)
-        };
-
-        // Grow workspace if needed
-        if dy + DESK_HEIGHT >= self.workspace.3 - 1 {
-            self.grow_workspace(DESK_SPACING_Y);
-        }
-
-        let variant = DeskVariant::Dual; // all desks same width
-        let w = variant.width();
-
-        // Mark grid cells
-        for row in 0..DESK_HEIGHT {
-            for col in 0..w {
-                let gy = (dy + row) as usize;
-                let gx = (dx + col) as usize;
-                if gy < self.height as usize && gx < self.width as usize {
-                    self.grid[gy][gx] = CellType::Desk;
+    /// Clear all desk cells from the grid, then re-place `count` desks
+    /// in an evenly distributed centered grid using ceil(sqrt(n)) columns.
+    fn relayout_desks(&mut self, count: usize) {
+        // Clear old desk cells from grid
+        for desk in &self.desks {
+            let w = desk.variant.width();
+            for row in 0..DESK_HEIGHT {
+                for col in 0..w {
+                    let gy = (desk.desk_y + row) as usize;
+                    let gx = (desk.desk_x + col) as usize;
+                    if gy < self.height as usize && gx < self.width as usize {
+                        self.grid[gy][gx] = CellType::Empty;
+                    }
                 }
             }
         }
 
-        self.desks.push(DeskSlot {
-            desk_x: dx,
-            desk_y: dy,
-            chair_x: dx + w / 2,
-            chair_y: dy + DESK_HEIGHT,
-            occupied: false,
-            agent_color: None,
-            variant,
-        });
+        // Preserve occupied state and agent_color for existing desks
+        let old_states: Vec<(bool, Option<SpriteColor>)> = self.desks
+            .iter()
+            .map(|d| (d.occupied, d.agent_color))
+            .collect();
 
-        Some(self.desks.len() - 1)
+        // Calculate grid dimensions: ceil(sqrt(n)) columns
+        let cols = (count as f32).sqrt().ceil() as u16;
+        let rows = ((count as f32) / cols as f32).ceil() as u16;
+
+        // Center horizontally
+        let usable_w = self.width.saturating_sub(2);
+        let total_w = cols * DESK_SPACING_X;
+        let start_x = 1 + usable_w.saturating_sub(total_w) / 2;
+
+        // Center vertically in workspace
+        let total_h = rows * DESK_SPACING_Y;
+        let workspace_inner = self.workspace.3.saturating_sub(2);
+
+        // Grow workspace if needed
+        while total_h + 2 > self.workspace.3.saturating_sub(2) {
+            self.grow_workspace(DESK_SPACING_Y);
+        }
+        let workspace_inner = self.workspace.3.saturating_sub(2);
+        let start_y = 1 + workspace_inner.saturating_sub(total_h) / 2;
+
+        // Place desks
+        self.desks.clear();
+        let variant = DeskVariant::Dual;
+        let w = variant.width();
+
+        for i in 0..count {
+            let col = i as u16 % cols;
+            let row = i as u16 / cols;
+            let dx = start_x + col * DESK_SPACING_X;
+            let dy = start_y + row * DESK_SPACING_Y;
+
+            // Mark grid cells
+            for r in 0..DESK_HEIGHT {
+                for c in 0..w {
+                    let gy = (dy + r) as usize;
+                    let gx = (dx + c) as usize;
+                    if gy < self.height as usize && gx < self.width as usize {
+                        self.grid[gy][gx] = CellType::Desk;
+                    }
+                }
+            }
+
+            // Restore state from old desk at this index if it existed
+            let (occupied, agent_color) = old_states.get(i).copied().unwrap_or((false, None));
+
+            self.desks.push(DeskSlot {
+                desk_x: dx,
+                desk_y: dy,
+                chair_x: dx + w / 2,
+                chair_y: dy + DESK_HEIGHT,
+                occupied,
+                agent_color,
+                variant,
+            });
+        }
     }
 
     fn grow_workspace(&mut self, extra_rows: u16) {
