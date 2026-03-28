@@ -161,6 +161,7 @@ impl<'a> Widget for FloorView<'a> {
                         ('▓', monitor_fg, floor_bg(floor, gx, gy))
                     }
                     CellType::PingPongTable => ('▒', sprites::PING_PONG_COLOR, bg),
+                    CellType::PingPongNet => ('│', sprites::PING_PONG_NET_COLOR, sprites::PING_PONG_COLOR),
                     CellType::Couch => ('█', sprites::COUCH_COLOR, bg),
                     CellType::CoffeeTable => ('▬', sprites::COFFEE_TABLE_COLOR, bg),
                     CellType::VendingMachine => ('▐', sprites::VENDING_MACHINE_COLOR, bg),

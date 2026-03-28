@@ -9,6 +9,7 @@ pub enum CellType {
     #[allow(dead_code)]
     Monitor,
     PingPongTable,
+    PingPongNet,
     CeoDesk,
     CeoMonitor,
     Couch,
@@ -165,7 +166,12 @@ impl Floor {
         for py in pp_y..pp_y + pp_h {
             for px in pp_x..pp_x + pp_w {
                 if (py as usize) < height as usize && (px as usize) < width as usize {
-                    grid[py as usize][px as usize] = CellType::PingPongTable;
+                    // Net runs vertically through the center of the table
+                    if px == pp_x + pp_w / 2 {
+                        grid[py as usize][px as usize] = CellType::PingPongNet;
+                    } else {
+                        grid[py as usize][px as usize] = CellType::PingPongTable;
+                    }
                 }
             }
         }
