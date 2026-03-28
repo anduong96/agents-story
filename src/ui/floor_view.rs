@@ -367,13 +367,11 @@ impl<'a> FloorView<'a> {
             for &(row, row_off) in &rows {
                 let sy = area.y + desk.desk_y + row_off;
                 if sy >= area.y + area.height { continue; }
-                let bg = floor_bg(floor, desk.desk_x as usize, (desk.desk_y + row_off) as usize);
                 for (col, &ch) in row.iter().enumerate() {
                     let sx = area.x + desk.desk_x + col as u16;
                     if sx >= area.x + area.width { continue; }
 
                     if row_off == 1 && screen_cols.contains(&col) {
-                        // Half-block screen pixel: ▀ with fg=top color, bg=bottom color
                         let (top, bottom) = screen_pixel_colors(desk.desk_x, desk.desk_y, col, desk.occupied);
                         if let Some(cell) = buf.cell_mut((sx, sy)) {
                             cell.set_char('▀');
@@ -382,7 +380,7 @@ impl<'a> FloorView<'a> {
                     } else {
                         if let Some(cell) = buf.cell_mut((sx, sy)) {
                             cell.set_char(ch);
-                            cell.set_style(Style::default().fg(sprites::DESK_FRAME_COLOR).bg(bg));
+                            cell.set_style(Style::default().fg(sprites::DESK_FRAME_COLOR).bg(sprites::DESK_SURFACE_COLOR));
                         }
                     }
                 }

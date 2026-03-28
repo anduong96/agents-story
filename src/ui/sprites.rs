@@ -53,8 +53,9 @@ pub const DOOR_COLOR: Color = Color::Rgb(180, 130, 70);      // warm wood door
 pub const MONITOR_COLOR: Color = Color::Rgb(60, 180, 255);
 pub const MONITOR_FLICKER_COLOR: Color = Color::Rgb(40, 140, 200);
 
-// Desk sprite colors — contrasting gray-blue frame, distinct from wood floor
+// Desk sprite colors
 pub const DESK_FRAME_COLOR: Color = Color::Rgb(80, 85, 100);      // blue-gray monitor bezel
+pub const DESK_SURFACE_COLOR: Color = Color::Rgb(110, 80, 45);    // dark wood desk surface
 pub const DESK_SCREEN_OFF_COLOR: Color = Color::Rgb(35, 40, 50);  // dark blue-gray off screen
 
 // Desk variants — clean boxes, no stand/line
