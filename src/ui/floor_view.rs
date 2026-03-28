@@ -57,10 +57,23 @@ fn floor_texture(floor: &Floor, gx: usize, gy: usize) -> (char, Color, Color) {
     let lounge_w = floor.lounge.2 as usize;
 
     if gy < workspace_h {
-        if gy % 2 == 0 {
-            (sprites::WORKSPACE_FLOOR_CHAR_EVEN, sprites::WORKSPACE_FLOOR_FG_EVEN, sprites::WORKSPACE_FLOOR_BG_EVEN)
+        // Wood tile rectangles: 6 wide × 3 tall, offset every other row like brickwork
+        let tile_w = 6;
+        let tile_h = 3;
+        let row_group = gy / tile_h;
+        let offset = if row_group % 2 == 0 { 0 } else { tile_w / 2 };
+        let local_x = (gx + offset) % tile_w;
+        let local_y = gy % tile_h;
+
+        if local_y == 0 {
+            // Horizontal tile border
+            ('─', sprites::WORKSPACE_FLOOR_FG_EVEN, sprites::WORKSPACE_FLOOR_BG_ODD)
+        } else if local_x == 0 {
+            // Vertical tile border
+            ('│', sprites::WORKSPACE_FLOOR_FG_EVEN, sprites::WORKSPACE_FLOOR_BG_ODD)
         } else {
-            (sprites::WORKSPACE_FLOOR_CHAR_ODD, sprites::WORKSPACE_FLOOR_BG_ODD, sprites::WORKSPACE_FLOOR_BG_ODD)
+            // Tile interior
+            (' ', sprites::WORKSPACE_FLOOR_BG_EVEN, sprites::WORKSPACE_FLOOR_BG_EVEN)
         }
     } else if gx < lounge_w {
         if gy % 2 == 0 {
