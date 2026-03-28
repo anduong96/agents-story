@@ -105,6 +105,16 @@ impl<'a> Widget for StatsBar<'a> {
             Style::default().fg(usage_color(s.usage_percent)),
         );
 
+        let fps_span = Span::styled(
+            format!("FPS: {}", s.fps),
+            Style::default().fg(Color::DarkGray),
+        );
+
+        let ram_span = Span::styled(
+            format!("RAM: {:.1}MB", s.ram_mb),
+            Style::default().fg(Color::DarkGray),
+        );
+
         let line = Line::from(vec![
             model_span,
             sep.clone(),
@@ -117,6 +127,10 @@ impl<'a> Widget for StatsBar<'a> {
             cost_span,
             sep.clone(),
             usage_span,
+            sep.clone(),
+            fps_span,
+            sep.clone(),
+            ram_span,
         ]);
 
         line.render(area, buf);

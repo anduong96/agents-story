@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use crate::game::agent::{Direction, Room};
 use crate::game::pathfinding::advance_along_path;
@@ -21,6 +21,8 @@ pub struct App {
     pub running: bool,
     pub tick_count: u64,
     pub show_help: bool,
+    frame_count: u64,
+    last_fps_update: Instant,
 }
 
 impl App {
@@ -34,6 +36,8 @@ impl App {
             running: true,
             tick_count: 0,
             show_help: false,
+            frame_count: 0,
+            last_fps_update: Instant::now(),
         }
     }
 
@@ -73,6 +77,18 @@ impl App {
     /// Advance simulation by one tick.
     pub fn tick(&mut self, delta_secs: f32) {
         self.tick_count += 1;
+        self.frame_count += 1;
+
+        // Update FPS every second
+        let elapsed = self.last_fps_update.elapsed();
+        if elapsed >= Duration::from_secs(1) {
+            self.state.stats.fps = self.frame_count * 1000 / elapsed.as_millis().max(1) as u64;
+            self.frame_count = 0;
+            self.last_fps_update = Instant::now();
+
+            // Update RAM usage (process RSS)
+            self.state.stats.ram_mb = get_rss_mb();
+        }
 
         // Advance each agent along its path and update facing direction.
         for agent in &mut self.state.agents {
@@ -90,5 +106,42 @@ impl App {
 
         self.bubbles.tick();
         self.state.update_stats();
+    }
+}
+
+/// Get current process RSS in MB (macOS/Linux).
+fn get_rss_mb() -> f64 {
+    #[cfg(target_os = "macos")]
+    {
+        use std::process::Command;
+        let pid = std::process::id();
+        if let Ok(output) = Command::new("ps").args(["-o", "rss=", "-p", &pid.to_string()]).output() {
+            if let Ok(s) = String::from_utf8(output.stdout) {
+                if let Ok(kb) = s.trim().parse::<f64>() {
+                    return kb / 1024.0;
+                }
+            }
+        }
+        0.0
+    }
+    #[cfg(target_os = "linux")]
+    {
+        if let Ok(status) = std::fs::read_to_string("/proc/self/status") {
+            for line in status.lines() {
+                if line.starts_with("VmRSS:") {
+                    let parts: Vec<&str> = line.split_whitespace().collect();
+                    if let Some(kb_str) = parts.get(1) {
+                        if let Ok(kb) = kb_str.parse::<f64>() {
+                            return kb / 1024.0;
+                        }
+                    }
+                }
+            }
+        }
+        0.0
+    }
+    #[cfg(not(any(target_os = "macos", target_os = "linux")))]
+    {
+        0.0
     }
 }

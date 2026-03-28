@@ -11,6 +11,8 @@ pub struct Stats {
     pub total_tokens: u64,
     pub total_cost: f64,
     pub usage_percent: f32,
+    pub fps: u64,
+    pub ram_mb: f64,
 }
 
 impl Default for Stats {
@@ -24,6 +26,8 @@ impl Default for Stats {
             total_tokens: 0,
             total_cost: 0.0,
             usage_percent: 0.0,
+            fps: 0,
+            ram_mb: 0.0,
         }
     }
 }
