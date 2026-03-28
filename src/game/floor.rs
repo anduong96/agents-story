@@ -118,22 +118,21 @@ impl Floor {
             grid[y][lounge_w as usize] = CellType::Wall;
         }
 
-        // Doors on the horizontal divider
-        // lounge-left door at x=2 (2 cells wide)
+        // Doors on the horizontal divider (4 cells wide each)
         let lounge_left_door_x: u16 = 2;
-        grid[workspace_h as usize][lounge_left_door_x as usize] = CellType::Door;
-        grid[workspace_h as usize][lounge_left_door_x as usize + 1] = CellType::Door;
+        for i in 0..4 {
+            grid[workspace_h as usize][lounge_left_door_x as usize + i] = CellType::Door;
+        }
 
-        // lounge-right door at x=lounge_w-3 (2 cells wide)
-        let lounge_right_door_x: u16 = lounge_w - 3;
-        grid[workspace_h as usize][lounge_right_door_x as usize] = CellType::Door;
-        grid[workspace_h as usize][lounge_right_door_x as usize + 1] = CellType::Door;
+        let lounge_right_door_x: u16 = lounge_w - 5;
+        for i in 0..4 {
+            grid[workspace_h as usize][lounge_right_door_x as usize + i] = CellType::Door;
+        }
 
-        // CEO door at x=lounge_w + ceo_w/2 (2 cells wide)
-        let ceo_door_x: u16 = lounge_w + ceo_w / 2;
-        // CEO door is on the vertical divider row — place on horizontal divider at ceo_door_x
-        grid[workspace_h as usize][ceo_door_x as usize] = CellType::Door;
-        grid[workspace_h as usize][ceo_door_x as usize + 1] = CellType::Door;
+        let ceo_door_x: u16 = lounge_w + ceo_w / 2 - 1;
+        for i in 0..4 {
+            grid[workspace_h as usize][ceo_door_x as usize + i] = CellType::Door;
+        }
 
         let doors = vec![
             DoorPos {
@@ -416,10 +415,11 @@ impl Floor {
         for door in &mut self.doors {
             let dx = door.x as usize;
             let dy = door.y as usize;
-            if dy < self.grid.len() && dx < self.width as usize {
-                self.grid[dy][dx] = CellType::Door;
-                if dx + 1 < self.width as usize {
-                    self.grid[dy][dx + 1] = CellType::Door;
+            if dy < self.grid.len() {
+                for i in 0..4 {
+                    if dx + i < self.width as usize {
+                        self.grid[dy][dx + i] = CellType::Door;
+                    }
                 }
             }
         }
