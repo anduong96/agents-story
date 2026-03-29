@@ -78,6 +78,7 @@ pub struct Floor {
     pub lounge: (u16, u16, u16, u16),
     pub ceo_office: (u16, u16, u16, u16),
     pub desks: Vec<DeskSlot>,
+    pub ceo_desk: Option<DeskSlot>,
     pub doors: Vec<DoorPos>,
     pub ceo_chair: (u16, u16),
     #[allow(dead_code)]
@@ -241,17 +242,16 @@ impl Floor {
                 }
             }
         }
-        // Add as a DeskSlot with Single variant (1 monitor)
-        desks.push(DeskSlot {
+        let ceo_desk = Some(DeskSlot {
             desk_x: ceo_desk_x,
             desk_y: ceo_desk_y,
             chair_x: ceo_desk_x + (ceo_desk_w - 2) / 2,
-            chair_y: ceo_desk_y + DESK_HEIGHT - 1,
-            occupied: true,  // CEO always at desk
+            chair_y: ceo_desk_y + DESK_HEIGHT,
+            occupied: true,
             agent_color: None,
             variant: DeskVariant::Single,
         });
-        let ceo_chair = (ceo_desk_x + (ceo_desk_w - 2) / 2, ceo_desk_y + DESK_HEIGHT - 1);
+        let ceo_chair = (ceo_desk_x + (ceo_desk_w - 2) / 2, ceo_desk_y + DESK_HEIGHT);
 
         // Bulletin board: 4×2, on the right wall of CEO office
         let bb_x = lounge_w + ceo_w - 6;
@@ -307,6 +307,7 @@ impl Floor {
             lounge,
             ceo_office,
             desks,
+            ceo_desk,
             doors,
             ceo_chair,
             ping_pong,

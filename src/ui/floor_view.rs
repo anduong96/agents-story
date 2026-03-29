@@ -264,33 +264,36 @@ impl<'a> FloorView<'a> {
     }
 
     fn render_desks(&self, floor: &Floor, area: Rect, buf: &mut Buffer) {
+        // Workspace desks
         for (desk_idx, desk) in floor.desks.iter().enumerate() {
-            // Monitor lights up when agent has arrived, or desk is permanently occupied (CEO)
-            let agent_seated = desk.occupied && (
-                // No agent assigned (CEO desk) — always on
-                !self.state.agents.iter().any(|a| a.assigned_desk == Some(desk_idx))
-                // Or agent has arrived
-                || self.state.agents.iter().any(|a| a.assigned_desk == Some(desk_idx) && !a.is_animating())
-            );
+            let agent_seated = self.state.agents.iter().any(|a| {
+                a.assigned_desk == Some(desk_idx) && !a.is_animating()
+            });
+            self.render_single_desk(desk, agent_seated, area, buf);
+        }
+        // CEO desk (always on)
+        if let Some(ref desk) = floor.ceo_desk {
+            self.render_single_desk(desk, true, area, buf);
+        }
+    }
 
-            let (row0, row1, row2, screen_cols): (&[char], &[char], &[char], &[usize]) = match desk.variant {
-                DeskVariant::Single => (&sprites::DESK1_ROW0, &sprites::DESK1_ROW1, &sprites::DESK1_ROW2, sprites::DESK1_SCREEN_COLS),
-                DeskVariant::Dual   => (&sprites::DESK2_ROW0, &sprites::DESK2_ROW1, &sprites::DESK2_ROW2, sprites::DESK2_SCREEN_COLS),
-                DeskVariant::Triple => (&sprites::DESK3_ROW0, &sprites::DESK3_ROW1, &sprites::DESK3_ROW2, sprites::DESK3_SCREEN_COLS),
-            };
+    fn render_single_desk(&self, desk: &crate::game::floor::DeskSlot, screen_on: bool, area: Rect, buf: &mut Buffer) {
+        let (row0, row1, row2, screen_cols): (&[char], &[char], &[char], &[usize]) = match desk.variant {
+            DeskVariant::Single => (&sprites::DESK1_ROW0, &sprites::DESK1_ROW1, &sprites::DESK1_ROW2, sprites::DESK1_SCREEN_COLS),
+            DeskVariant::Dual   => (&sprites::DESK2_ROW0, &sprites::DESK2_ROW1, &sprites::DESK2_ROW2, sprites::DESK2_SCREEN_COLS),
+            DeskVariant::Triple => (&sprites::DESK3_ROW0, &sprites::DESK3_ROW1, &sprites::DESK3_ROW2, sprites::DESK3_SCREEN_COLS),
+        };
 
-            let rows: [(&[char], u16); 3] = [(row0, 0), (row1, 1), (row2, 2)];
-            for &(row, row_off) in &rows {
-                let gy = desk.desk_y + row_off;
-                if gy < self.scroll_y { continue; }
-                let sy = area.y + gy - self.scroll_y;
-                if sy >= area.y + area.height { continue; }
+        let rows: [(&[char], u16); 3] = [(row0, 0), (row1, 1), (row2, 2)];
+        for &(row, row_off) in &rows {
+            let gy = desk.desk_y + row_off;
+            if let Some(sy) = self.grid_to_screen(gy, &area) {
                 for (col, &ch) in row.iter().enumerate() {
                     let sx = area.x + desk.desk_x + col as u16;
                     if sx >= area.x + area.width { continue; }
 
                     if row_off == 1 && screen_cols.contains(&col) {
-                        let (top, bottom) = screen_pixel_colors(desk.desk_x, desk.desk_y, col, agent_seated, self.tick);
+                        let (top, bottom) = screen_pixel_colors(desk.desk_x, desk.desk_y, col, screen_on, self.tick);
                         if let Some(cell) = buf.cell_mut((sx, sy)) {
                             cell.set_char('▀');
                             cell.set_style(Style::default().fg(top).bg(bottom));
