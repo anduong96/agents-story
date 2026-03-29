@@ -120,10 +120,24 @@ impl<'a> Widget for FloorView<'a> {
                     CellType::PingPongTable => ('▒', sprites::PING_PONG_COLOR, bg),
                     CellType::PingPongNet => ('│', sprites::PING_PONG_NET_COLOR, sprites::PING_PONG_COLOR),
                     CellType::Arcade => {
-                        // Animated neon screen on dark cabinet
-                        let len = sprites::ARCADE_SCREEN_COLORS.len();
-                        let phase = ((self.tick / 8) as usize + gx * 5 + gy * 3) % len;
-                        ('█', sprites::ARCADE_SCREEN_COLORS[phase], sprites::ARCADE_CABINET_COLOR)
+                        // Check if an idle agent is nearby (within 2 cells)
+                        let in_use = self.state.agents.iter().any(|a| {
+                            a.status == AgentStatus::Idle
+                                && !a.is_animating()
+                                && (a.position.0 as i32 - gx as i32).abs() <= 2
+                                && (a.position.1 as i32 - gy as i32).abs() <= 2
+                        });
+                        let above_is_arcade = gy > 0 && floor.grid[gy - 1][gx] == CellType::Arcade;
+                        let is_top = !above_is_arcade;
+                        if is_top && in_use {
+                            // Top row: animated screen when in use
+                            let len = sprites::ARCADE_SCREEN_COLORS.len();
+                            let phase = ((self.tick / 8) as usize + gx * 5) % len;
+                            ('█', sprites::ARCADE_SCREEN_COLORS[phase], sprites::ARCADE_CABINET_COLOR)
+                        } else {
+                            // Off or bottom row: dark cabinet
+                            ('█', sprites::ARCADE_CABINET_COLOR, sprites::ARCADE_TRIM_COLOR)
+                        }
                     }
                     CellType::Bookshelf => {
                         let book_idx = (gx * 3 + gy * 5) % 4;
