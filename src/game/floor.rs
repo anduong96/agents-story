@@ -251,7 +251,7 @@ impl Floor {
             agent_color: None,
             variant: DeskVariant::Single,
         });
-        let ceo_chair = (ceo_desk_x + ceo_desk_w / 2, ceo_desk_y + DESK_HEIGHT);
+        let ceo_chair = (ceo_desk_x + ceo_desk_w / 2, ceo_desk_y + DESK_HEIGHT - 1);
 
         // Bulletin board: 4×2, on the right wall of CEO office
         let bb_x = lounge_w + ceo_w - 6;
@@ -433,7 +433,7 @@ impl Floor {
                 desk_x: dx,
                 desk_y: dy,
                 chair_x: dx + w / 2,
-                chair_y: dy + DESK_HEIGHT,
+                chair_y: dy + DESK_HEIGHT - 1,
                 occupied,
                 agent_color,
                 variant,
