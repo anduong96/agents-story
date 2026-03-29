@@ -52,6 +52,8 @@ pub const TREE_SMALL_COLOR: Color = Color::Rgb(40, 160, 50);
 pub const TREE_SMALL_TRUNK: Color = Color::Rgb(140, 90, 40);
 pub const TREE_LARGE_COLOR: Color = Color::Rgb(30, 140, 40);
 pub const TREE_LARGE_TRUNK: Color = Color::Rgb(120, 75, 35);
+pub const CHAIR_COLOR: Color = Color::Rgb(100, 80, 55);
+pub const CHAIR_SEAT_COLOR: Color = Color::Rgb(140, 110, 70);
 
 
 // Lounge TV
