@@ -99,8 +99,14 @@ In demo mode (`--demo`), synthetic events simulate a full session with 6 staff a
 
 - [ ] Homebrew formula (`brew install agents-story`)
 - [ ] Connect to live Claude Code sessions
+- [ ] Custom office themes (dark mode, neon, corporate beige)
+- [ ] Name your agents
+- [ ] Choose your floor plan
+- [ ] Configurable furniture placement
+- [ ] Agent outfit colors via config file
 - [ ] Water cooler
 - [ ] Meeting room where agents accomplish nothing
+- [ ] Bathroom breaks
 
 ## Contributing
 
