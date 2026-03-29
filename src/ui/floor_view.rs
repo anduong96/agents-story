@@ -506,7 +506,7 @@ impl<'a> FloorView<'a> {
                 if sx < area.x + area.width {
                     if let Some(cell) = buf.cell_mut((sx, sy1)) {
                         cell.set_char('█');
-                        cell.set_style(Style::default().fg(sprites::CEO_COLOR));
+                        cell.set_style(Style::default().fg(Color::Rgb(30, 30, 35)));
                     }
                 }
             }
