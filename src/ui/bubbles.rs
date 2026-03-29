@@ -99,24 +99,114 @@ impl BubbleManager {
         let sy = area.y + agent_y + 2; // below the 2-tall sprite
 
         if let Some(ref text) = bubble.text {
-            // Text bubble: render below agent, clamped to screen
-            let ty = area.y + agent_y + 2;
-            if ty < area.y + area.height {
-                let style = Style::default()
-                    .fg(Color::Rgb(255, 255, 255))
-                    .bg(bubble.color);
-                // Center text around agent, clamp to screen bounds
-                let text_len = text.len() as u16;
-                let start_x = (area.x + agent_x).saturating_sub(text_len / 2);
-                let start_x = start_x.max(area.x);
-                // Render with padding: " TEXT "
-                let padded = format!(" {} ", text);
-                for (i, ch) in padded.chars().enumerate() {
-                    let tx = start_x + i as u16;
-                    if tx < area.x + area.width {
-                        if let Some(cell) = buf.cell_mut((tx, ty)) {
-                            cell.set_symbol(&ch.to_string());
-                            cell.set_style(style);
+            // Rectangle text bubble: max 6 chars wide, word-wrapped
+            // Black text on white background
+            let box_w: usize = 6;
+            let style = Style::default()
+                .fg(Color::Rgb(0, 0, 0))
+                .bg(Color::Rgb(255, 255, 255));
+            let border_style = Style::default()
+                .fg(Color::Rgb(180, 180, 180))
+                .bg(Color::Rgb(255, 255, 255));
+
+            // Word-wrap text into lines of box_w chars
+            let mut lines: Vec<String> = Vec::new();
+            let mut line = String::new();
+            for word in text.split_whitespace() {
+                if line.is_empty() {
+                    line = word.chars().take(box_w).collect();
+                } else if line.len() + 1 + word.len() <= box_w {
+                    line.push(' ');
+                    line.push_str(word);
+                } else {
+                    lines.push(line);
+                    line = word.chars().take(box_w).collect();
+                }
+            }
+            if !line.is_empty() {
+                lines.push(line);
+            }
+
+            // Position: above agent, clamped to screen
+            let total_h = lines.len() as u16 + 2; // +2 for top/bottom border
+            let frame_w = box_w as u16 + 2; // +2 for left/right border
+            let top_y = agent_y.saturating_sub(total_h);
+            let left_x = agent_x.saturating_sub(frame_w / 2).max(0);
+            // Clamp right edge
+            let left_x = if area.x + left_x + frame_w > area.x + area.width {
+                (area.x + area.width).saturating_sub(frame_w + area.x)
+            } else {
+                left_x
+            };
+
+            // Top border
+            if let Some(row_y) = top_y.checked_add(0) {
+                let sy = area.y + row_y;
+                if sy < area.y + area.height {
+                    for i in 0..frame_w {
+                        let sx = area.x + left_x + i;
+                        if sx < area.x + area.width {
+                            let ch = if i == 0 {
+                                '┌'
+                            } else if i == frame_w - 1 {
+                                '┐'
+                            } else {
+                                '─'
+                            };
+                            if let Some(cell) = buf.cell_mut((sx, sy)) {
+                                cell.set_char(ch);
+                                cell.set_style(border_style);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Text lines
+            for (row, line_text) in lines.iter().enumerate() {
+                let sy = area.y + top_y + 1 + row as u16;
+                if sy >= area.y + area.height {
+                    break;
+                }
+                for i in 0..frame_w {
+                    let sx = area.x + left_x + i;
+                    if sx >= area.x + area.width {
+                        break;
+                    }
+                    let ch = if i == 0 || i == frame_w - 1 {
+                        '│'
+                    } else {
+                        let ci = (i - 1) as usize;
+                        line_text.chars().nth(ci).unwrap_or(' ')
+                    };
+                    let s = if i == 0 || i == frame_w - 1 {
+                        border_style
+                    } else {
+                        style
+                    };
+                    if let Some(cell) = buf.cell_mut((sx, sy)) {
+                        cell.set_char(ch);
+                        cell.set_style(s);
+                    }
+                }
+            }
+
+            // Bottom border
+            let sy = area.y + top_y + 1 + lines.len() as u16;
+            if sy < area.y + area.height {
+                for i in 0..frame_w {
+                    let sx = area.x + left_x + i;
+                    if sx < area.x + area.width {
+                        let ch = if i == 0 {
+                            '└'
+                        } else if i == frame_w - 1 {
+                            '┘'
+                        } else {
+                            '─'
+                        };
+                        if let Some(cell) = buf.cell_mut((sx, sy)) {
+                            cell.set_char(ch);
+                            cell.set_style(border_style);
                         }
                     }
                 }
