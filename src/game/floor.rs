@@ -18,6 +18,7 @@ pub enum CellType {
     VendingMachine,
     BulletinBoard,
     Plant,
+    Bookshelf,
 }
 
 pub const MIN_DESKS: usize = 0;
@@ -246,6 +247,15 @@ impl Floor {
                 if (by as usize) < height as usize && (bx as usize) < width as usize {
                     grid[by as usize][bx as usize] = CellType::BulletinBoard;
                 }
+            }
+        }
+
+        // Bookshelf: 6×1, along the bottom wall of CEO office
+        let bs_x = lounge_w + 2;
+        let bs_y = workspace_h + bottom_h - 2;
+        for bx in bs_x..bs_x + 6 {
+            if (bs_y as usize) < height as usize && (bx as usize) < width as usize {
+                grid[bs_y as usize][bx as usize] = CellType::Bookshelf;
             }
         }
 

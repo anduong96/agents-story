@@ -148,6 +148,10 @@ impl<'a> Widget for FloorView<'a> {
                     CellType::PingPongTable => ('▒', sprites::PING_PONG_COLOR, bg),
                     CellType::PingPongNet => ('│', sprites::PING_PONG_NET_COLOR, sprites::PING_PONG_COLOR),
                     CellType::TV => ('▓', sprites::TV_SCREEN_COLOR, sprites::TV_FRAME_COLOR),
+                    CellType::Bookshelf => {
+                        let book_idx = (gx * 3 + gy * 5) % 4;
+                        ('▐', sprites::BOOKSHELF_BOOK_COLORS[book_idx], sprites::BOOKSHELF_COLOR)
+                    }
                     CellType::Plant => ('♣', sprites::PLANT_COLOR, sprites::PLANT_POT_COLOR),
                     CellType::Couch => ('█', sprites::COUCH_COLOR, bg),
                     CellType::CoffeeTable => ('▬', sprites::COFFEE_TABLE_COLOR, bg),

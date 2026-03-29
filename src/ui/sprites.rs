@@ -36,6 +36,15 @@ pub const PING_PONG_COLOR: Color = Color::Rgb(0, 128, 0);
 pub const PING_PONG_NET_COLOR: Color = Color::Rgb(220, 220, 220);
 
 // Plants/trees
+// Bookshelf
+pub const BOOKSHELF_COLOR: Color = Color::Rgb(120, 85, 50);
+pub const BOOKSHELF_BOOK_COLORS: [Color; 4] = [
+    Color::Rgb(200, 70, 70),
+    Color::Rgb(70, 130, 200),
+    Color::Rgb(70, 170, 70),
+    Color::Rgb(220, 200, 70),
+];
+
 pub const PLANT_COLOR: Color = Color::Rgb(60, 180, 60);
 pub const PLANT_POT_COLOR: Color = Color::Rgb(160, 100, 50);
 
