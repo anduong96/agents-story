@@ -245,13 +245,13 @@ impl Floor {
         desks.push(DeskSlot {
             desk_x: ceo_desk_x,
             desk_y: ceo_desk_y,
-            chair_x: ceo_desk_x + ceo_desk_w / 2,
-            chair_y: ceo_desk_y + DESK_HEIGHT,
+            chair_x: ceo_desk_x + (ceo_desk_w - 2) / 2,
+            chair_y: ceo_desk_y + 1,
             occupied: true,  // CEO always at desk
             agent_color: None,
             variant: DeskVariant::Single,
         });
-        let ceo_chair = (ceo_desk_x + ceo_desk_w / 2, ceo_desk_y + DESK_HEIGHT - 2);
+        let ceo_chair = (ceo_desk_x + (ceo_desk_w - 2) / 2, ceo_desk_y + 1);
 
         // Bulletin board: 4×2, on the right wall of CEO office
         let bb_x = lounge_w + ceo_w - 6;
@@ -432,8 +432,8 @@ impl Floor {
             self.desks.push(DeskSlot {
                 desk_x: dx,
                 desk_y: dy,
-                chair_x: dx + w / 2,
-                chair_y: dy + DESK_HEIGHT - 2,
+                chair_x: dx + (w - 2) / 2,  // center 2-wide agent in desk
+                chair_y: dy + 1,             // head at screen row (middle of desk)
                 occupied,
                 agent_color,
                 variant,
