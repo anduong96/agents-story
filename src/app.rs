@@ -228,13 +228,14 @@ impl App {
                         // Near ping pong table
                         (ping_pong.0.saturating_sub(1), ping_pong.1 + ping_pong.3 + 1),
                         (ping_pong.0 + ping_pong.2 + 1, ping_pong.1),
-                        // Near couches (lounge edges)
+                        // Lounge edges
                         (lounge.0 + 3, lounge.1 + 3),
                         (lounge.0 + lounge.2 - 5, lounge.1 + lounge.3 - 3),
                         // Center of lounge
                         (lounge.0 + lounge.2 / 2, lounge.1 + lounge.3 / 2),
-                        // Near TV
-                        (lounge.0 + lounge.2 / 2, lounge.1 + 4),
+                        // Arcade machines (bottom-left)
+                        (5, lounge.1 + lounge.3 - 5),
+                        (9, lounge.1 + lounge.3 - 5),
                     ];
                     let pick = (self.tick_count / 90 + agent.sprite_color.0 as u64) as usize % targets.len();
                     let (tx, ty) = targets[pick];

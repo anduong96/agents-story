@@ -119,6 +119,11 @@ impl<'a> Widget for FloorView<'a> {
                     }
                     CellType::PingPongTable => ('▒', sprites::PING_PONG_COLOR, bg),
                     CellType::PingPongNet => ('│', sprites::PING_PONG_NET_COLOR, sprites::PING_PONG_COLOR),
+                    CellType::Arcade => {
+                        // Animated arcade screen — shifts color based on tick + position
+                        let phase = ((self.tick / 10) as usize + gx * 3 + gy * 7) % sprites::ARCADE_SCREEN_COLORS.len();
+                        ('▓', sprites::ARCADE_SCREEN_COLORS[phase], sprites::ARCADE_BODY_COLOR)
+                    }
                     CellType::Bookshelf => {
                         let book_idx = (gx * 3 + gy * 5) % 4;
                         ('▐', sprites::BOOKSHELF_BOOK_COLORS[book_idx], sprites::BOOKSHELF_COLOR)

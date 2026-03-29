@@ -19,6 +19,7 @@ pub enum CellType {
     TreeSmall,
     TreeLarge,
     Bookshelf,
+    Arcade,
 }
 
 pub const MIN_DESKS: usize = 0;
@@ -191,6 +192,21 @@ impl Floor {
             let x = tx as usize;
             if y < height as usize && x < width as usize && grid[y][x] == CellType::Empty {
                 grid[y][x] = cell;
+            }
+        }
+
+        // 2 arcade machines in bottom-left of lounge
+        let arcade_x = 3u16;
+        let arcade_y = workspace_h + bottom_h - 4;
+        for a in 0..2u16 {
+            let ax = arcade_x + a * 4;
+            let y = arcade_y as usize;
+            let x = ax as usize;
+            if y < height as usize && x + 1 < width as usize {
+                grid[y][x] = CellType::Arcade;
+                grid[y][x + 1] = CellType::Arcade;
+                grid[y + 1][x] = CellType::Arcade;
+                grid[y + 1][x + 1] = CellType::Arcade;
             }
         }
 

@@ -52,6 +52,15 @@ pub const TREE_SMALL_COLOR: Color = Color::Rgb(40, 160, 50);
 pub const TREE_SMALL_TRUNK: Color = Color::Rgb(140, 90, 40);
 pub const TREE_LARGE_COLOR: Color = Color::Rgb(30, 140, 40);
 pub const TREE_LARGE_TRUNK: Color = Color::Rgb(120, 75, 35);
+// Arcade machines
+pub const ARCADE_BODY_COLOR: Color = Color::Rgb(50, 50, 60);
+pub const ARCADE_SCREEN_COLORS: [Color; 4] = [
+    Color::Rgb(255, 80, 80),
+    Color::Rgb(80, 255, 80),
+    Color::Rgb(80, 80, 255),
+    Color::Rgb(255, 255, 80),
+];
+
 // Room wall/door colors
 pub const WALL_COLOR: Color = Color::Rgb(190, 185, 170);     // cream/beige walls
 pub const DOOR_COLOR: Color = Color::Rgb(180, 130, 70);      // warm wood door
