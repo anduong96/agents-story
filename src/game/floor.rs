@@ -285,12 +285,9 @@ impl Floor {
             (width - 3, workspace_h - 2, CellType::Plant),
             (width / 3, 1, CellType::TreeLarge),
             (width * 2 / 3, 1, CellType::TreeLarge),
-            // Lounge — mix of trees and plants
-            (2, workspace_h + 2, CellType::TreeLarge),
-            (lounge_w - 3, workspace_h + 2, CellType::TreeSmall),
+            // Lounge — plants along edges, away from furniture
             (2, workspace_h + bottom_h - 2, CellType::Plant),
-            (lounge_w - 3, workspace_h + bottom_h - 2, CellType::TreeLarge),
-            (lounge_w / 3, workspace_h + bottom_h - 2, CellType::Plant),
+            (lounge_w - 3, workspace_h + bottom_h - 2, CellType::TreeSmall),
             // CEO office — elegant plants
             (lounge_w + 2, workspace_h + 2, CellType::TreeSmall),
             (width - 3, workspace_h + 2, CellType::Plant),
