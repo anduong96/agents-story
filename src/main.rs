@@ -173,7 +173,6 @@ fn render(frame: &mut Frame, app: &mut App) {
 
     // 1. Floor view
     let floor_view = FloorView::new(&app.state)
-        .with_highlight(app.highlighted_room)
         .with_tick(app.tick_count)
         .with_scroll(app.floor_scroll_y);
     frame.render_widget(floor_view, floor_area);

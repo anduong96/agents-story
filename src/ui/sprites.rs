@@ -4,6 +4,8 @@ use ratatui::style::Color;
 // No sprite struct needed — render_agent handles it directly.
 
 pub const CEO_SKIN_COLOR: Color = Color::Rgb(220, 180, 130); // CEO skin tone
+pub const CEO_OUTFIT_COLOR: Color = Color::Rgb(30, 30, 35);  // CEO black outfit
+pub const VERTICAL_DIVIDER_COLOR: Color = Color::Rgb(80, 80, 120); // lounge/CEO divider
 
 // Monitor sprite — 2 cells wide × 2 tall
 #[allow(dead_code)]
@@ -56,14 +58,13 @@ pub const TV_SCREEN_COLOR: Color = Color::Rgb(60, 120, 200);
 pub const WALL_COLOR: Color = Color::Rgb(190, 185, 170);     // cream/beige walls
 pub const DOOR_COLOR: Color = Color::Rgb(180, 130, 70);      // warm wood door
 
-// Monitor/desk colors
-pub const MONITOR_COLOR: Color = Color::Rgb(60, 180, 255);
-pub const MONITOR_FLICKER_COLOR: Color = Color::Rgb(40, 140, 200);
+// Desk colors
 
 // Desk sprite colors
 pub const DESK_FRAME_COLOR: Color = Color::Rgb(80, 85, 100);      // blue-gray monitor bezel
 pub const DESK_SURFACE_COLOR: Color = Color::Rgb(210, 205, 195);   // off-white desk surface
 pub const DESK_SCREEN_OFF_COLOR: Color = Color::Rgb(35, 40, 50);  // dark blue-gray off screen
+pub const DESK_SCREEN_DIM_COLOR: Color = Color::Rgb(25, 25, 30);  // subtle dim variation
 
 // All desks same width (10w × 3h), monitor count varies inside
 // 1 monitor — centered:
@@ -130,7 +131,6 @@ pub const VENDING_MACHINE_COLOR: Color = Color::Rgb(100, 150, 220);   // cheerfu
 pub const VENDING_LIGHT_COLOR: Color = Color::Rgb(140, 220, 140);     // bright green
 
 // CEO office — premium feel
-pub const BULLETIN_BOARD_COLOR: Color = Color::Rgb(200, 165, 100);    // bright cork
 pub const BULLETIN_PIN_COLORS: [Color; 4] = [
     Color::Rgb(255, 70, 70),     // red
     Color::Rgb(70, 210, 70),     // green
