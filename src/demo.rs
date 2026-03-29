@@ -14,265 +14,138 @@ async fn send(tx: &mpsc::Sender<ReaderMessage>, session_id: &str, event: StreamE
         .await;
 }
 
+async fn spawn(tx: &mpsc::Sender<ReaderMessage>, sid: &str, id: &str, name: &str, desc: &str) {
+    send(tx, sid, StreamEvent::AgentSpawn {
+        agent_id: id.to_string(),
+        name: name.to_string(),
+        description: desc.to_string(),
+    }).await;
+}
+
+async fn tool(tx: &mpsc::Sender<ReaderMessage>, sid: &str, t: &str, hint: Option<&str>) {
+    send(tx, sid, StreamEvent::ToolUse {
+        tool: t.to_string(),
+        args_hint: hint.map(|s| s.to_string()),
+    }).await;
+}
+
+async fn done(tx: &mpsc::Sender<ReaderMessage>, sid: &str, id: &str) {
+    send(tx, sid, StreamEvent::AgentResult { agent_id: id.to_string() }).await;
+}
+
+async fn stats(tx: &mpsc::Sender<ReaderMessage>, sid: &str, inp: u64, out: u64, cost: f64) {
+    send(tx, sid, StreamEvent::StatsUpdate { input_tokens: inp, output_tokens: out, cost }).await;
+}
+
 pub async fn run_demo(tx: mpsc::Sender<ReaderMessage>) {
-    let session_id = "demo-session";
+    let s = "demo-session";
 
-    // (0ms) SessionInit
-    send(
-        &tx,
-        session_id,
-        StreamEvent::SessionInit {
-            session_id: session_id.to_string(),
-            model: "claude-opus-4-6".to_string(),
-        },
-    )
-    .await;
+    // Init session
+    send(&tx, s, StreamEvent::SessionInit {
+        session_id: s.to_string(),
+        model: "claude-opus-4-6".to_string(),
+    }).await;
 
-    // (500ms) AgentSpawn: agent-01
+    // === Phase 1: All 6 staff start working (rapid spawn) ===
     sleep(Duration::from_millis(500)).await;
-    send(
-        &tx,
-        session_id,
-        StreamEvent::AgentSpawn {
-            agent_id: "agent-01".to_string(),
-            name: "Fix auth bug".to_string(),
-            description: "Investigates and fixes the authentication middleware bug".to_string(),
-        },
-    )
-    .await;
+    spawn(&tx, s, "a1", "Fix auth bug", "Fix authentication middleware").await;
 
-    // (1500ms) ToolUse: Read
+    sleep(Duration::from_millis(400)).await;
+    spawn(&tx, s, "a2", "Add tests", "Write unit tests for auth module").await;
+
+    sleep(Duration::from_millis(400)).await;
+    spawn(&tx, s, "a3", "Code review", "Review auth changes").await;
+
+    sleep(Duration::from_millis(400)).await;
+    spawn(&tx, s, "a4", "Update docs", "Update API documentation").await;
+
+    sleep(Duration::from_millis(400)).await;
+    spawn(&tx, s, "a5", "Refactor DB", "Refactor session storage queries").await;
+
+    sleep(Duration::from_millis(400)).await;
+    spawn(&tx, s, "a6", "Add logging", "Add structured logging to auth").await;
+
+    // === Phase 2: Busy working — tool use activity ===
+    sleep(Duration::from_millis(1500)).await;
+    tool(&tx, s, "Read", Some("src/auth/middleware.rs")).await;
+
+    sleep(Duration::from_millis(1200)).await;
+    tool(&tx, s, "Grep", Some("session_token")).await;
+
     sleep(Duration::from_millis(1000)).await;
-    send(
-        &tx,
-        session_id,
-        StreamEvent::ToolUse {
-            tool: "Read".to_string(),
-            args_hint: Some("src/auth/middleware.rs".to_string()),
-        },
-    )
-    .await;
+    tool(&tx, s, "Edit", Some("src/auth/middleware.rs")).await;
 
-    // (3500ms) AgentSpawn: agent-02
-    sleep(Duration::from_millis(2000)).await;
-    send(
-        &tx,
-        session_id,
-        StreamEvent::AgentSpawn {
-            agent_id: "agent-02".to_string(),
-            name: "Add unit tests".to_string(),
-            description: "Writes unit tests for the authentication module".to_string(),
-        },
-    )
-    .await;
+    sleep(Duration::from_millis(800)).await;
+    tool(&tx, s, "Bash", Some("cargo test")).await;
 
-    // (4500ms) ToolUse: Edit
+    sleep(Duration::from_millis(1500)).await;
+    tool(&tx, s, "Read", Some("src/db/sessions.rs")).await;
+
     sleep(Duration::from_millis(1000)).await;
-    send(
-        &tx,
-        session_id,
-        StreamEvent::ToolUse {
-            tool: "Edit".to_string(),
-            args_hint: Some("src/auth/middleware.rs".to_string()),
-        },
-    )
-    .await;
+    tool(&tx, s, "Edit", Some("src/db/sessions.rs")).await;
+    stats(&tx, s, 18000, 5200, 0.56).await;
 
-    // (6500ms) ToolUse: Bash
+    // === Phase 3: Need more help — spawn 3 temp agents (exceed 6 staff) ===
     sleep(Duration::from_millis(2000)).await;
-    send(
-        &tx,
-        session_id,
-        StreamEvent::ToolUse {
-            tool: "Bash".to_string(),
-            args_hint: Some("cargo test auth::tests".to_string()),
-        },
-    )
-    .await;
+    spawn(&tx, s, "t1", "Perf testing", "Run performance benchmarks on auth flow").await;
 
-    // (9500ms) AgentSpawn: agent-03
-    sleep(Duration::from_millis(3000)).await;
-    send(
-        &tx,
-        session_id,
-        StreamEvent::AgentSpawn {
-            agent_id: "agent-03".to_string(),
-            name: "Code review".to_string(),
-            description: "Reviews the auth changes for correctness and style".to_string(),
-        },
-    )
-    .await;
-
-    // (10000ms) AgentSpawn: agent-04
     sleep(Duration::from_millis(500)).await;
-    send(
-        &tx,
-        session_id,
-        StreamEvent::AgentSpawn {
-            agent_id: "agent-04".to_string(),
-            name: "Update docs".to_string(),
-            description: "Updates API documentation for auth endpoints".to_string(),
-        },
-    )
-    .await;
+    spawn(&tx, s, "t2", "Security audit", "Audit token handling for vulnerabilities").await;
 
-    // (10500ms) AgentSpawn: agent-05
     sleep(Duration::from_millis(500)).await;
-    send(
-        &tx,
-        session_id,
-        StreamEvent::AgentSpawn {
-            agent_id: "agent-05".to_string(),
-            name: "Refactor DB".to_string(),
-            description: "Refactors database queries for session storage".to_string(),
-        },
-    )
-    .await;
+    spawn(&tx, s, "t3", "CI pipeline", "Fix broken CI pipeline for auth module").await;
 
-    // (10700ms) ToolUse: Grep (agent-05 searching)
-    sleep(Duration::from_millis(200)).await;
-    send(
-        &tx,
-        session_id,
-        StreamEvent::ToolUse {
-            tool: "Grep".to_string(),
-            args_hint: Some("session_store".to_string()),
-        },
-    )
-    .await;
+    // More tool activity while everyone works
+    sleep(Duration::from_millis(1500)).await;
+    tool(&tx, s, "Bash", Some("cargo bench auth")).await;
 
-    // (11000ms) AgentSpawn: agent-06
-    sleep(Duration::from_millis(300)).await;
-    send(
-        &tx,
-        session_id,
-        StreamEvent::AgentSpawn {
-            agent_id: "agent-06".to_string(),
-            name: "Add logging".to_string(),
-            description: "Adds structured logging to auth flow".to_string(),
-        },
-    )
-    .await;
+    sleep(Duration::from_millis(1200)).await;
+    tool(&tx, s, "Read", Some("Cargo.toml")).await;
 
-    // (11500ms) AgentResult: agent-01
-    sleep(Duration::from_millis(2000)).await;
-    send(
-        &tx,
-        session_id,
-        StreamEvent::AgentResult {
-            agent_id: "agent-01".to_string(),
-        },
-    )
-    .await;
-
-    // (13500ms) StatsUpdate
-    sleep(Duration::from_millis(2000)).await;
-    send(
-        &tx,
-        session_id,
-        StreamEvent::StatsUpdate {
-            input_tokens: 14200,
-            output_tokens: 3800,
-            cost: 0.42,
-        },
-    )
-    .await;
-
-    // (16500ms) AgentResult: agent-02
-    sleep(Duration::from_millis(3000)).await;
-    send(
-        &tx,
-        session_id,
-        StreamEvent::AgentResult {
-            agent_id: "agent-02".to_string(),
-        },
-    )
-    .await;
-
-    // (18500ms) Error
-    sleep(Duration::from_millis(2000)).await;
-    send(
-        &tx,
-        session_id,
-        StreamEvent::Error {
-            message: "Lint check failed".to_string(),
-        },
-    )
-    .await;
-
-    // (21500ms) ToolUse: Edit
-    sleep(Duration::from_millis(3000)).await;
-    send(
-        &tx,
-        session_id,
-        StreamEvent::ToolUse {
-            tool: "Edit".to_string(),
-            args_hint: Some("src/lib.rs".to_string()),
-        },
-    )
-    .await;
-
-    // (23500ms) AgentResult: agent-03
-    sleep(Duration::from_millis(2000)).await;
-    send(
-        &tx,
-        session_id,
-        StreamEvent::AgentResult {
-            agent_id: "agent-03".to_string(),
-        },
-    )
-    .await;
-
-    // (24500ms) AgentResult: agent-04
     sleep(Duration::from_millis(1000)).await;
-    send(
-        &tx,
-        session_id,
-        StreamEvent::AgentResult {
-            agent_id: "agent-04".to_string(),
-        },
-    )
-    .await;
+    tool(&tx, s, "Edit", Some(".github/workflows/ci.yml")).await;
+    stats(&tx, s, 38000, 11000, 1.18).await;
 
-    // (26500ms) AgentResult: agent-05
+    // === Phase 4: Temp agents finish and leave ===
+    sleep(Duration::from_millis(3000)).await;
+    done(&tx, s, "t1").await;  // temp leaves
+
     sleep(Duration::from_millis(2000)).await;
-    send(
-        &tx,
-        session_id,
-        StreamEvent::AgentResult {
-            agent_id: "agent-05".to_string(),
-        },
-    )
-    .await;
+    done(&tx, s, "t3").await;  // temp leaves
 
-    // (27500ms) AgentResult: agent-06
+    sleep(Duration::from_millis(1500)).await;
+    done(&tx, s, "t2").await;  // temp leaves
+
+    // === Phase 5: Some staff finish (return to lounge), others keep working ===
+    sleep(Duration::from_millis(2000)).await;
+    done(&tx, s, "a4").await;  // staff → lounge
+
+    sleep(Duration::from_millis(1500)).await;
+    done(&tx, s, "a6").await;  // staff → lounge
+
     sleep(Duration::from_millis(1000)).await;
-    send(
-        &tx,
-        session_id,
-        StreamEvent::AgentResult {
-            agent_id: "agent-06".to_string(),
-        },
-    )
-    .await;
+    tool(&tx, s, "Edit", Some("src/auth/token.rs")).await;
 
-    // (27500ms) StatsUpdate
-    send(
-        &tx,
-        session_id,
-        StreamEvent::StatsUpdate {
-            input_tokens: 52000,
-            output_tokens: 14800,
-            cost: 1.64,
-        },
-    )
-    .await;
+    // === Phase 6: Remaining staff finish ===
+    sleep(Duration::from_millis(3000)).await;
+    done(&tx, s, "a1").await;
+    stats(&tx, s, 62000, 18000, 1.94).await;
 
-    // (32500ms) SessionEnded
-    sleep(Duration::from_millis(5000)).await;
+    sleep(Duration::from_millis(2000)).await;
+    done(&tx, s, "a3").await;
+
+    sleep(Duration::from_millis(2000)).await;
+    done(&tx, s, "a2").await;
+
+    sleep(Duration::from_millis(1500)).await;
+    done(&tx, s, "a5").await;
+    stats(&tx, s, 78000, 22000, 2.42).await;
+
+    // === Phase 7: Idle in lounge for a bit, then session ends ===
+    sleep(Duration::from_millis(8000)).await;
     let _ = tx
         .send(ReaderMessage::SessionEnded {
-            session_id: session_id.to_string(),
+            session_id: s.to_string(),
         })
         .await;
 }
