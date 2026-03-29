@@ -219,7 +219,9 @@ impl App {
             .map(|(i, _)| i)
             .collect();
 
-        if occupied_indices.len() < self.state.floor.desks.len() {
+        if occupied_indices.len() < self.state.floor.desks.len()
+            && occupied_indices.len() >= crate::game::floor::MIN_DESKS
+        {
             // Build index map: old_index -> new_index
             let mut index_map = vec![None; self.state.floor.desks.len()];
             for (new_idx, &old_idx) in occupied_indices.iter().enumerate() {

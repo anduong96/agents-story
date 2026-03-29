@@ -24,7 +24,7 @@ pub enum CellType {
     Whiteboard,
 }
 
-pub const MIN_DESKS: usize = 0;
+pub const MIN_DESKS: usize = 6;
 pub const DESK_HEIGHT: u16 = 3;
 pub const DESK_SPACING_X: u16 = 12; // accommodate widest (3 monitors = 10)
 pub const DESK_SPACING_Y: u16 = 5; // desk(3) + agent(2), no gap
