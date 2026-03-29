@@ -45,16 +45,17 @@ impl<'a> FloorView<'a> {
 
 /// Returns (top_color, bottom_color) for a half-block screen pixel.
 /// Each cell shows TWO colors via ▀ (fg=top, bg=bottom), doubling visual detail.
-fn screen_pixel_colors(desk_x: u16, desk_y: u16, col: usize, occupied: bool) -> (Color, Color) {
+fn screen_pixel_colors(desk_x: u16, desk_y: u16, col: usize, occupied: bool, tick: u64) -> (Color, Color) {
     if !occupied {
         let off = sprites::DESK_SCREEN_OFF_COLOR;
-        // Slight variation even when off
         let dim = sprites::DESK_SCREEN_DIM_COLOR;
         return if (desk_x as usize + col) % 2 == 0 { (off, dim) } else { (dim, off) };
     }
+    // Animate: shift colors every ~20 ticks, each desk at its own phase
+    let phase = (tick / 20) as usize + desk_x as usize * 3 + desk_y as usize * 7;
     let len = sprites::SCREEN_PIXELS.len();
-    let h1 = (desk_x as usize * 7 + desk_y as usize * 13 + col * 31) % len;
-    let h2 = (desk_x as usize * 11 + desk_y as usize * 23 + col * 17 + 3) % len;
+    let h1 = (phase + col * 31) % len;
+    let h2 = (phase + col * 17 + 3) % len;
     (sprites::SCREEN_PIXELS[h1], sprites::SCREEN_PIXELS[h2])
 }
 
@@ -289,7 +290,7 @@ impl<'a> FloorView<'a> {
                     if sx >= area.x + area.width { continue; }
 
                     if row_off == 1 && screen_cols.contains(&col) {
-                        let (top, bottom) = screen_pixel_colors(desk.desk_x, desk.desk_y, col, agent_seated);
+                        let (top, bottom) = screen_pixel_colors(desk.desk_x, desk.desk_y, col, agent_seated, self.tick);
                         if let Some(cell) = buf.cell_mut((sx, sy)) {
                             cell.set_char('▀');
                             cell.set_style(Style::default().fg(top).bg(bottom));
