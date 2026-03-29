@@ -61,7 +61,7 @@ fn screen_pixel_colors(
     if !occupied {
         let off = sprites::DESK_SCREEN_OFF_COLOR;
         let dim = sprites::DESK_SCREEN_DIM_COLOR;
-        return if (desk_x as usize + col) % 2 == 0 {
+        return if (desk_x as usize + col).is_multiple_of(2) {
             (off, dim)
         } else {
             (dim, off)
@@ -85,7 +85,7 @@ fn floor_texture(floor: &Floor, gx: usize, gy: usize) -> (char, Color, Color) {
         let tile_w = 6;
         let tile_h = 2;
         let row_group = gy / tile_h;
-        let offset = if row_group % 2 == 0 { 0 } else { tile_w / 2 };
+        let offset = if row_group.is_multiple_of(2) { 0 } else { tile_w / 2 };
         let tile_idx = ((gx + offset) / tile_w + row_group) % 2;
         if tile_idx == 0 {
             (
@@ -103,7 +103,7 @@ fn floor_texture(floor: &Floor, gx: usize, gy: usize) -> (char, Color, Color) {
     } else if gx < lounge_w {
         ('▩', sprites::LOUNGE_FLOOR_FG, sprites::LOUNGE_FLOOR_BG_EVEN)
     } else {
-        if gy % 2 == 0 {
+        if gy.is_multiple_of(2) {
             (
                 sprites::CEO_FLOOR_CHAR_EVEN,
                 sprites::CEO_FLOOR_FG_EVEN,

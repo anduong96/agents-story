@@ -91,9 +91,8 @@ async fn run(
 ) -> io::Result<()> {
     // Get initial terminal size for floor dimensions
     let term_size = terminal.size()?;
-    let floor_w = term_size.width.max(DEFAULT_FLOOR_WIDTH).min(MAX_WIDTH);
-    let floor_h = (term_size.height as f32 * 0.65) as u16;
-    let floor_h = floor_h.max(DEFAULT_FLOOR_HEIGHT).min(MAX_HEIGHT);
+    let floor_w = term_size.width.clamp(DEFAULT_FLOOR_WIDTH, MAX_WIDTH);
+    let floor_h = ((term_size.height as f32 * 0.65) as u16).clamp(DEFAULT_FLOOR_HEIGHT, MAX_HEIGHT);
     let mut app = App::new(floor_w, floor_h);
 
     // Create 6 permanent staff agents, idle in the lounge
