@@ -99,16 +99,20 @@ impl BubbleManager {
         let sy = area.y + agent_y + 2; // below the 2-tall sprite
 
         if let Some(ref text) = bubble.text {
-            // Text bubble: show short text above agent
-            let ty = if agent_y >= 1 {
-                area.y + agent_y - 1
-            } else {
-                area.y
-            };
-            if ty >= area.y && ty < area.y + area.height {
-                let style = Style::default().fg(bubble.color);
-                for (i, ch) in text.chars().take(20).enumerate() {
-                    let tx = area.x + agent_x + i as u16;
+            // Text bubble: render below agent, clamped to screen
+            let ty = area.y + agent_y + 2;
+            if ty < area.y + area.height {
+                let style = Style::default()
+                    .fg(Color::Rgb(255, 255, 255))
+                    .bg(bubble.color);
+                // Center text around agent, clamp to screen bounds
+                let text_len = text.len() as u16;
+                let start_x = (area.x + agent_x).saturating_sub(text_len / 2);
+                let start_x = start_x.max(area.x);
+                // Render with padding: " TEXT "
+                let padded = format!(" {} ", text);
+                for (i, ch) in padded.chars().enumerate() {
+                    let tx = start_x + i as u16;
                     if tx < area.x + area.width {
                         if let Some(cell) = buf.cell_mut((tx, ty)) {
                             cell.set_symbol(&ch.to_string());
