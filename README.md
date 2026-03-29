@@ -54,6 +54,47 @@ cargo run -- --demo --extreme    # 10x
 | Scroll | Scroll workspace |
 | Click | Select agent |
 
+## How it works
+
+Claude Code emits stream events when agents spawn, use tools, and finish tasks. This app listens to those events and translates them into office activity.
+
+```
+Claude Code session
+  │
+  ├── AgentSpawn    →  CEO runs to whiteboard, idle staff walks to desk
+  ├── ToolUse       →  Status indicator appears (◇ read, ✎ edit, ▸ bash)
+  ├── AgentResult   →  Staff returns to lounge / temp exits through top door
+  └── SessionEnd    →  Everyone goes back to the lounge
+```
+
+In demo mode (`--demo`), synthetic events simulate a full session with 6 staff and 3 temp agents.
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│  main.rs — event loop, stream handling, agent wiring │
+│                                                      │
+│  ┌─────────────┐     ┌──────────────┐               │
+│  │  game/       │     │  ui/          │               │
+│  │  floor.rs    │────▶│  floor_view.rs│──▶ terminal   │
+│  │  agent.rs    │     │  sprites.rs   │               │
+│  │  state.rs    │     │  agent_panel  │               │
+│  │  pathfinding │     │  stats_bar    │               │
+│  └─────────────┘     │  bubbles      │               │
+│                       └──────────────┘               │
+│  app.rs — tick loop, collision avoidance, CEO logic   │
+│  demo.rs — synthetic events                          │
+│  stream/ — protocol + reader                         │
+└─────────────────────────────────────────────────────┘
+```
+
+**Game layer** (`src/game/`) owns the state: a grid-based floor with rooms, desks, furniture, and agents with positions and status. Desks are created on demand using `ceil(sqrt(n))` columns for an even grid. Agents pathfind between rooms through doors using waypoint-based routing.
+
+**UI layer** (`src/ui/`) renders the state each frame using [ratatui](https://github.com/ratatui/ratatui). The floor is drawn in a single pass with textured backgrounds per room. Desks, agents, and furniture are overlaid on top. Monitor screens animate with half-block characters (`▀`) showing two colors per cell.
+
+**App layer** (`src/app.rs`) runs the tick loop: advances agent positions, handles collision avoidance (perpendicular dodge), removes finished temp agents, cleans up unused desks, and makes idle agents wander in the lounge.
+
 ## Roadmap
 
 - [ ] Homebrew formula (`brew install agents-story`)
