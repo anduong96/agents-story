@@ -151,7 +151,7 @@ impl Floor {
         ];
 
         // Desks start empty — ensure_minimum_desks() adds the initial rows
-        let desks = Vec::new();
+        let mut desks = Vec::new();
 
         // Ping pong table (6x2) centered in lounge
         let lounge_center_x = lounge_w / 2;
@@ -226,18 +226,30 @@ impl Floor {
             }
         }
 
-        // CEO desk + monitor in CEO office center
-        let ceo_center_x = lounge_w + ceo_w / 2;
-        let ceo_center_y = workspace_h + bottom_h / 2;
-        if (ceo_center_y as usize) < height as usize && (ceo_center_x as usize) < width as usize {
-            grid[ceo_center_y as usize][ceo_center_x as usize] = CellType::CeoDesk;
+        // CEO desk: 10 wide × 3 tall (same as workspace desks), centered in CEO office
+        let ceo_desk_w: u16 = 10;
+        let ceo_desk_x = lounge_w + (ceo_w.saturating_sub(ceo_desk_w)) / 2;
+        let ceo_desk_y = workspace_h + bottom_h / 2 - 1;
+        for row in 0..DESK_HEIGHT {
+            for col in 0..ceo_desk_w {
+                let gy = (ceo_desk_y + row) as usize;
+                let gx = (ceo_desk_x + col) as usize;
+                if gy < height as usize && gx < width as usize {
+                    grid[gy][gx] = CellType::Desk;
+                }
+            }
         }
-        if (ceo_center_y as usize) < height as usize
-            && (ceo_center_x as usize + 1) < width as usize
-        {
-            grid[ceo_center_y as usize][ceo_center_x as usize + 1] = CellType::CeoMonitor;
-        }
-        let ceo_chair = (ceo_center_x, ceo_center_y + 1);
+        // Add as a DeskSlot with Single variant (1 monitor)
+        desks.push(DeskSlot {
+            desk_x: ceo_desk_x,
+            desk_y: ceo_desk_y,
+            chair_x: ceo_desk_x + ceo_desk_w / 2,
+            chair_y: ceo_desk_y + DESK_HEIGHT,
+            occupied: true,  // CEO always at desk
+            agent_color: None,
+            variant: DeskVariant::Single,
+        });
+        let ceo_chair = (ceo_desk_x + ceo_desk_w / 2, ceo_desk_y + DESK_HEIGHT);
 
         // Bulletin board: 4×2, on the right wall of CEO office
         let bb_x = lounge_w + ceo_w - 6;
@@ -558,20 +570,23 @@ mod tests {
     #[test]
     fn test_desk_assignment() {
         let mut floor = Floor::generate(80, 30);
+        // Index 0 is the CEO desk (occupied), so first assign gets index 1
         let first = floor.assign_desk("test");
-        let second = floor.assign_desk("test");
-        assert_eq!(first, Some(0));
-        assert_eq!(second, Some(1));
+        let second = floor.assign_desk("test2");
+        assert!(first.is_some());
+        assert!(second.is_some());
+        assert_ne!(first, second);
     }
 
     #[test]
     fn test_desk_free_and_reassign() {
         let mut floor = Floor::generate(80, 30);
         let first = floor.assign_desk("test");
-        assert_eq!(first, Some(0));
-        floor.free_desk(0);
+        assert!(first.is_some());
+        let idx = first.unwrap();
+        floor.free_desk(idx);
         let reassigned = floor.assign_desk("test");
-        assert_eq!(reassigned, Some(0));
+        assert_eq!(reassigned, Some(idx));
     }
 
     #[test]

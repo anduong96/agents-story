@@ -349,10 +349,13 @@ impl<'a> FloorView<'a> {
 
     fn render_desks(&self, floor: &Floor, area: Rect, buf: &mut Buffer) {
         for (desk_idx, desk) in floor.desks.iter().enumerate() {
-            // Monitor only lights up when agent has arrived (not still walking)
-            let agent_seated = self.state.agents.iter().any(|a| {
-                a.assigned_desk == Some(desk_idx) && !a.is_animating()
-            });
+            // Monitor lights up when agent has arrived, or desk is permanently occupied (CEO)
+            let agent_seated = desk.occupied && (
+                // No agent assigned (CEO desk) — always on
+                !self.state.agents.iter().any(|a| a.assigned_desk == Some(desk_idx))
+                // Or agent has arrived
+                || self.state.agents.iter().any(|a| a.assigned_desk == Some(desk_idx) && !a.is_animating())
+            );
 
             let (row0, row1, row2, screen_cols): (&[char], &[char], &[char], &[usize]) = match desk.variant {
                 DeskVariant::Single => (&sprites::DESK1_ROW0, &sprites::DESK1_ROW1, &sprites::DESK1_ROW2, sprites::DESK1_SCREEN_COLS),
