@@ -195,18 +195,18 @@ impl Floor {
             }
         }
 
-        // 2 arcade machines in bottom-left of lounge
-        let arcade_x = 3u16;
+        // 2 arcade machines (each 2×2) in bottom-left of lounge
         let arcade_y = workspace_h + bottom_h - 4;
-        for a in 0..2u16 {
-            let ax = arcade_x + a * 4;
-            let y = arcade_y as usize;
-            let x = ax as usize;
-            if y < height as usize && x + 1 < width as usize {
-                grid[y][x] = CellType::Arcade;
-                grid[y][x + 1] = CellType::Arcade;
-                grid[y + 1][x] = CellType::Arcade;
-                grid[y + 1][x + 1] = CellType::Arcade;
+        let arcade_positions = [3u16, 6u16]; // 1 cell gap between them
+        for ax in arcade_positions {
+            for ry in 0..2u16 {
+                for rx in 0..2u16 {
+                    let y = (arcade_y + ry) as usize;
+                    let x = (ax + rx) as usize;
+                    if y < height as usize && x < width as usize && grid[y][x] == CellType::Empty {
+                        grid[y][x] = CellType::Arcade;
+                    }
+                }
             }
         }
 

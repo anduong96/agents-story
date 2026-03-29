@@ -120,19 +120,10 @@ impl<'a> Widget for FloorView<'a> {
                     CellType::PingPongTable => ('▒', sprites::PING_PONG_COLOR, bg),
                     CellType::PingPongNet => ('│', sprites::PING_PONG_NET_COLOR, sprites::PING_PONG_COLOR),
                     CellType::Arcade => {
-                        // Check if this is the top or bottom row of the 2×2 arcade
-                        let above_is_arcade = gy > 0 && floor.grid[gy - 1][gx] == CellType::Arcade;
-                        let below_is_arcade = gy + 1 < grid_h && floor.grid[gy + 1][gx] == CellType::Arcade;
-                        if !above_is_arcade && below_is_arcade {
-                            // Top row: animated neon screen
-                            let len = sprites::ARCADE_SCREEN_COLORS.len();
-                            let p1 = ((self.tick / 8) as usize + gx * 5) % len;
-                            let p2 = ((self.tick / 8) as usize + gx * 5 + 3) % len;
-                            ('▀', sprites::ARCADE_SCREEN_COLORS[p1], sprites::ARCADE_SCREEN_COLORS[p2])
-                        } else {
-                            // Bottom row: dark cabinet
-                            ('▄', sprites::ARCADE_TRIM_COLOR, sprites::ARCADE_CABINET_COLOR)
-                        }
+                        // Animated neon screen on dark cabinet
+                        let len = sprites::ARCADE_SCREEN_COLORS.len();
+                        let phase = ((self.tick / 8) as usize + gx * 5 + gy * 3) % len;
+                        ('█', sprites::ARCADE_SCREEN_COLORS[phase], sprites::ARCADE_CABINET_COLOR)
                     }
                     CellType::Bookshelf => {
                         let book_idx = (gx * 3 + gy * 5) % 4;
