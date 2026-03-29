@@ -159,13 +159,11 @@ impl Floor {
         // Desks start empty — ensure_minimum_desks() adds the initial rows
         let desks = Vec::new();
 
-        // === LOUNGE LAYOUT: 3 zones ===
-        let lounge_cx = lounge_w / 2;  // horizontal center of lounge
-        let lounge_top = workspace_h + 2;
-        let lounge_bot = workspace_h + bottom_h - 2;
+        // === LOUNGE: ping pong table + trees ===
+        let lounge_cx = lounge_w / 2;
         let lounge_mid = workspace_h + bottom_h / 2;
 
-        // --- Zone 2: Ping pong (center, placed FIRST with direct write) ---
+        // Ping pong table centered in lounge
         let pp_w: u16 = 6;
         let pp_h: u16 = 2;
         let pp_x = lounge_cx.saturating_sub(pp_w / 2).max(2);
@@ -184,55 +182,20 @@ impl Floor {
                 }
             }
         }
-
-        // Helper: only place on empty cells (won't overwrite ping pong)
-        let mut place = |gy: u16, gx: u16, cell: CellType| {
-            let y = gy as usize;
-            let x = gx as usize;
-            if y < height as usize && x < width as usize && grid[y][x] == CellType::Empty {
-                grid[y][x] = cell;
-            }
-        };
         let ping_pong = (pp_x, pp_y, pp_w, pp_h);
 
-        // --- Zone 1: TV + Sofa area (top-left, must stay above ping pong) ---
-        let tv_w: u16 = 8;
-        let tv_x = 4u16;
-        let zone1_max_y = pp_y.saturating_sub(2); // stay 2 rows above ping pong
-        for tx in tv_x..tv_x + tv_w {
-            place(lounge_top, tx, CellType::TV);
-        }
-        let sofa_y1 = lounge_top + 2;
-        if sofa_y1 <= zone1_max_y {
-            for sx in tv_x..tv_x + 6 {
-                place(sofa_y1, sx, CellType::Couch);
-            }
-            if sofa_y1 + 1 <= zone1_max_y {
-                for sx in (tv_x + 1)..(tv_x + 5) {
-                    place(sofa_y1 + 1, sx, CellType::CoffeeTable);
-                }
-            }
-        }
-
-        // --- Zone 3: Lunch area (bottom-right, must stay below ping pong) ---
-        let zone3_min_y = pp_y + pp_h + 2; // stay 2 rows below ping pong
-        let lunch_x = lounge_w / 2;
-        let lunch_y = lounge_bot.saturating_sub(3).max(zone3_min_y);
-        let lunch_w: u16 = 6;
-        for lx in lunch_x..lunch_x + lunch_w {
-            place(lunch_y, lx, CellType::CoffeeTable);
-            if lunch_y >= workspace_h + 1 { place(lunch_y - 1, lx, CellType::Chair); }
-        }
-        for lx in lunch_x..lunch_x + lunch_w {
-            place(lunch_y + 1, lx, CellType::Chair);
-        }
-
-        // Vending machine near lunch area
-        let vm_x = lounge_w - 4;
-        let vm_y = lounge_bot - 2;
-        for vy in vm_y..vm_y + 2 {
-            for vx in vm_x..vm_x + 2 {
-                place(vy, vx, CellType::VendingMachine);
+        // Trees in lounge corners
+        let lounge_trees: [(u16, u16, CellType); 4] = [
+            (2, workspace_h + 2, CellType::TreeLarge),
+            (lounge_w - 3, workspace_h + 2, CellType::TreeSmall),
+            (2, workspace_h + bottom_h - 2, CellType::Plant),
+            (lounge_w - 3, workspace_h + bottom_h - 2, CellType::TreeSmall),
+        ];
+        for (tx, ty, cell) in lounge_trees {
+            let y = ty as usize;
+            let x = tx as usize;
+            if y < height as usize && x < width as usize && grid[y][x] == CellType::Empty {
+                grid[y][x] = cell;
             }
         }
 
@@ -289,9 +252,6 @@ impl Floor {
             (width - 3, workspace_h - 2, CellType::Plant),
             (width / 3, 1, CellType::TreeLarge),
             (width * 2 / 3, 1, CellType::TreeLarge),
-            // Lounge — plants along edges, away from furniture
-            (2, workspace_h + bottom_h - 2, CellType::Plant),
-            (lounge_w - 3, workspace_h + bottom_h - 2, CellType::TreeSmall),
             // CEO office — elegant plants
             (lounge_w + 2, workspace_h + 2, CellType::TreeSmall),
             (width - 3, workspace_h + 2, CellType::Plant),
