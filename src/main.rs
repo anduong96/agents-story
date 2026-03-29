@@ -154,6 +154,9 @@ fn render(frame: &mut Frame, app: &mut App) {
     let stats_area = chunks[1];
     let panel_area = chunks[2];
 
+    // Track panel position for mouse click handling
+    app.panel_top = Some(panel_area.y);
+
     // Resize floor to fill available pane (clamped by centered layout)
     app.resize_floor(floor_area.width.min(MAX_WIDTH), floor_area.height.min(MAX_HEIGHT));
 

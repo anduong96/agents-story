@@ -21,6 +21,7 @@ pub struct App {
     pub running: bool,
     pub tick_count: u64,
     pub show_help: bool,
+    pub panel_top: Option<u16>,
     frame_count: u64,
     last_fps_update: Instant,
 }
@@ -36,6 +37,7 @@ impl App {
             running: true,
             tick_count: 0,
             show_help: false,
+            panel_top: None,
             frame_count: 0,
             last_fps_update: Instant::now(),
         }

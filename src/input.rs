@@ -1,7 +1,6 @@
-use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, MouseEvent};
+use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, MouseEvent, MouseEventKind};
 
 use crate::app::{App, Focus};
-use crate::game::agent::Room;
 
 pub fn handle_event(app: &mut App, event: Event) {
     match event {
@@ -30,21 +29,6 @@ fn handle_key(app: &mut App, key: KeyEvent) {
             app.cycle_focus();
             return;
         }
-        KeyCode::Char('1') => {
-            app.highlighted_room = Some(Room::Workspace);
-            app.focus = Focus::Floor;
-            return;
-        }
-        KeyCode::Char('2') => {
-            app.highlighted_room = Some(Room::Lounge);
-            app.focus = Focus::Floor;
-            return;
-        }
-        KeyCode::Char('3') => {
-            app.highlighted_room = Some(Room::CeoOffice);
-            app.focus = Focus::Floor;
-            return;
-        }
         _ => {}
     }
 
@@ -66,6 +50,26 @@ fn handle_key(app: &mut App, key: KeyEvent) {
     }
 }
 
-fn handle_mouse(_app: &mut App, _mouse: MouseEvent) {
-    // Mouse handling — stub for future implementation.
+fn handle_mouse(app: &mut App, mouse: MouseEvent) {
+    if let MouseEventKind::Down(_) = mouse.kind {
+        let y = mouse.row;
+        // Check if click is in the agent panel area
+        // The panel starts after the floor (65%) and stats bar (1 line)
+        // Each agent row is 1 line, with a border at top
+        if let Some(panel_y) = app.panel_top {
+            if y > panel_y {
+                let row = (y - panel_y - 1) as usize; // -1 for border
+                let agent_count = app.state.agents.len();
+                if row < agent_count {
+                    app.focus = Focus::AgentPanel;
+                    if app.agent_panel.selected == Some(row) {
+                        app.agent_panel.toggle_expand();
+                    } else {
+                        app.agent_panel.selected = Some(row);
+                        app.agent_panel.expanded = None;
+                    }
+                }
+            }
+        }
+    }
 }
