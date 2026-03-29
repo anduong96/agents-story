@@ -22,14 +22,22 @@ pub struct App {
     pub show_help: bool,
     pub panel_top: Option<u16>,
     pub floor_scroll_y: u16,
+    pub ceo_pos: (f32, f32),
+    pub ceo_path: Vec<(u16, u16)>,
+    pub ceo_returning: bool,
     frame_count: u64,
     last_fps_update: Instant,
 }
 
 impl App {
     pub fn new(floor_width: u16, floor_height: u16) -> Self {
+        let state = GameState::new(floor_width, floor_height);
+        let ceo_pos = (
+            state.floor.ceo_chair.0 as f32,
+            state.floor.ceo_chair.1 as f32,
+        );
         App {
-            state: GameState::new(floor_width, floor_height),
+            state,
             agent_panel: AgentPanelState::new(),
             bubbles: BubbleManager::new(),
             focus: Focus::Floor,
@@ -38,6 +46,9 @@ impl App {
             show_help: false,
             panel_top: None,
             floor_scroll_y: 0,
+            ceo_pos,
+            ceo_path: Vec::new(),
+            ceo_returning: false,
             frame_count: 0,
             last_fps_update: Instant::now(),
         }
@@ -90,6 +101,28 @@ impl App {
 
             // Update RAM usage (process RSS)
             self.state.stats.ram_mb = get_rss_mb();
+        }
+
+        // Advance CEO along path
+        if !self.ceo_path.is_empty() {
+            advance_along_path(&mut self.ceo_pos, &mut self.ceo_path, 6.0, delta_secs);
+            // When CEO arrives at whiteboard and path is empty, start returning
+            if self.ceo_path.is_empty() && !self.ceo_returning {
+                self.ceo_returning = true;
+                let chair = self.state.floor.ceo_chair;
+                // Path back: workspace → CEO office
+                self.ceo_path = crate::game::pathfinding::compute_path(
+                    self.ceo_pos.0 as u16,
+                    self.ceo_pos.1 as u16,
+                    Room::Workspace,
+                    Room::CeoOffice,
+                    chair.0,
+                    chair.1,
+                    &self.state.floor,
+                );
+            } else if self.ceo_path.is_empty() && self.ceo_returning {
+                self.ceo_returning = false;
+            }
         }
 
         // Snapshot all agent positions for collision checks

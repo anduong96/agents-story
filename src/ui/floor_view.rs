@@ -14,14 +14,20 @@ pub struct FloorView<'a> {
     pub state: &'a GameState,
     pub tick: u64,
     pub scroll_y: u16,
+    pub ceo_pos: (f32, f32),
 }
 
 impl<'a> FloorView<'a> {
     pub fn new(state: &'a GameState) -> Self {
+        let ceo_pos = (
+            state.floor.ceo_chair.0 as f32,
+            state.floor.ceo_chair.1 as f32,
+        );
         FloorView {
             state,
             tick: 0,
             scroll_y: 0,
+            ceo_pos,
         }
     }
 
@@ -32,6 +38,11 @@ impl<'a> FloorView<'a> {
 
     pub fn with_scroll(mut self, scroll_y: u16) -> Self {
         self.scroll_y = scroll_y;
+        self
+    }
+
+    pub fn with_ceo_pos(mut self, pos: (f32, f32)) -> Self {
+        self.ceo_pos = pos;
         self
     }
 
@@ -201,6 +212,9 @@ impl<'a> Widget for FloorView<'a> {
                     CellType::Plant => ('♣', sprites::PLANT_COLOR, sprites::PLANT_POT_COLOR),
                     CellType::TreeSmall => {
                         ('▲', sprites::TREE_SMALL_COLOR, sprites::TREE_SMALL_TRUNK)
+                    }
+                    CellType::Whiteboard => {
+                        ('░', sprites::WHITEBOARD_FRAME, sprites::WHITEBOARD_COLOR)
                     }
                     CellType::Bush => ('▓', sprites::BUSH_COLOR, sprites::BUSH_BG_COLOR),
                     CellType::TreeLarge => {
@@ -519,7 +533,8 @@ impl<'a> FloorView<'a> {
     }
 
     fn render_ceo(&self, _floor: &Floor, area: Rect, buf: &mut Buffer) {
-        let (cx, cy) = self.state.floor.ceo_chair;
+        let cx = self.ceo_pos.0 as u16;
+        let cy = self.ceo_pos.1 as u16;
 
         // 8-bit CEO
         if cy < self.scroll_y {

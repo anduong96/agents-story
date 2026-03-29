@@ -52,6 +52,9 @@ pub const TREE_SMALL_COLOR: Color = Color::Rgb(40, 160, 50);
 pub const TREE_SMALL_TRUNK: Color = Color::Rgb(140, 90, 40);
 pub const TREE_LARGE_COLOR: Color = Color::Rgb(30, 140, 40);
 pub const TREE_LARGE_TRUNK: Color = Color::Rgb(120, 75, 35);
+pub const WHITEBOARD_COLOR: Color = Color::Rgb(240, 240, 235);
+pub const WHITEBOARD_FRAME: Color = Color::Rgb(180, 180, 175);
+
 pub const BUSH_COLOR: Color = Color::Rgb(50, 150, 50);
 pub const BUSH_BG_COLOR: Color = Color::Rgb(35, 110, 35);
 // Arcade machines — neon retro style

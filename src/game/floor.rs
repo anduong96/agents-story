@@ -21,6 +21,7 @@ pub enum CellType {
     Bookshelf,
     Arcade,
     Bush,
+    Whiteboard,
 }
 
 pub const MIN_DESKS: usize = 0;
@@ -84,6 +85,7 @@ pub struct Floor {
     pub doors: Vec<DoorPos>,
     pub ceo_chair: (u16, u16),
     pub exit_pos: (u16, u16),
+    pub whiteboard_pos: (u16, u16),
     #[allow(dead_code)]
     pub ping_pong: (u16, u16, u16, u16),
 }
@@ -114,6 +116,14 @@ impl Floor {
         for i in 0..4u16 {
             grid[0][(exit_door_x + i) as usize] = CellType::Door;
         }
+
+        // Whiteboard: 1×5 on right wall of workspace, centered vertically
+        let wb_x = width - 2;
+        let wb_y = workspace_h / 2 - 2;
+        for i in 0..5u16 {
+            grid[(wb_y + i) as usize][wb_x as usize] = CellType::Whiteboard;
+        }
+        let whiteboard_pos = (wb_x - 2, wb_y + 2); // stand in front of center
 
         // Horizontal divider at workspace_h
         #[allow(clippy::needless_range_loop)]
@@ -337,6 +347,7 @@ impl Floor {
             doors,
             ceo_chair,
             exit_pos,
+            whiteboard_pos,
             ping_pong,
         }
     }

@@ -184,7 +184,8 @@ fn render(frame: &mut Frame, app: &mut App) {
     // 1. Floor view
     let floor_view = FloorView::new(&app.state)
         .with_tick(app.tick_count)
-        .with_scroll(app.floor_scroll_y);
+        .with_scroll(app.floor_scroll_y)
+        .with_ceo_pos(app.ceo_pos);
     frame.render_widget(floor_view, floor_area);
 
     // 2. Bubbles (rendered on top of floor)
@@ -242,6 +243,10 @@ fn render_bubbles(frame: &mut Frame, app: &App, floor_area: Rect) {
         app.bubbles
             .render_bubble_at(&agent.id, ax, ay, floor_area, buf);
     }
+    // CEO bubble
+    let cx = app.ceo_pos.0 as u16;
+    let cy = app.ceo_pos.1 as u16;
+    app.bubbles.render_bubble_at("ceo", cx, cy, floor_area, buf);
 }
 
 // ---------------------------------------------------------------------------
@@ -299,6 +304,23 @@ fn handle_stream_event(app: &mut App, session_id: &str, event: StreamEvent) {
             description,
         } => {
             app.state.stats.total_tasks += 1;
+
+            // CEO runs to whiteboard and yells the task
+            if app.ceo_path.is_empty() {
+                let wb = app.state.floor.whiteboard_pos;
+                app.ceo_returning = false;
+                app.ceo_path = compute_path(
+                    app.ceo_pos.0 as u16,
+                    app.ceo_pos.1 as u16,
+                    Room::CeoOffice,
+                    Room::Workspace,
+                    wb.0,
+                    wb.1,
+                    &app.state.floor,
+                );
+                let yell = format!("NEW TASK: {}!", name.to_uppercase());
+                app.bubbles.trigger_ceo_yell(yell);
+            }
 
             // Try to assign an idle staff agent first
             let idle_idx = app
