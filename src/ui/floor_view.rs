@@ -438,43 +438,95 @@ impl<'a> FloorView<'a> {
         let ax = agent.position.0 as u16;
         let ay = agent.position.1 as u16;
 
-        let color = if agent.status == AgentStatus::Error {
+        let shirt = if agent.status == AgentStatus::Error {
             Color::Red
         } else {
             agent.sprite_color.to_color()
         };
+        let floor = &self.state.floor;
 
-        // Render agent as a padded name tag: " AB " with colored background
-        let tag: String = format!(" {} ", agent.name.chars().take(2).collect::<String>().to_uppercase());
-        let style = Style::default().fg(color).bg(sprites::NAME_TAG_BG);
+        // 2×2 half-block pixel human:
+        // Row 0: ▄▄  head (fg=skin, bg=floor)
+        // Row 1: ██  body (fg=shirt color, bg=floor)
+        // Row 2: name label below
+        let skin = sprites::SKIN_COLOR;
 
-        let sy = area.y + ay;
-        if sy >= area.y + area.height { return; }
+        // Row 0 — head
+        let sy0 = area.y + ay;
+        if sy0 < area.y + area.height {
+            let bg = floor_bg(floor, ax as usize, ay as usize);
+            for col in 0..2u16 {
+                let sx = area.x + ax + col;
+                if sx < area.x + area.width {
+                    if let Some(cell) = buf.cell_mut((sx, sy0)) {
+                        cell.set_char('▄');
+                        cell.set_style(Style::default().fg(skin).bg(bg));
+                    }
+                }
+            }
+        }
 
-        for (i, ch) in tag.chars().enumerate() {
-            let sx = area.x + ax + i as u16;
-            if sx >= area.x + area.width { continue; }
-            if let Some(cell) = buf.cell_mut((sx, sy)) {
-                cell.set_char(ch);
-                cell.set_style(style);
+        // Row 1 — body
+        let sy1 = area.y + ay + 1;
+        if sy1 < area.y + area.height {
+            let bg = floor_bg(floor, ax as usize, (ay + 1) as usize);
+            for col in 0..2u16 {
+                let sx = area.x + ax + col;
+                if sx < area.x + area.width {
+                    if let Some(cell) = buf.cell_mut((sx, sy1)) {
+                        cell.set_char('▀');
+                        cell.set_style(Style::default().fg(shirt).bg(bg));
+                    }
+                }
+            }
+        }
+
+        // Row 2 — name label
+        let sy2 = area.y + ay + 2;
+        if sy2 < area.y + area.height {
+            let tag: String = agent.name.chars().take(2).collect::<String>().to_uppercase();
+            let label_style = Style::default().fg(shirt);
+            for (i, ch) in tag.chars().enumerate() {
+                let sx = area.x + ax + i as u16;
+                if sx < area.x + area.width {
+                    if let Some(cell) = buf.cell_mut((sx, sy2)) {
+                        cell.set_char(ch);
+                        cell.set_style(label_style);
+                    }
+                }
             }
         }
     }
 
     fn render_ceo(&self, _floor: &Floor, area: Rect, buf: &mut Buffer) {
-        let (cx, cy) = self.state.floor.ceo_chair;
-        let style = Style::default().fg(sprites::CEO_COLOR).bg(sprites::NAME_TAG_BG);
-        let tag = "CEO";
+        let floor = &self.state.floor;
+        let (cx, cy) = floor.ceo_chair;
 
-        let sy = area.y + cy;
-        if sy >= area.y + area.height { return; }
-
-        for (i, ch) in tag.chars().enumerate() {
-            let sx = area.x + cx + i as u16;
-            if sx >= area.x + area.width { continue; }
-            if let Some(cell) = buf.cell_mut((sx, sy)) {
-                cell.set_char(ch);
-                cell.set_style(style);
+        // CEO as 2×2 pixel human
+        let sy0 = area.y + cy;
+        if sy0 < area.y + area.height {
+            let bg = floor_bg(floor, cx as usize, cy as usize);
+            for col in 0..2u16 {
+                let sx = area.x + cx + col;
+                if sx < area.x + area.width {
+                    if let Some(cell) = buf.cell_mut((sx, sy0)) {
+                        cell.set_char('▄');
+                        cell.set_style(Style::default().fg(sprites::SKIN_COLOR).bg(bg));
+                    }
+                }
+            }
+        }
+        let sy1 = area.y + cy + 1;
+        if sy1 < area.y + area.height {
+            let bg = floor_bg(floor, cx as usize, (cy + 1) as usize);
+            for col in 0..2u16 {
+                let sx = area.x + cx + col;
+                if sx < area.x + area.width {
+                    if let Some(cell) = buf.cell_mut((sx, sy1)) {
+                        cell.set_char('▀');
+                        cell.set_style(Style::default().fg(sprites::CEO_COLOR).bg(bg));
+                    }
+                }
             }
         }
     }
