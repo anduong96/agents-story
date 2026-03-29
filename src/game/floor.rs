@@ -165,7 +165,27 @@ impl Floor {
         let lounge_bot = workspace_h + bottom_h - 2;
         let lounge_mid = workspace_h + bottom_h / 2;
 
-        // Helper: only place on empty cells
+        // --- Zone 2: Ping pong (center, placed FIRST with direct write) ---
+        let pp_w: u16 = 6;
+        let pp_h: u16 = 2;
+        let pp_x = lounge_cx.saturating_sub(pp_w / 2).max(2);
+        let pp_y = lounge_mid.saturating_sub(pp_h / 2);
+        let pp_x = if pp_x + pp_w >= lounge_w { lounge_w.saturating_sub(pp_w + 1) } else { pp_x };
+        for py in pp_y..pp_y + pp_h {
+            for px in pp_x..pp_x + pp_w {
+                let y = py as usize;
+                let x = px as usize;
+                if y < height as usize && x < width as usize {
+                    grid[y][x] = if px == pp_x + pp_w / 2 {
+                        CellType::PingPongNet
+                    } else {
+                        CellType::PingPongTable
+                    };
+                }
+            }
+        }
+
+        // Helper: only place on empty cells (won't overwrite ping pong)
         let mut place = |gy: u16, gx: u16, cell: CellType| {
             let y = gy as usize;
             let x = gx as usize;
@@ -173,21 +193,6 @@ impl Floor {
                 grid[y][x] = cell;
             }
         };
-
-        // --- Zone 2: Ping pong (center, placed FIRST so nothing overlaps it) ---
-        let pp_w: u16 = 6;
-        let pp_h: u16 = 2;
-        let pp_x = lounge_cx.saturating_sub(pp_w / 2);
-        let pp_y = lounge_mid.saturating_sub(pp_h / 2);
-        for py in pp_y..pp_y + pp_h {
-            for px in pp_x..pp_x + pp_w {
-                if px == pp_x + pp_w / 2 {
-                    place(py, px, CellType::PingPongNet);
-                } else {
-                    place(py, px, CellType::PingPongTable);
-                }
-            }
-        }
         let ping_pong = (pp_x, pp_y, pp_w, pp_h);
 
         // --- Zone 1: TV + Sofa area (top-left) ---
