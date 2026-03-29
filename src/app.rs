@@ -94,15 +94,21 @@ impl App {
 
         // Advance each agent along its path and update facing direction.
         for agent in &mut self.state.agents {
-            let prev_x = agent.position.0;
-            advance_along_path(&mut agent.position, &mut agent.path, 4.0, delta_secs);
-            let new_x = agent.position.0;
+            if agent.is_animating() {
+                let prev_x = agent.position.0;
+                advance_along_path(&mut agent.position, &mut agent.path, 4.0, delta_secs);
+                let new_x = agent.position.0;
 
-            // Update facing based on horizontal movement.
-            if new_x > prev_x {
-                agent.facing = Direction::Right;
-            } else if new_x < prev_x {
-                agent.facing = Direction::Left;
+                if new_x > prev_x {
+                    agent.facing = Direction::Right;
+                } else if new_x < prev_x {
+                    agent.facing = Direction::Left;
+                }
+            } else if let Some(desk_idx) = agent.assigned_desk {
+                // Snap seated agents to their desk chair position every tick
+                if let Some(desk) = self.state.floor.desks.get(desk_idx) {
+                    agent.position = (desk.chair_x as f32, desk.chair_y as f32);
+                }
             }
         }
 
