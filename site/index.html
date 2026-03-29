@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agents Story — A pixel-art TUI for Claude Code</title>
+    <meta name="description" content="Watch your Claude Code agents work in a pixel-art office instead of staring at terminal text. It doesn't help. But it's nicer." />
+    <meta name="keywords" content="claude code, tui, terminal, pixel art, rust, visualization, agents" />
+    <meta property="og:title" content="Agents Story" />
+    <meta property="og:description" content="A pixel-art TUI that visualizes Claude Code agents working in a tiny office. Zero practical value. Immaculate vibes." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://anduong96.github.io/agents-story/" />
+    <meta property="og:image" content="https://raw.githubusercontent.com/anduong96/agents-story/main/docs/demo.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+    <main>
+        <section class="hero">
+            <h1>Agents Story</h1>
+            <p class="tagline">You've been staring at terminal text for forty minutes.<br/>This is marginally better.</p>
+            <div class="badges">
+                <span class="badge rust">Rust 1.70+</span>
+                <span class="badge vibes">Immaculate vibes</span>
+                <span class="badge useful">Usefulness: negligible</span>
+            </div>
+            <a href="https://github.com/anduong96/agents-story" class="cta">View on GitHub</a>
+        </section>
+
+        <section class="screenshot">
+            <img src="https://raw.githubusercontent.com/anduong96/agents-story/main/docs/demo.png" alt="Demo screenshot showing pixel-art office with agents working at desks" loading="lazy" />
+        </section>
+
+        <section class="pitch">
+            <h2>The problem, if you can call it that</h2>
+            <p>Claude Code agents read files, edit code, run tests. Important stuff. And the way you experience all of this is: text. Scrolling. Forever.</p>
+            <p>You could read it. Or you could watch pixel people walk to their desks instead. We built the second thing.</p>
+        </section>
+
+        <section class="features">
+            <h2>What you get</h2>
+            <div class="grid">
+                <div class="card">
+                    <div class="icon">👥</div>
+                    <h3>6 permanent employees</h3>
+                    <p>They idle in the lounge until you give them work. They wander near the arcade machines. They do not play ping pong.</p>
+                </div>
+                <div class="card">
+                    <div class="icon">🚪</div>
+                    <h3>Temp contractors</h3>
+                    <p>Show up when your staff can't keep up. Do their job. Leave through the top door without saying goodbye.</p>
+                </div>
+                <div class="card">
+                    <div class="icon">👔</div>
+                    <h3>A CEO</h3>
+                    <p>Sits alone in a blue office. When a new task arrives, sprints to the whiteboard and yells. The most realistic part.</p>
+                </div>
+                <div class="card">
+                    <div class="icon">🖥️</div>
+                    <h3>Animated monitors</h3>
+                    <p>Rainbow pixels that shift every few ticks. Your agents are definitely working and not browsing Reddit.</p>
+                </div>
+                <div class="card">
+                    <div class="icon">🕹️</div>
+                    <h3>Arcade machines</h3>
+                    <p>In the lounge. They only turn on when someone walks up. Neon colors. Very retro. Very distracting.</p>
+                </div>
+                <div class="card">
+                    <div class="icon">📊</div>
+                    <h3>Performance stats</h3>
+                    <p>FPS and RAM in the status bar. Because you should monitor the performance of your monitoring tool.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="setup">
+            <h2>Setup</h2>
+            <p>You need Rust and a tolerance for whimsy.</p>
+            <pre><code>git clone https://github.com/anduong96/agents-story.git
+cd agents-story
+cargo build --release
+cargo run -- --demo</code></pre>
+            <p class="subtle">That's it. We didn't say it was hard. We said it was pointless.</p>
+        </section>
+
+        <footer>
+            <p>MIT — because restricting access to something this unnecessary felt wrong.</p>
+            <p><a href="https://github.com/anduong96/agents-story">GitHub</a></p>
+        </footer>
+    </main>
+    <script type="module" src="/main.js"></script>
+</body>
+</html>

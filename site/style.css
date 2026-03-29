@@ -1,0 +1,195 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0d0d0d;
+  --surface: #161616;
+  --border: #252525;
+  --text: #e0e0e0;
+  --text-muted: #888;
+  --accent: #c8956a;
+  --accent-dim: #8a6040;
+  --green: #6ec46e;
+  --red: #e06060;
+  --blue: #6090e0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Hero */
+.hero {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.tagline {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+  line-height: 1.8;
+}
+
+.badges {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: "SF Mono", "Fira Code", monospace;
+}
+
+.badge.rust { color: var(--accent); border-color: var(--accent-dim); }
+.badge.vibes { color: var(--green); border-color: #3a6e3a; }
+.badge.useful { color: var(--red); border-color: #6e3030; }
+
+.cta {
+  display: inline-block;
+  padding: 0.75rem 2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 500;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.cta:hover {
+  border-color: var(--accent);
+  background: #1a1a1a;
+  text-decoration: none;
+}
+
+/* Screenshot */
+.screenshot {
+  margin-bottom: 4rem;
+}
+
+.screenshot img {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+/* Sections */
+section {
+  margin-bottom: 4rem;
+}
+
+h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.pitch p {
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+/* Feature grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+}
+
+.card .icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.card h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.card p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* Setup */
+pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+code {
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+
+.subtle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+footer p {
+  margin-bottom: 0.5rem;
+}

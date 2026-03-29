@@ -1,2 +1,4 @@
 target/
 .claude/worktrees/
+site/dist/
+site/node_modules/
