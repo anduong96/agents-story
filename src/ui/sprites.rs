@@ -71,14 +71,14 @@ pub const DESK_SCREEN_OFF_COLOR: Color = Color::Rgb(35, 40, 50);  // dark blue-g
 pub const DESK_SCREEN_DIM_COLOR: Color = Color::Rgb(25, 25, 30);  // subtle dim variation
 
 // All desks same width (10w × 3h), monitor count varies inside
-// 1 monitor — centered:
+// 1 monitor — small centered:
 //  ┌────────┐
-//  │  ▓▓▓▓  │
+//  │   ▓▓   │
 //  └────────┘
 pub const DESK1_ROW0: [char; 10] = ['┌', '─', '─', '─', '─', '─', '─', '─', '─', '┐'];
-pub const DESK1_ROW1: [char; 10] = ['│', ' ', ' ', '▓', '▓', '▓', '▓', ' ', ' ', '│'];
+pub const DESK1_ROW1: [char; 10] = ['│', ' ', ' ', ' ', '▓', '▓', ' ', ' ', ' ', '│'];
 pub const DESK1_ROW2: [char; 10] = ['└', '─', '─', '─', '─', '─', '─', '─', '─', '┘'];
-pub const DESK1_SCREEN_COLS: &[usize] = &[3, 4, 5, 6];
+pub const DESK1_SCREEN_COLS: &[usize] = &[4, 5];
 
 // 2 monitors — side by side:
 //  ┌────────┐
