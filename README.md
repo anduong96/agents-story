@@ -37,10 +37,10 @@ cargo build --release
 cargo run -- --demo
 ```
 
-### Demo with hot reload
+### Dev mode (hot reload)
 
 ```bash
-./demo.sh
+./dev.sh
 ```
 
 ### Speed options

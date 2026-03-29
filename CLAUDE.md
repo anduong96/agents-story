@@ -41,7 +41,7 @@ A Rust TUI application that visualizes Claude Code agent sessions as a pixel-art
 cargo run -- --demo              # Demo mode (2x speed)
 cargo run -- --demo --fast       # 5x speed
 cargo run -- --demo --extreme    # 10x speed
-./demo.sh                        # Hot reload demo with cargo-watch
+./dev.sh                         # Hot reload demo with cargo-watch
 ```
 
 ## Code Quality
