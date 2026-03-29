@@ -1,6 +1,6 @@
 # Agents Story
 
-A Kairosoft-inspired TUI visualization of Claude Code agent sessions. Watch your AI agents work in a pixel-art office with desks, a lounge, and a CEO office.
+A pixel-art TUI visualization of Claude Code agent sessions. Watch your AI agents work in an office with desks, a lounge, and a CEO office.
 
 ![Rust](https://img.shields.io/badge/rust-1.70%2B-orange)
 
