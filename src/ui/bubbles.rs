@@ -131,7 +131,7 @@ impl BubbleManager {
             let total_h = lines.len() as u16 + 2; // +2 for top/bottom border
             let frame_w = box_w as u16 + 2; // +2 for left/right border
             let top_y = agent_y.saturating_sub(total_h);
-            let left_x = agent_x.saturating_sub(frame_w / 2).max(0);
+            let left_x = agent_x.saturating_sub(frame_w / 2);
             // Clamp right edge
             let left_x = if area.x + left_x + frame_w > area.x + area.width {
                 (area.x + area.width).saturating_sub(frame_w + area.x)
