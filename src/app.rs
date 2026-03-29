@@ -92,20 +92,39 @@ impl App {
             self.state.stats.ram_mb = get_rss_mb();
         }
 
-        // Advance each agent along its path and update facing direction.
-        for agent in &mut self.state.agents {
-            if agent.is_animating() {
-                let prev_x = agent.position.0;
-                advance_along_path(&mut agent.position, &mut agent.path, 4.0, delta_secs);
-                let new_x = agent.position.0;
+        // Snapshot all agent positions for collision checks
+        let positions: Vec<(f32, f32)> = self.state.agents.iter()
+            .map(|a| a.position)
+            .collect();
 
-                if new_x > prev_x {
-                    agent.facing = Direction::Right;
-                } else if new_x < prev_x {
-                    agent.facing = Direction::Left;
+        // Advance agents with collision avoidance
+        for i in 0..self.state.agents.len() {
+            let agent = &mut self.state.agents[i];
+            if agent.is_animating() {
+                let old_pos = agent.position;
+
+                advance_along_path(&mut agent.position, &mut agent.path, 4.0, delta_secs);
+
+                let new_cell = (agent.position.0.round() as i32, agent.position.1.round() as i32);
+
+                // Check collision against snapshot of other agents
+                let collides = positions.iter().enumerate().any(|(j, &(ox, oy))| {
+                    if j == i { return false; }
+                    let ocx = ox.round() as i32;
+                    let ocy = oy.round() as i32;
+                    (new_cell.0 - ocx).abs() < 2 && (new_cell.1 - ocy).abs() < 2
+                });
+
+                if collides {
+                    agent.position = old_pos;
+                } else {
+                    if agent.position.0 > old_pos.0 {
+                        agent.facing = Direction::Right;
+                    } else if agent.position.0 < old_pos.0 {
+                        agent.facing = Direction::Left;
+                    }
                 }
             } else if let Some(desk_idx) = agent.assigned_desk {
-                // Snap seated agents to their desk chair position every tick
                 if let Some(desk) = self.state.floor.desks.get(desk_idx) {
                     agent.position = (desk.chair_x as f32, desk.chair_y as f32);
                 }
