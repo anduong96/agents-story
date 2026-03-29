@@ -18,7 +18,6 @@ pub enum CellType {
     VendingMachine,
     BulletinBoard,
     Plant,
-    Whiteboard,
 }
 
 pub const MIN_DESKS: usize = 0;
@@ -153,26 +152,6 @@ impl Floor {
         // Desks start empty — ensure_minimum_desks() adds the initial rows
         let desks = Vec::new();
 
-        // 2 large whiteboards in workspace — on left and right walls
-        let wb1_x = 2u16;
-        let wb1_y = 2u16;
-        for wy in wb1_y..wb1_y + 2 {
-            for wx in wb1_x..wb1_x + 8 {
-                if (wy as usize) < workspace_h as usize && (wx as usize) < width as usize {
-                    grid[wy as usize][wx as usize] = CellType::Whiteboard;
-                }
-            }
-        }
-        let wb2_x = width - 10;
-        let wb2_y = 2u16;
-        for wy in wb2_y..wb2_y + 2 {
-            for wx in wb2_x..wb2_x + 8 {
-                if (wy as usize) < workspace_h as usize && (wx as usize) < width as usize {
-                    grid[wy as usize][wx as usize] = CellType::Whiteboard;
-                }
-            }
-        }
-
         // Ping pong table (6x2) centered in lounge
         let lounge_center_x = lounge_w / 2;
         let lounge_center_y = workspace_h + bottom_h / 2;
@@ -266,17 +245,6 @@ impl Floor {
             for bx in bb_x..bb_x + 4 {
                 if (by as usize) < height as usize && (bx as usize) < width as usize {
                     grid[by as usize][bx as usize] = CellType::BulletinBoard;
-                }
-            }
-        }
-
-        // Whiteboard: 6×2, on the left wall of CEO office
-        let wb_x = lounge_w + 2;
-        let wb_y = workspace_h + bottom_h - 4;
-        for wy in wb_y..wb_y + 2 {
-            for wx in wb_x..wb_x + 6 {
-                if (wy as usize) < height as usize && (wx as usize) < width as usize {
-                    grid[wy as usize][wx as usize] = CellType::Whiteboard;
                 }
             }
         }

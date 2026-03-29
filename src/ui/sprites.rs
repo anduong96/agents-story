@@ -39,9 +39,6 @@ pub const PING_PONG_NET_COLOR: Color = Color::Rgb(220, 220, 220);
 pub const PLANT_COLOR: Color = Color::Rgb(60, 180, 60);
 pub const PLANT_POT_COLOR: Color = Color::Rgb(160, 100, 50);
 
-// Whiteboard
-pub const WHITEBOARD_COLOR: Color = Color::Rgb(240, 240, 235);
-pub const WHITEBOARD_FRAME_COLOR: Color = Color::Rgb(160, 160, 155);
 
 // Lounge TV
 pub const TV_FRAME_COLOR: Color = Color::Rgb(40, 40, 45);
