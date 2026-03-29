@@ -165,72 +165,57 @@ impl Floor {
         let lounge_bot = workspace_h + bottom_h - 2;
         let lounge_mid = workspace_h + bottom_h / 2;
 
-        // --- Zone 1: TV + Sofa area (top-left) ---
-        // TV on wall
-        let tv_w: u16 = 8;
-        let tv_x = 4u16;
-        for tx in tv_x..tv_x + tv_w {
-            if (lounge_top as usize) < height as usize && (tx as usize) < lounge_w as usize {
-                grid[lounge_top as usize][tx as usize] = CellType::TV;
+        // Helper: only place on empty cells
+        let mut place = |gy: u16, gx: u16, cell: CellType| {
+            let y = gy as usize;
+            let x = gx as usize;
+            if y < height as usize && x < width as usize && grid[y][x] == CellType::Empty {
+                grid[y][x] = cell;
             }
-        }
-        // Two sofas facing the TV
-        let sofa_y1 = lounge_top + 2;
-        let sofa_y2 = lounge_top + 4;
-        for sx in tv_x..tv_x + 6 {
-            if (sofa_y1 as usize) < height as usize && (sx as usize) < lounge_w as usize {
-                grid[sofa_y1 as usize][sx as usize] = CellType::Couch;
-            }
-            if (sofa_y2 as usize) < height as usize && (sx as usize) < lounge_w as usize {
-                grid[sofa_y2 as usize][sx as usize] = CellType::Couch;
-            }
-        }
-        // Coffee table between sofas
-        for sx in (tv_x + 1)..(tv_x + 5) {
-            if (sofa_y1 + 1) < height && (sx as usize) < lounge_w as usize {
-                grid[(sofa_y1 + 1) as usize][sx as usize] = CellType::CoffeeTable;
-            }
-        }
+        };
 
-        // --- Zone 2: Ping pong (center) ---
+        // --- Zone 2: Ping pong (center, placed FIRST so nothing overlaps it) ---
         let pp_w: u16 = 6;
         let pp_h: u16 = 2;
         let pp_x = lounge_cx.saturating_sub(pp_w / 2);
         let pp_y = lounge_mid.saturating_sub(pp_h / 2);
         for py in pp_y..pp_y + pp_h {
             for px in pp_x..pp_x + pp_w {
-                if (py as usize) < height as usize && (px as usize) < lounge_w as usize {
-                    if px == pp_x + pp_w / 2 {
-                        grid[py as usize][px as usize] = CellType::PingPongNet;
-                    } else {
-                        grid[py as usize][px as usize] = CellType::PingPongTable;
-                    }
+                if px == pp_x + pp_w / 2 {
+                    place(py, px, CellType::PingPongNet);
+                } else {
+                    place(py, px, CellType::PingPongTable);
                 }
             }
         }
         let ping_pong = (pp_x, pp_y, pp_w, pp_h);
 
+        // --- Zone 1: TV + Sofa area (top-left) ---
+        let tv_w: u16 = 8;
+        let tv_x = 4u16;
+        for tx in tv_x..tv_x + tv_w {
+            place(lounge_top, tx, CellType::TV);
+        }
+        let sofa_y1 = lounge_top + 2;
+        let sofa_y2 = lounge_top + 4;
+        for sx in tv_x..tv_x + 6 {
+            place(sofa_y1, sx, CellType::Couch);
+            place(sofa_y2, sx, CellType::Couch);
+        }
+        for sx in (tv_x + 1)..(tv_x + 5) {
+            place(sofa_y1 + 1, sx, CellType::CoffeeTable);
+        }
+
         // --- Zone 3: Lunch area (bottom-right of lounge) ---
         let lunch_x = lounge_w / 2;
         let lunch_y = lounge_bot - 3;
         let lunch_w: u16 = 6;
-        // Lunch table
         for lx in lunch_x..lunch_x + lunch_w {
-            if (lunch_y as usize) < height as usize && (lx as usize) < lounge_w as usize {
-                grid[lunch_y as usize][lx as usize] = CellType::CoffeeTable;
-            }
+            place(lunch_y, lx, CellType::CoffeeTable);
+            if lunch_y >= workspace_h + 1 { place(lunch_y - 1, lx, CellType::Chair); }
         }
-        // Chairs above table
         for lx in lunch_x..lunch_x + lunch_w {
-            if (lunch_y - 1) >= workspace_h && ((lunch_y - 1) as usize) < height as usize && (lx as usize) < lounge_w as usize {
-                grid[(lunch_y - 1) as usize][lx as usize] = CellType::Chair;
-            }
-        }
-        // Chairs below table
-        for lx in lunch_x..lunch_x + lunch_w {
-            if ((lunch_y + 1) as usize) < height as usize && (lx as usize) < lounge_w as usize {
-                grid[(lunch_y + 1) as usize][lx as usize] = CellType::Chair;
-            }
+            place(lunch_y + 1, lx, CellType::Chair);
         }
 
         // Vending machine near lunch area
@@ -238,9 +223,7 @@ impl Floor {
         let vm_y = lounge_bot - 2;
         for vy in vm_y..vm_y + 2 {
             for vx in vm_x..vm_x + 2 {
-                if (vy as usize) < height as usize && (vx as usize) < lounge_w as usize {
-                    grid[vy as usize][vx as usize] = CellType::VendingMachine;
-                }
+                place(vy, vx, CellType::VendingMachine);
             }
         }
 

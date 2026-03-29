@@ -4,6 +4,8 @@ A Kairosoft-inspired TUI visualization of Claude Code agent sessions. Watch your
 
 ![Rust](https://img.shields.io/badge/rust-1.70%2B-orange)
 
+![Demo Screenshot](docs/demo.png)
+
 ## Features
 
 - 8-bit pixel-art office with workspace, lounge, and CEO office
