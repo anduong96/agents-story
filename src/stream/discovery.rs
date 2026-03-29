@@ -26,10 +26,12 @@ pub async fn discover_sessions(watch_dir: PathBuf, tx: mpsc::Sender<DiscoveryEve
                             .unwrap_or("unknown")
                             .to_string();
                         if known.insert(session_id.clone()) {
-                            let _ = tx.send(DiscoveryEvent::NewSession {
-                                session_id,
-                                path: path.clone(),
-                            }).await;
+                            let _ = tx
+                                .send(DiscoveryEvent::NewSession {
+                                    session_id,
+                                    path: path.clone(),
+                                })
+                                .await;
                         }
                     }
                 }

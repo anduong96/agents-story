@@ -1,6 +1,6 @@
-use std::collections::HashMap;
 use serde::Deserialize;
 use serde_json::Value;
+use std::collections::HashMap;
 
 #[derive(Debug, Deserialize)]
 pub struct ContentBlock {
@@ -44,15 +44,37 @@ pub struct RawMessage {
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
 pub enum StreamEvent {
-    SessionInit { session_id: String, model: String },
-    ToolUse { tool: String, args_hint: Option<String> },
-    ToolResult { tool: String },
-    AgentSpawn { agent_id: String, name: String, description: String },
-    AgentResult { agent_id: String },
-    StatsUpdate { input_tokens: u64, output_tokens: u64, cost: f64 },
-    TextDelta { text: String },
+    SessionInit {
+        session_id: String,
+        model: String,
+    },
+    ToolUse {
+        tool: String,
+        args_hint: Option<String>,
+    },
+    ToolResult {
+        tool: String,
+    },
+    AgentSpawn {
+        agent_id: String,
+        name: String,
+        description: String,
+    },
+    AgentResult {
+        agent_id: String,
+    },
+    StatsUpdate {
+        input_tokens: u64,
+        output_tokens: u64,
+        cost: f64,
+    },
+    TextDelta {
+        text: String,
+    },
     SessionEnd,
-    Error { message: String },
+    Error {
+        message: String,
+    },
 }
 
 #[allow(dead_code)]
@@ -77,22 +99,32 @@ pub fn parse_line(line: &str) -> Option<StreamEvent> {
                         let tool = cb.name.unwrap_or_default();
                         if tool == "Agent" {
                             // Extract agent_id, name, description from input
-                            let agent_id = cb.input.as_ref()
+                            let agent_id = cb
+                                .input
+                                .as_ref()
                                 .and_then(|v| v.get("agent_id"))
                                 .and_then(|v| v.as_str())
                                 .unwrap_or("unknown")
                                 .to_string();
-                            let name = cb.input.as_ref()
+                            let name = cb
+                                .input
+                                .as_ref()
                                 .and_then(|v| v.get("name"))
                                 .and_then(|v| v.as_str())
                                 .unwrap_or("Agent")
                                 .to_string();
-                            let description = cb.input.as_ref()
+                            let description = cb
+                                .input
+                                .as_ref()
                                 .and_then(|v| v.get("description"))
                                 .and_then(|v| v.as_str())
                                 .unwrap_or("")
                                 .to_string();
-                            Some(StreamEvent::AgentSpawn { agent_id, name, description })
+                            Some(StreamEvent::AgentSpawn {
+                                agent_id,
+                                name,
+                                description,
+                            })
                         } else {
                             // Extract first string value from input as args_hint
                             let args_hint = cb.input.as_ref().and_then(|input| {
@@ -122,14 +154,20 @@ pub fn parse_line(line: &str) -> Option<StreamEvent> {
                 cache_read_input_tokens: None,
                 cache_creation_input_tokens: None,
             });
-            let input_tokens = usage.input_tokens.unwrap_or(0)
-                + usage.cache_read_input_tokens.unwrap_or(0);
+            let input_tokens =
+                usage.input_tokens.unwrap_or(0) + usage.cache_read_input_tokens.unwrap_or(0);
             let output_tokens = usage.output_tokens.unwrap_or(0);
             let cost = msg.cost_usd.unwrap_or(0.0);
-            Some(StreamEvent::StatsUpdate { input_tokens, output_tokens, cost })
+            Some(StreamEvent::StatsUpdate {
+                input_tokens,
+                output_tokens,
+                cost,
+            })
         }
         Some("error") => {
-            let message = msg.extra.get("message")
+            let message = msg
+                .extra
+                .get("message")
                 .and_then(|v| v.as_str())
                 .unwrap_or("unknown error")
                 .to_string();
@@ -174,7 +212,11 @@ mod tests {
         let line = r#"{"type":"assistant","content_block":{"type":"tool_use","name":"Agent","input":{"agent_id":"agent-001","name":"ResearchAgent","description":"Does research"}}}"#;
         let event = parse_line(line).expect("should parse");
         match event {
-            StreamEvent::AgentSpawn { agent_id, name, description } => {
+            StreamEvent::AgentSpawn {
+                agent_id,
+                name,
+                description,
+            } => {
                 assert_eq!(agent_id, "agent-001");
                 assert_eq!(name, "ResearchAgent");
                 assert_eq!(description, "Does research");
@@ -188,7 +230,11 @@ mod tests {
         let line = r#"{"type":"result","cost_usd":0.42,"usage":{"input_tokens":1000,"output_tokens":500,"cache_read_input_tokens":200}}"#;
         let event = parse_line(line).expect("should parse");
         match event {
-            StreamEvent::StatsUpdate { input_tokens, output_tokens, cost } => {
+            StreamEvent::StatsUpdate {
+                input_tokens,
+                output_tokens,
+                cost,
+            } => {
                 assert_eq!(input_tokens, 1200);
                 assert_eq!(output_tokens, 500);
                 assert!((cost - 0.42).abs() < 1e-9);

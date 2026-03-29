@@ -2,7 +2,9 @@
 
 > Because watching a progress bar wasn't unproductive enough.
 
-A completely unnecessary pixel-art TUI that lets you watch your Claude Code agents pretend to work in a tiny office. They walk to desks. They sit down. Their monitors flicker with colorful pixels. They accomplish absolutely nothing visual — but hey, at least you burned some extra tokens rendering it.
+A pixel-art TUI that visualizes Claude Code agents working in a tiny office. Desks, monitors, a lounge with arcade machines, a CEO doing CEO things. Zero practical value. Immaculate vibes.
+
+Setup: 30 seconds. Entertainment value: hours. Productivity lost: incalculable.
 
 ![Rust](https://img.shields.io/badge/rust-1.70%2B-orange)
 ![Usefulness](https://img.shields.io/badge/usefulness-0%25-red)
@@ -12,9 +14,9 @@ A completely unnecessary pixel-art TUI that lets you watch your Claude Code agen
 
 ## Why does this exist?
 
-You could be reading your agent's actual output. You could be reviewing diffs. Instead, you're watching 8-bit pixel people shuffle between a workspace and a lounge with a ping pong table they never actually play.
+Your agents are already running. You're already paying for tokens. Why not watch them work?
 
-Your AI agents deserve a workplace too. Even if it's made of Unicode characters.
+Built during a Claude Code session that should have been spent shipping features.
 
 ## Features
 

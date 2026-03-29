@@ -66,11 +66,11 @@ impl AgentPanelState {
 /// Returns (indicator_char, use_agent_color). If use_agent_color is false, use the returned color.
 fn status_indicator(status: &AgentStatus) -> (&'static str, bool) {
     match status {
-        AgentStatus::Working => ("●", true),   // filled, agent color
-        AgentStatus::Spawning => ("●", true),   // filled, agent color
-        AgentStatus::Error => ("●", false),     // filled, red
-        AgentStatus::Idle => ("○", true),       // outline, agent color
-        AgentStatus::Finished => ("○", true),   // outline, agent color
+        AgentStatus::Working => ("●", true),  // filled, agent color
+        AgentStatus::Spawning => ("●", true), // filled, agent color
+        AgentStatus::Error => ("●", false),   // filled, red
+        AgentStatus::Idle => ("○", true),     // outline, agent color
+        AgentStatus::Finished => ("○", true), // outline, agent color
     }
 }
 
@@ -120,9 +120,7 @@ impl<'a> StatefulWidget for AgentPanel<'a> {
     type State = AgentPanelState;
 
     fn render(self, area: Rect, buf: &mut Buffer, state: &mut AgentPanelState) {
-        let block = Block::default()
-            .title(" Agents ")
-            .borders(Borders::ALL);
+        let block = Block::default().title(" Agents ").borders(Borders::ALL);
 
         let inner = block.inner(area);
         block.render(area, buf);
@@ -224,23 +222,30 @@ impl<'a> StatefulWidget for AgentPanel<'a> {
                             Style::default().fg(crate::ui::stats_bar::cost_color(agent.cost)),
                         ),
                     ]);
-                    let detail1_area = Rect { x: inner.x, y, width: inner.width, height: 1 };
+                    let detail1_area = Rect {
+                        x: inner.x,
+                        y,
+                        width: inner.width,
+                        height: 1,
+                    };
                     detail1.render(detail1_area, buf);
                     y += 1;
                 }
 
                 // Line 2: Current tool
                 if y < inner.bottom() {
-                    let tool_text = agent
-                        .current_tool
-                        .as_deref()
-                        .unwrap_or("(none)");
+                    let tool_text = agent.current_tool.as_deref().unwrap_or("(none)");
                     let detail2 = Line::from(vec![
                         Span::raw("    "),
                         Span::styled("Tool: ", Style::default().fg(Color::DarkGray)),
                         Span::styled(tool_text, Style::default().fg(Color::Magenta)),
                     ]);
-                    let detail2_area = Rect { x: inner.x, y, width: inner.width, height: 1 };
+                    let detail2_area = Rect {
+                        x: inner.x,
+                        y,
+                        width: inner.width,
+                        height: 1,
+                    };
                     detail2.render(detail2_area, buf);
                     y += 1;
                 }
@@ -251,12 +256,14 @@ impl<'a> StatefulWidget for AgentPanel<'a> {
                     let detail3 = Line::from(vec![
                         Span::raw("    "),
                         Span::styled("Duration: ", Style::default().fg(Color::DarkGray)),
-                        Span::styled(
-                            format_duration(elapsed),
-                            Style::default().fg(Color::White),
-                        ),
+                        Span::styled(format_duration(elapsed), Style::default().fg(Color::White)),
                     ]);
-                    let detail3_area = Rect { x: inner.x, y, width: inner.width, height: 1 };
+                    let detail3_area = Rect {
+                        x: inner.x,
+                        y,
+                        width: inner.width,
+                        height: 1,
+                    };
                     detail3.render(detail3_area, buf);
                     y += 1;
                 }

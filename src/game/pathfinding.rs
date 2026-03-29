@@ -24,11 +24,7 @@ pub fn compute_path(
                 let door_x = door.x;
                 let door_y = door.y;
                 // Walk to just above the door (workspace side), step through, walk to target
-                vec![
-                    (door_x, door_y - 1),
-                    (door_x, door_y + 1),
-                    (to_x, to_y),
-                ]
+                vec![(door_x, door_y - 1), (door_x, door_y + 1), (to_x, to_y)]
             } else {
                 vec![(to_x, to_y)]
             }
@@ -38,11 +34,7 @@ pub fn compute_path(
                 let door_x = door.x;
                 let door_y = door.y;
                 // Walk to just below the door (lounge side), step through, walk to target
-                vec![
-                    (door_x, door_y + 1),
-                    (door_x, door_y - 1),
-                    (to_x, to_y),
-                ]
+                vec![(door_x, door_y + 1), (door_x, door_y - 1), (to_x, to_y)]
             } else {
                 vec![(to_x, to_y)]
             }
@@ -50,31 +42,21 @@ pub fn compute_path(
 
         // Adjacent: Workspace <-> CeoOffice
         (Room::Workspace, Room::CeoOffice) => {
-            if let Some(door) =
-                floor.nearest_door(from_x, from_y, Room::Workspace, Room::CeoOffice)
+            if let Some(door) = floor.nearest_door(from_x, from_y, Room::Workspace, Room::CeoOffice)
             {
                 let door_x = door.x;
                 let door_y = door.y;
-                vec![
-                    (door_x, door_y - 1),
-                    (door_x, door_y + 1),
-                    (to_x, to_y),
-                ]
+                vec![(door_x, door_y - 1), (door_x, door_y + 1), (to_x, to_y)]
             } else {
                 vec![(to_x, to_y)]
             }
         }
         (Room::CeoOffice, Room::Workspace) => {
-            if let Some(door) =
-                floor.nearest_door(from_x, from_y, Room::CeoOffice, Room::Workspace)
+            if let Some(door) = floor.nearest_door(from_x, from_y, Room::CeoOffice, Room::Workspace)
             {
                 let door_x = door.x;
                 let door_y = door.y;
-                vec![
-                    (door_x, door_y + 1),
-                    (door_x, door_y - 1),
-                    (to_x, to_y),
-                ]
+                vec![(door_x, door_y + 1), (door_x, door_y - 1), (to_x, to_y)]
             } else {
                 vec![(to_x, to_y)]
             }
@@ -114,8 +96,7 @@ pub fn compute_path(
         (Room::CeoOffice, Room::Lounge) => {
             let workspace_center = floor.room_center(Room::Workspace);
             // Exit ceo -> workspace
-            let exit_door =
-                floor.nearest_door(from_x, from_y, Room::CeoOffice, Room::Workspace);
+            let exit_door = floor.nearest_door(from_x, from_y, Room::CeoOffice, Room::Workspace);
             // Enter workspace -> lounge
             let enter_door = floor.nearest_door(
                 workspace_center.0,
@@ -235,7 +216,10 @@ mod tests {
         let mut pos: (f32, f32) = (0.0, 0.0);
         let mut path: Vec<(u16, u16)> = vec![(10, 0)];
         let still_moving = advance_along_path(&mut pos, &mut path, 4.0, 3.0);
-        assert!(!still_moving, "Path should be empty after reaching waypoint");
+        assert!(
+            !still_moving,
+            "Path should be empty after reaching waypoint"
+        );
         assert!(path.is_empty(), "Path should be drained");
         assert!(
             (pos.0 - 10.0).abs() < 0.001,

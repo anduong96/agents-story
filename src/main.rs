@@ -166,7 +166,10 @@ fn render(frame: &mut Frame, app: &mut App) {
     app.panel_top = Some(panel_area.y);
 
     // Resize floor to fill available pane (clamped by centered layout)
-    app.resize_floor(floor_area.width.min(MAX_WIDTH), floor_area.height.min(MAX_HEIGHT));
+    app.resize_floor(
+        floor_area.width.min(MAX_WIDTH),
+        floor_area.height.min(MAX_HEIGHT),
+    );
 
     // Auto-scroll: if floor is taller than view, scroll to keep workspace desks visible
     let floor_h = app.state.floor.height;
@@ -220,7 +223,9 @@ fn render(frame: &mut Frame, app: &mut App) {
             let y = hy + i as u16;
             if y < size.bottom() {
                 frame.buffer_mut().set_string(
-                    hx, y, line,
+                    hx,
+                    y,
+                    line,
                     ratatui::style::Style::default()
                         .fg(ratatui::style::Color::White)
                         .bg(ratatui::style::Color::Rgb(30, 30, 40)),
@@ -297,7 +302,11 @@ fn handle_stream_event(app: &mut App, session_id: &str, event: StreamEvent) {
             app.state.stats.total_tasks += 1;
 
             // Try to assign an idle staff agent first
-            let idle_idx = app.state.agents.iter().position(|a| a.status == AgentStatus::Idle);
+            let idle_idx = app
+                .state
+                .agents
+                .iter()
+                .position(|a| a.status == AgentStatus::Idle);
 
             if let Some(idx) = idle_idx {
                 // Reuse idle staff agent
@@ -323,13 +332,22 @@ fn handle_stream_event(app: &mut App, session_id: &str, event: StreamEvent) {
                     let desk = &app.state.floor.desks[desk_idx];
                     let target_x = desk.chair_x;
                     let target_y = desk.chair_y;
-                    let path = compute_path(from_x, from_y, Room::Lounge, Room::Workspace, target_x, target_y, &app.state.floor);
+                    let path = compute_path(
+                        from_x,
+                        from_y,
+                        Room::Lounge,
+                        Room::Workspace,
+                        target_x,
+                        target_y,
+                        &app.state.floor,
+                    );
                     app.state.agents[idx].path = path;
                     app.state.agents[idx].target_room = Room::Workspace;
                 }
 
                 sync_agent_positions(app);
-                app.bubbles.trigger_status_change(&agent_id, BubbleAgentStatus::Working);
+                app.bubbles
+                    .trigger_status_change(&agent_id, BubbleAgentStatus::Working);
             } else {
                 // Hire a new temp agent
                 let color_index = app.state.next_color_index;
@@ -365,11 +383,20 @@ fn handle_stream_event(app: &mut App, session_id: &str, event: StreamEvent) {
                         .unwrap_or((1, 1));
 
                     agent.position = (start_x as f32, start_y as f32);
-                    agent.path = compute_path(start_x, start_y, Room::Workspace, Room::Workspace, target_x, target_y, &app.state.floor);
+                    agent.path = compute_path(
+                        start_x,
+                        start_y,
+                        Room::Workspace,
+                        Room::Workspace,
+                        target_x,
+                        target_y,
+                        &app.state.floor,
+                    );
                 }
 
                 agent.status = AgentStatus::Working;
-                app.bubbles.trigger_status_change(&agent_id, BubbleAgentStatus::Spawning);
+                app.bubbles
+                    .trigger_status_change(&agent_id, BubbleAgentStatus::Spawning);
                 app.state.agents.push(agent);
                 sync_agent_positions(app);
             }
@@ -377,12 +404,10 @@ fn handle_stream_event(app: &mut App, session_id: &str, event: StreamEvent) {
 
         StreamEvent::ToolUse { tool, args_hint } => {
             // Find the most recently added agent for this session that is Working.
-            if let Some(agent) = app
-                .state
-                .agents
-                .iter_mut()
-                .rev()
-                .find(|a| a.session.session_id == session_id && a.status == AgentStatus::Working)
+            if let Some(agent) =
+                app.state.agents.iter_mut().rev().find(|a| {
+                    a.session.session_id == session_id && a.status == AgentStatus::Working
+                })
             {
                 agent.current_tool = Some(tool.clone());
                 app.bubbles
@@ -398,7 +423,10 @@ fn handle_stream_event(app: &mut App, session_id: &str, event: StreamEvent) {
             app.state.stats.completed_tasks += 1;
 
             // Check if agent is permanent staff or temp
-            let is_permanent = app.state.agents.iter()
+            let is_permanent = app
+                .state
+                .agents
+                .iter()
                 .find(|a| a.id == agent_id)
                 .map(|a| a.is_permanent)
                 .unwrap_or(false);
@@ -415,17 +443,33 @@ fn handle_stream_event(app: &mut App, session_id: &str, event: StreamEvent) {
                     let from_x = agent.position.0 as u16;
                     let from_y = agent.position.1 as u16;
                     agent.path = compute_path(
-                        from_x, from_y, Room::Workspace, Room::Lounge,
-                        exit.0, exit.1, &app.state.floor,
+                        from_x,
+                        from_y,
+                        Room::Workspace,
+                        Room::Lounge,
+                        exit.0,
+                        exit.1,
+                        &app.state.floor,
                     );
                 }
             }
 
             // Check if all working agents are done
-            let all_done = app.state.agents.iter()
+            let all_done = app
+                .state
+                .agents
+                .iter()
                 .filter(|a| !a.is_permanent)
-                .all(|a| matches!(a.status, AgentStatus::Finished | AgentStatus::Error | AgentStatus::Idle));
-            let any_working = app.state.agents.iter()
+                .all(|a| {
+                    matches!(
+                        a.status,
+                        AgentStatus::Finished | AgentStatus::Error | AgentStatus::Idle
+                    )
+                });
+            let any_working = app
+                .state
+                .agents
+                .iter()
                 .any(|a| matches!(a.status, AgentStatus::Working | AgentStatus::Spawning));
             if all_done && !any_working && app.state.stats.total_tasks > 0 {
                 app.state.ceo_status = game::state::CeoStatus::AllComplete;
@@ -487,7 +531,9 @@ fn transition_agent(app: &mut App, agent_id: &str, new_status: AgentStatus) {
     let from_x = agent.position.0 as u16;
     let from_y = agent.position.1 as u16;
     let from_room = agent.target_room;
-    let path = compute_path(from_x, from_y, from_room, new_room, target_x, target_y, floor);
+    let path = compute_path(
+        from_x, from_y, from_room, new_room, target_x, target_y, floor,
+    );
     let old_desk = agent.assigned_desk;
 
     // Now mutate the agent.
@@ -506,8 +552,7 @@ fn transition_agent(app: &mut App, agent_id: &str, new_status: AgentStatus) {
 
     // Trigger bubble.
     let bubble_status = to_bubble_status(&new_status);
-    app.bubbles
-        .trigger_status_change(agent_id, bubble_status);
+    app.bubbles.trigger_status_change(agent_id, bubble_status);
 }
 
 /// Convert game::agent::AgentStatus to ui::bubbles::AgentStatus.
@@ -606,8 +651,17 @@ mod tests {
 
     #[test]
     fn test_to_bubble_status_mapping() {
-        assert_eq!(to_bubble_status(&AgentStatus::Working), BubbleAgentStatus::Working);
-        assert_eq!(to_bubble_status(&AgentStatus::Finished), BubbleAgentStatus::Finished);
-        assert_eq!(to_bubble_status(&AgentStatus::Error), BubbleAgentStatus::Error);
+        assert_eq!(
+            to_bubble_status(&AgentStatus::Working),
+            BubbleAgentStatus::Working
+        );
+        assert_eq!(
+            to_bubble_status(&AgentStatus::Finished),
+            BubbleAgentStatus::Finished
+        );
+        assert_eq!(
+            to_bubble_status(&AgentStatus::Error),
+            BubbleAgentStatus::Error
+        );
     }
 }

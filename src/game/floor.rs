@@ -24,14 +24,14 @@ pub enum CellType {
 
 pub const MIN_DESKS: usize = 0;
 pub const DESK_HEIGHT: u16 = 3;
-pub const DESK_SPACING_X: u16 = 12;  // accommodate widest (3 monitors = 10)
+pub const DESK_SPACING_X: u16 = 12; // accommodate widest (3 monitors = 10)
 pub const DESK_SPACING_Y: u16 = 5; // desk(3) + agent(2), no gap
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DeskVariant {
-    Single,  // 1 monitor, 4 wide
-    Dual,    // 2 monitors, 7 wide
-    Triple,  // 3 monitors, 10 wide
+    Single, // 1 monitor, 4 wide
+    Dual,   // 2 monitors, 7 wide
+    Triple, // 3 monitors, 10 wide
 }
 
 impl DeskVariant {
@@ -41,7 +41,9 @@ impl DeskVariant {
 
     /// Pick variant from agent name (deterministic)
     pub fn from_name(name: &str) -> Self {
-        let hash: u32 = name.bytes().fold(0u32, |acc, b| acc.wrapping_mul(31).wrapping_add(b as u32));
+        let hash: u32 = name
+            .bytes()
+            .fold(0u32, |acc, b| acc.wrapping_mul(31).wrapping_add(b as u32));
         match hash % 3 {
             0 => DeskVariant::Single,
             1 => DeskVariant::Dual,
@@ -165,7 +167,11 @@ impl Floor {
         let pp_h: u16 = 2;
         let pp_x = lounge_cx.saturating_sub(pp_w / 2).max(2);
         let pp_y = lounge_mid.saturating_sub(pp_h / 2);
-        let pp_x = if pp_x + pp_w >= lounge_w { lounge_w.saturating_sub(pp_w + 1) } else { pp_x };
+        let pp_x = if pp_x + pp_w >= lounge_w {
+            lounge_w.saturating_sub(pp_w + 1)
+        } else {
+            pp_x
+        };
         for py in pp_y..pp_y + pp_h {
             for px in pp_x..pp_x + pp_w {
                 let y = py as usize;
@@ -186,7 +192,11 @@ impl Floor {
             (2, workspace_h + 2, CellType::TreeLarge),
             (lounge_w - 3, workspace_h + 2, CellType::TreeSmall),
             (2, workspace_h + bottom_h - 2, CellType::Plant),
-            (lounge_w - 3, workspace_h + bottom_h - 2, CellType::TreeSmall),
+            (
+                lounge_w - 3,
+                workspace_h + bottom_h - 2,
+                CellType::TreeSmall,
+            ),
         ];
         for (tx, ty, cell) in lounge_trees {
             let y = ty as usize;
@@ -270,10 +280,11 @@ impl Floor {
             (width - 3, workspace_h + bottom_h - 2, CellType::TreeSmall),
         ];
         for (px, py, cell) in decorations {
-            if (py as usize) < height as usize && (px as usize) < width as usize {
-                if grid[py as usize][px as usize] == CellType::Empty {
-                    grid[py as usize][px as usize] = cell;
-                }
+            if (py as usize) < height as usize
+                && (px as usize) < width as usize
+                && grid[py as usize][px as usize] == CellType::Empty
+            {
+                grid[py as usize][px as usize] = cell;
             }
         }
 
@@ -373,7 +384,8 @@ impl Floor {
         }
 
         // Preserve existing desk state
-        let old_desks: Vec<(bool, Option<SpriteColor>, DeskVariant)> = self.desks
+        let old_desks: Vec<(bool, Option<SpriteColor>, DeskVariant)> = self
+            .desks
             .iter()
             .map(|d| (d.occupied, d.agent_color, d.variant))
             .collect();
@@ -420,14 +432,15 @@ impl Floor {
                 }
             }
 
-            let (occupied, agent_color) = old_desks.get(i)
+            let (occupied, agent_color) = old_desks
+                .get(i)
                 .map(|&(o, ac, _)| (o, ac))
                 .unwrap_or((false, None));
 
             self.desks.push(DeskSlot {
                 desk_x: dx,
                 desk_y: dy,
-                chair_x: dx + (w - 2) / 2,  // center 2-wide agent in 10-wide desk
+                chair_x: dx + (w - 2) / 2, // center 2-wide agent in 10-wide desk
                 chair_y: dy + DESK_HEIGHT - 1, // head overlaps desk bottom row
                 occupied,
                 agent_color,
@@ -436,13 +449,7 @@ impl Floor {
         }
     }
 
-    pub fn nearest_door(
-        &self,
-        x: u16,
-        y: u16,
-        from_room: Room,
-        to_room: Room,
-    ) -> Option<&DoorPos> {
+    pub fn nearest_door(&self, x: u16, y: u16, from_room: Room, to_room: Room) -> Option<&DoorPos> {
         self.doors
             .iter()
             .filter(|d| {
@@ -525,9 +532,14 @@ mod tests {
         let idx = floor.assign_desk("test").unwrap();
         let desk = &floor.desks[idx];
         // Chair Y: head overlaps desk bottom row
-        assert_eq!(desk.chair_y, desk.desk_y + DESK_HEIGHT - 1,
+        assert_eq!(
+            desk.chair_y,
+            desk.desk_y + DESK_HEIGHT - 1,
             "Agent head (chair_y={}) should be at desk_y({}) + DESK_HEIGHT({}) - 1",
-            desk.chair_y, desk.desk_y, DESK_HEIGHT);
+            desk.chair_y,
+            desk.desk_y,
+            DESK_HEIGHT
+        );
     }
 
     #[test]
@@ -538,9 +550,11 @@ mod tests {
         let w = desk.variant.width();
         // Agent is 2 cells wide, should be centered in desk
         let expected_x = desk.desk_x + (w - 2) / 2;
-        assert_eq!(desk.chair_x, expected_x,
+        assert_eq!(
+            desk.chair_x, expected_x,
             "Agent left edge (chair_x={}) should be at desk_x({}) + ({}-2)/2 = {}",
-            desk.chair_x, desk.desk_x, w, expected_x);
+            desk.chair_x, desk.desk_x, w, expected_x
+        );
     }
 
     #[test]
@@ -555,12 +569,16 @@ mod tests {
         // For desks in different rows, verify agent doesn't overlap next desk
         for (i, desk) in floor.desks.iter().enumerate() {
             let agent_bottom = desk.chair_y + 2; // agent is 2 rows tall
-            // Find next desk in same column
+                                                 // Find next desk in same column
             for other in floor.desks.iter().skip(i + 1) {
                 if other.desk_x == desk.desk_x && other.desk_y > desk.desk_y {
-                    assert!(agent_bottom <= other.desk_y,
+                    assert!(
+                        agent_bottom <= other.desk_y,
                         "Agent at desk {} (bottom={}) overlaps desk at y={}",
-                        i, agent_bottom, other.desk_y);
+                        i,
+                        agent_bottom,
+                        other.desk_y
+                    );
                     break;
                 }
             }
@@ -576,12 +594,24 @@ mod tests {
         // Every desk (except CEO at index 0) should have consistent positioning
         for desk in &floor.desks {
             let w = desk.variant.width();
-            assert_eq!(desk.chair_y, desk.desk_y + DESK_HEIGHT - 1,
+            assert_eq!(
+                desk.chair_y,
+                desk.desk_y + DESK_HEIGHT - 1,
                 "Desk at ({},{}) has chair_y={}, expected {}",
-                desk.desk_x, desk.desk_y, desk.chair_y, desk.desk_y + DESK_HEIGHT - 1);
-            assert_eq!(desk.chair_x, desk.desk_x + (w - 2) / 2,
+                desk.desk_x,
+                desk.desk_y,
+                desk.chair_y,
+                desk.desk_y + DESK_HEIGHT - 1
+            );
+            assert_eq!(
+                desk.chair_x,
+                desk.desk_x + (w - 2) / 2,
                 "Desk at ({},{}) has chair_x={}, expected {}",
-                desk.desk_x, desk.desk_y, desk.chair_x, desk.desk_x + (w - 2) / 2);
+                desk.desk_x,
+                desk.desk_y,
+                desk.chair_x,
+                desk.desk_x + (w - 2) / 2
+            );
         }
     }
 }

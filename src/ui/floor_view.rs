@@ -37,19 +37,35 @@ impl<'a> FloorView<'a> {
 
     /// Convert grid Y to screen Y, returning None if off-screen.
     fn grid_to_screen(&self, gy: u16, area: &Rect) -> Option<u16> {
-        if gy < self.scroll_y { return None; }
+        if gy < self.scroll_y {
+            return None;
+        }
         let sy = area.y + gy - self.scroll_y;
-        if sy >= area.y + area.height { None } else { Some(sy) }
+        if sy >= area.y + area.height {
+            None
+        } else {
+            Some(sy)
+        }
     }
 }
 
 /// Returns (top_color, bottom_color) for a half-block screen pixel.
 /// Each cell shows TWO colors via ▀ (fg=top, bg=bottom), doubling visual detail.
-fn screen_pixel_colors(desk_x: u16, desk_y: u16, col: usize, occupied: bool, tick: u64) -> (Color, Color) {
+fn screen_pixel_colors(
+    desk_x: u16,
+    desk_y: u16,
+    col: usize,
+    occupied: bool,
+    tick: u64,
+) -> (Color, Color) {
     if !occupied {
         let off = sprites::DESK_SCREEN_OFF_COLOR;
         let dim = sprites::DESK_SCREEN_DIM_COLOR;
-        return if (desk_x as usize + col) % 2 == 0 { (off, dim) } else { (dim, off) };
+        return if (desk_x as usize + col) % 2 == 0 {
+            (off, dim)
+        } else {
+            (dim, off)
+        };
     }
     // Animate: shift colors every ~20 ticks, each desk at its own phase
     let phase = (tick / 20) as usize + desk_x as usize * 3 + desk_y as usize * 7;
@@ -72,17 +88,33 @@ fn floor_texture(floor: &Floor, gx: usize, gy: usize) -> (char, Color, Color) {
         let offset = if row_group % 2 == 0 { 0 } else { tile_w / 2 };
         let tile_idx = ((gx + offset) / tile_w + row_group) % 2;
         if tile_idx == 0 {
-            (' ', sprites::WORKSPACE_FLOOR_BG_EVEN, sprites::WORKSPACE_FLOOR_BG_EVEN)
+            (
+                ' ',
+                sprites::WORKSPACE_FLOOR_BG_EVEN,
+                sprites::WORKSPACE_FLOOR_BG_EVEN,
+            )
         } else {
-            (' ', sprites::WORKSPACE_FLOOR_BG_ALT, sprites::WORKSPACE_FLOOR_BG_ALT)
+            (
+                ' ',
+                sprites::WORKSPACE_FLOOR_BG_ALT,
+                sprites::WORKSPACE_FLOOR_BG_ALT,
+            )
         }
     } else if gx < lounge_w {
         ('▩', sprites::LOUNGE_FLOOR_FG, sprites::LOUNGE_FLOOR_BG_EVEN)
     } else {
         if gy % 2 == 0 {
-            (sprites::CEO_FLOOR_CHAR_EVEN, sprites::CEO_FLOOR_FG_EVEN, sprites::CEO_FLOOR_BG_EVEN)
+            (
+                sprites::CEO_FLOOR_CHAR_EVEN,
+                sprites::CEO_FLOOR_FG_EVEN,
+                sprites::CEO_FLOOR_BG_EVEN,
+            )
         } else {
-            (sprites::CEO_FLOOR_CHAR_ODD, sprites::CEO_FLOOR_BG_ODD, sprites::CEO_FLOOR_BG_ODD)
+            (
+                sprites::CEO_FLOOR_CHAR_ODD,
+                sprites::CEO_FLOOR_BG_ODD,
+                sprites::CEO_FLOOR_BG_ODD,
+            )
         }
     }
 }
@@ -102,11 +134,15 @@ impl<'a> Widget for FloorView<'a> {
         // Single pass: render grid cells with scroll offset
         for gy in scroll..grid_h {
             let sy = area.y + (gy - scroll) as u16;
-            if sy >= area.y + area.height { break; }
+            if sy >= area.y + area.height {
+                break;
+            }
 
             for gx in 0..grid_w {
                 let sx = area.x + gx as u16;
-                if sx >= area.x + area.width { continue; }
+                if sx >= area.x + area.width {
+                    continue;
+                }
 
                 let cell_type = floor.grid[gy][gx];
                 let bg = floor_bg(floor, gx, gy);
@@ -114,11 +150,14 @@ impl<'a> Widget for FloorView<'a> {
                 let (ch, fg, actual_bg) = match cell_type {
                     CellType::Wall => ('│', sprites::WALL_COLOR, Color::Reset),
                     CellType::Door => ('▒', sprites::DOOR_COLOR, Color::Reset),
-                    CellType::Desk | CellType::Monitor | CellType::CeoDesk | CellType::CeoMonitor => {
-                        floor_texture(floor, gx, gy)
-                    }
+                    CellType::Desk
+                    | CellType::Monitor
+                    | CellType::CeoDesk
+                    | CellType::CeoMonitor => floor_texture(floor, gx, gy),
                     CellType::PingPongTable => ('▒', sprites::PING_PONG_COLOR, bg),
-                    CellType::PingPongNet => ('│', sprites::PING_PONG_NET_COLOR, sprites::PING_PONG_COLOR),
+                    CellType::PingPongNet => {
+                        ('│', sprites::PING_PONG_NET_COLOR, sprites::PING_PONG_COLOR)
+                    }
                     CellType::Arcade => {
                         // Check if an idle agent is nearby (within 2 cells)
                         let in_use = self.state.agents.iter().any(|a| {
@@ -133,23 +172,43 @@ impl<'a> Widget for FloorView<'a> {
                             // Top row: animated screen when in use
                             let len = sprites::ARCADE_SCREEN_COLORS.len();
                             let phase = ((self.tick / 8) as usize + gx * 5) % len;
-                            ('█', sprites::ARCADE_SCREEN_COLORS[phase], sprites::ARCADE_CABINET_COLOR)
+                            (
+                                '█',
+                                sprites::ARCADE_SCREEN_COLORS[phase],
+                                sprites::ARCADE_CABINET_COLOR,
+                            )
                         } else {
                             // Off or bottom row: dark cabinet
-                            ('█', sprites::ARCADE_CABINET_COLOR, sprites::ARCADE_TRIM_COLOR)
+                            (
+                                '█',
+                                sprites::ARCADE_CABINET_COLOR,
+                                sprites::ARCADE_TRIM_COLOR,
+                            )
                         }
                     }
                     CellType::Bookshelf => {
                         let book_idx = (gx * 3 + gy * 5) % 4;
-                        ('▐', sprites::BOOKSHELF_BOOK_COLORS[book_idx], sprites::BOOKSHELF_COLOR)
+                        (
+                            '▐',
+                            sprites::BOOKSHELF_BOOK_COLORS[book_idx],
+                            sprites::BOOKSHELF_COLOR,
+                        )
                     }
                     CellType::Plant => ('♣', sprites::PLANT_COLOR, sprites::PLANT_POT_COLOR),
-                    CellType::TreeSmall => ('▲', sprites::TREE_SMALL_COLOR, sprites::TREE_SMALL_TRUNK),
-                    CellType::TreeLarge => ('♠', sprites::TREE_LARGE_COLOR, sprites::TREE_LARGE_TRUNK),
+                    CellType::TreeSmall => {
+                        ('▲', sprites::TREE_SMALL_COLOR, sprites::TREE_SMALL_TRUNK)
+                    }
+                    CellType::TreeLarge => {
+                        ('♠', sprites::TREE_LARGE_COLOR, sprites::TREE_LARGE_TRUNK)
+                    }
                     CellType::BulletinBoard => {
                         let pin1 = (gx * 3 + gy * 7) % 4;
                         let pin2 = (gx * 5 + gy * 11 + 1) % 4;
-                        ('▀', sprites::BULLETIN_PIN_COLORS[pin1], sprites::BULLETIN_PIN_COLORS[pin2])
+                        (
+                            '▀',
+                            sprites::BULLETIN_PIN_COLORS[pin1],
+                            sprites::BULLETIN_PIN_COLORS[pin2],
+                        )
                     }
                     CellType::Empty => floor_texture(floor, gx, gy),
                 };
@@ -215,10 +274,20 @@ impl<'a> FloorView<'a> {
         }
     }
 
-    fn render_label_at(&self, label: &str, lx: u16, sy: u16, fg: Color, area: Rect, buf: &mut Buffer) {
+    fn render_label_at(
+        &self,
+        label: &str,
+        lx: u16,
+        sy: u16,
+        fg: Color,
+        area: Rect,
+        buf: &mut Buffer,
+    ) {
         for (i, ch) in label.chars().enumerate() {
             let sx = lx + i as u16;
-            if sx >= area.x + area.width { break; }
+            if sx >= area.x + area.width {
+                break;
+            }
             if let Some(cell) = buf.cell_mut((sx, sy)) {
                 cell.set_char(ch);
                 cell.set_style(Style::default().fg(fg));
@@ -230,39 +299,71 @@ impl<'a> FloorView<'a> {
         let left_x = area.x;
         let right_x = area.x + floor.width - 1;
         let wall_style = Style::default().fg(sprites::WALL_COLOR).bg(Color::Reset);
-        let div_style = Style::default().fg(sprites::VERTICAL_DIVIDER_COLOR).bg(Color::Reset);
+        let div_style = Style::default()
+            .fg(sprites::VERTICAL_DIVIDER_COLOR)
+            .bg(Color::Reset);
         let lounge_w = floor.lounge.2;
 
         // Top border
         if let Some(sy) = self.grid_to_screen(0, &area) {
-            if let Some(c) = buf.cell_mut((left_x, sy)) { c.set_char('┌'); c.set_style(wall_style); }
-            if let Some(c) = buf.cell_mut((right_x, sy)) { c.set_char('┐'); c.set_style(wall_style); }
+            if let Some(c) = buf.cell_mut((left_x, sy)) {
+                c.set_char('┌');
+                c.set_style(wall_style);
+            }
+            if let Some(c) = buf.cell_mut((right_x, sy)) {
+                c.set_char('┐');
+                c.set_style(wall_style);
+            }
             for gx in 1..floor.width - 1 {
-                if let Some(c) = buf.cell_mut((area.x + gx, sy)) { c.set_char('─'); c.set_style(wall_style); }
+                if let Some(c) = buf.cell_mut((area.x + gx, sy)) {
+                    c.set_char('─');
+                    c.set_style(wall_style);
+                }
             }
         }
 
         // Bottom border
         if let Some(sy) = self.grid_to_screen(floor.height - 1, &area) {
-            if let Some(c) = buf.cell_mut((left_x, sy)) { c.set_char('└'); c.set_style(wall_style); }
-            if let Some(c) = buf.cell_mut((right_x, sy)) { c.set_char('┘'); c.set_style(wall_style); }
+            if let Some(c) = buf.cell_mut((left_x, sy)) {
+                c.set_char('└');
+                c.set_style(wall_style);
+            }
+            if let Some(c) = buf.cell_mut((right_x, sy)) {
+                c.set_char('┘');
+                c.set_style(wall_style);
+            }
             for gx in 1..floor.width - 1 {
-                if let Some(c) = buf.cell_mut((area.x + gx, sy)) { c.set_char('─'); c.set_style(wall_style); }
+                if let Some(c) = buf.cell_mut((area.x + gx, sy)) {
+                    c.set_char('─');
+                    c.set_style(wall_style);
+                }
             }
         }
 
         // Horizontal divider
         if let Some(sy) = self.grid_to_screen(floor.workspace.3, &area) {
-            if let Some(c) = buf.cell_mut((left_x, sy)) { c.set_char('├'); c.set_style(wall_style); }
-            if let Some(c) = buf.cell_mut((right_x, sy)) { c.set_char('┤'); c.set_style(wall_style); }
+            if let Some(c) = buf.cell_mut((left_x, sy)) {
+                c.set_char('├');
+                c.set_style(wall_style);
+            }
+            if let Some(c) = buf.cell_mut((right_x, sy)) {
+                c.set_char('┤');
+                c.set_style(wall_style);
+            }
             let div_jx = area.x + lounge_w;
             if div_jx < right_x {
-                if let Some(c) = buf.cell_mut((div_jx, sy)) { c.set_char('┬'); c.set_style(wall_style); }
+                if let Some(c) = buf.cell_mut((div_jx, sy)) {
+                    c.set_char('┬');
+                    c.set_style(wall_style);
+                }
             }
             for gx in 1..floor.width - 1 {
                 let cell_type = floor.grid[floor.workspace.3 as usize][gx as usize];
                 if cell_type == CellType::Wall {
-                    if let Some(c) = buf.cell_mut((area.x + gx, sy)) { c.set_char('─'); c.set_style(wall_style); }
+                    if let Some(c) = buf.cell_mut((area.x + gx, sy)) {
+                        c.set_char('─');
+                        c.set_style(wall_style);
+                    }
                 }
             }
         }
@@ -272,21 +373,29 @@ impl<'a> FloorView<'a> {
         for gy in (floor.workspace.3 + 1)..floor.height - 1 {
             if let Some(sy) = self.grid_to_screen(gy, &area) {
                 if lounge_wall_x < area.x + area.width {
-                    if let Some(c) = buf.cell_mut((lounge_wall_x, sy)) { c.set_char('│'); c.set_style(div_style); }
+                    if let Some(c) = buf.cell_mut((lounge_wall_x, sy)) {
+                        c.set_char('│');
+                        c.set_style(div_style);
+                    }
                 }
             }
         }
         if let Some(sy) = self.grid_to_screen(floor.height - 1, &area) {
-            if let Some(c) = buf.cell_mut((lounge_wall_x, sy)) { c.set_char('┴'); c.set_style(div_style); }
+            if let Some(c) = buf.cell_mut((lounge_wall_x, sy)) {
+                c.set_char('┴');
+                c.set_style(div_style);
+            }
         }
     }
 
     fn render_desks(&self, floor: &Floor, area: Rect, buf: &mut Buffer) {
         // Workspace desks
         for (desk_idx, desk) in floor.desks.iter().enumerate() {
-            let agent_seated = self.state.agents.iter().any(|a| {
-                a.assigned_desk == Some(desk_idx) && !a.is_animating()
-            });
+            let agent_seated = self
+                .state
+                .agents
+                .iter()
+                .any(|a| a.assigned_desk == Some(desk_idx) && !a.is_animating());
             self.render_single_desk(desk, agent_seated, area, buf);
         }
         // CEO desk (always on)
@@ -295,12 +404,34 @@ impl<'a> FloorView<'a> {
         }
     }
 
-    fn render_single_desk(&self, desk: &crate::game::floor::DeskSlot, screen_on: bool, area: Rect, buf: &mut Buffer) {
-        let (row0, row1, row2, screen_cols): (&[char], &[char], &[char], &[usize]) = match desk.variant {
-            DeskVariant::Single => (&sprites::DESK1_ROW0, &sprites::DESK1_ROW1, &sprites::DESK1_ROW2, sprites::DESK1_SCREEN_COLS),
-            DeskVariant::Dual   => (&sprites::DESK2_ROW0, &sprites::DESK2_ROW1, &sprites::DESK2_ROW2, sprites::DESK2_SCREEN_COLS),
-            DeskVariant::Triple => (&sprites::DESK3_ROW0, &sprites::DESK3_ROW1, &sprites::DESK3_ROW2, sprites::DESK3_SCREEN_COLS),
-        };
+    fn render_single_desk(
+        &self,
+        desk: &crate::game::floor::DeskSlot,
+        screen_on: bool,
+        area: Rect,
+        buf: &mut Buffer,
+    ) {
+        let (row0, row1, row2, screen_cols): (&[char], &[char], &[char], &[usize]) =
+            match desk.variant {
+                DeskVariant::Single => (
+                    &sprites::DESK1_ROW0,
+                    &sprites::DESK1_ROW1,
+                    &sprites::DESK1_ROW2,
+                    sprites::DESK1_SCREEN_COLS,
+                ),
+                DeskVariant::Dual => (
+                    &sprites::DESK2_ROW0,
+                    &sprites::DESK2_ROW1,
+                    &sprites::DESK2_ROW2,
+                    sprites::DESK2_SCREEN_COLS,
+                ),
+                DeskVariant::Triple => (
+                    &sprites::DESK3_ROW0,
+                    &sprites::DESK3_ROW1,
+                    &sprites::DESK3_ROW2,
+                    sprites::DESK3_SCREEN_COLS,
+                ),
+            };
 
         let rows: [(&[char], u16); 3] = [(row0, 0), (row1, 1), (row2, 2)];
         for &(row, row_off) in &rows {
@@ -308,10 +439,18 @@ impl<'a> FloorView<'a> {
             if let Some(sy) = self.grid_to_screen(gy, &area) {
                 for (col, &ch) in row.iter().enumerate() {
                     let sx = area.x + desk.desk_x + col as u16;
-                    if sx >= area.x + area.width { continue; }
+                    if sx >= area.x + area.width {
+                        continue;
+                    }
 
                     if row_off == 1 && screen_cols.contains(&col) {
-                        let (top, bottom) = screen_pixel_colors(desk.desk_x, desk.desk_y, col, screen_on, self.tick);
+                        let (top, bottom) = screen_pixel_colors(
+                            desk.desk_x,
+                            desk.desk_y,
+                            col,
+                            screen_on,
+                            self.tick,
+                        );
                         if let Some(cell) = buf.cell_mut((sx, sy)) {
                             cell.set_char('▀');
                             cell.set_style(Style::default().fg(top).bg(bottom));
@@ -319,7 +458,11 @@ impl<'a> FloorView<'a> {
                     } else {
                         if let Some(cell) = buf.cell_mut((sx, sy)) {
                             cell.set_char(ch);
-                            cell.set_style(Style::default().fg(sprites::DESK_FRAME_COLOR).bg(sprites::DESK_SURFACE_COLOR));
+                            cell.set_style(
+                                Style::default()
+                                    .fg(sprites::DESK_FRAME_COLOR)
+                                    .bg(sprites::DESK_SURFACE_COLOR),
+                            );
                         }
                     }
                 }
@@ -341,7 +484,9 @@ impl<'a> FloorView<'a> {
         // Row 0: ██  head (unique skin tone per agent)
         // Row 1: ██  body (agent color)
         let skin = agent.sprite_color.skin_color();
-        if ay < self.scroll_y { return; }
+        if ay < self.scroll_y {
+            return;
+        }
         let sy0 = area.y + ay - self.scroll_y;
         if sy0 < area.y + area.height {
             for col in 0..2u16 {
@@ -372,7 +517,9 @@ impl<'a> FloorView<'a> {
         let (cx, cy) = self.state.floor.ceo_chair;
 
         // 8-bit CEO
-        if cy < self.scroll_y { return; }
+        if cy < self.scroll_y {
+            return;
+        }
         let sy0 = area.y + cy - self.scroll_y;
         if sy0 < area.y + area.height {
             for col in 0..2u16 {
@@ -385,7 +532,9 @@ impl<'a> FloorView<'a> {
                 }
             }
         }
-        if cy + 1 < self.scroll_y { return; }
+        if cy + 1 < self.scroll_y {
+            return;
+        }
         let sy1 = area.y + cy + 1 - self.scroll_y;
         if sy1 < area.y + area.height {
             for col in 0..2u16 {

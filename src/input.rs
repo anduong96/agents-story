@@ -1,4 +1,6 @@
-use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, MouseEvent, MouseEventKind};
+use crossterm::event::{
+    Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers, MouseEvent, MouseEventKind,
+};
 
 use crate::app::{App, Focus};
 
@@ -35,7 +37,9 @@ fn handle_key(app: &mut App, key: KeyEvent) {
     // Focus-specific keys.
     match app.focus {
         Focus::AgentPanel => match key.code {
-            KeyCode::Char('j') | KeyCode::Down => app.agent_panel.select_next(app.state.agents.len()),
+            KeyCode::Char('j') | KeyCode::Down => {
+                app.agent_panel.select_next(app.state.agents.len())
+            }
             KeyCode::Char('k') | KeyCode::Up => app.agent_panel.select_prev(app.state.agents.len()),
             KeyCode::Enter => app.agent_panel.toggle_expand(),
             _ => {}

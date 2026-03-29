@@ -9,9 +9,17 @@ use crate::stream::protocol::{parse_line, StreamEvent};
 #[derive(Debug)]
 #[allow(dead_code)]
 pub enum ReaderMessage {
-    Event { session_id: String, event: StreamEvent },
-    SessionEnded { session_id: String },
-    ReaderError { session_id: String, error: String },
+    Event {
+        session_id: String,
+        event: StreamEvent,
+    },
+    SessionEnded {
+        session_id: String,
+    },
+    ReaderError {
+        session_id: String,
+        error: String,
+    },
 }
 
 #[allow(dead_code)]
@@ -35,10 +43,12 @@ impl SessionReader {
             let file = match File::open(&self.path).await {
                 Ok(f) => f,
                 Err(e) => {
-                    let _ = tx.send(ReaderMessage::ReaderError {
-                        session_id: self.session_id.clone(),
-                        error: e.to_string(),
-                    }).await;
+                    let _ = tx
+                        .send(ReaderMessage::ReaderError {
+                            session_id: self.session_id.clone(),
+                            error: e.to_string(),
+                        })
+                        .await;
                     return;
                 }
             };
@@ -50,24 +60,30 @@ impl SessionReader {
                 match lines.next_line().await {
                     Ok(Some(line)) => {
                         if let Some(event) = parse_line(&line) {
-                            let _ = tx.send(ReaderMessage::Event {
-                                session_id: self.session_id.clone(),
-                                event,
-                            }).await;
+                            let _ = tx
+                                .send(ReaderMessage::Event {
+                                    session_id: self.session_id.clone(),
+                                    event,
+                                })
+                                .await;
                         }
                     }
                     Ok(None) => {
                         // EOF
-                        let _ = tx.send(ReaderMessage::SessionEnded {
-                            session_id: self.session_id.clone(),
-                        }).await;
+                        let _ = tx
+                            .send(ReaderMessage::SessionEnded {
+                                session_id: self.session_id.clone(),
+                            })
+                            .await;
                         break;
                     }
                     Err(e) => {
-                        let _ = tx.send(ReaderMessage::ReaderError {
-                            session_id: self.session_id.clone(),
-                            error: e.to_string(),
-                        }).await;
+                        let _ = tx
+                            .send(ReaderMessage::ReaderError {
+                                session_id: self.session_id.clone(),
+                                error: e.to_string(),
+                            })
+                            .await;
                         break;
                     }
                 }

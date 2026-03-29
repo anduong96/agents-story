@@ -72,12 +72,7 @@ impl GameState {
         let active = self
             .agents
             .iter()
-            .filter(|a| {
-                matches!(
-                    a.status,
-                    AgentStatus::Working | AgentStatus::Spawning
-                )
-            })
+            .filter(|a| matches!(a.status, AgentStatus::Working | AgentStatus::Spawning))
             .count();
 
         let total_tokens: u64 = self.agents.iter().map(|a| a.tokens).sum();

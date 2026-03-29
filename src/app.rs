@@ -93,16 +93,16 @@ impl App {
         }
 
         // Snapshot all agent positions for collision checks
-        let positions: Vec<(f32, f32)> = self.state.agents.iter()
-            .map(|a| a.position)
-            .collect();
+        let positions: Vec<(f32, f32)> = self.state.agents.iter().map(|a| a.position).collect();
 
         // Check if a position collides with any other agent
         let check_collision = |pos: (f32, f32), skip: usize| -> bool {
             let cx = pos.0.round() as i32;
             let cy = pos.1.round() as i32;
             positions.iter().enumerate().any(|(j, &(ox, oy))| {
-                if j == skip { return false; }
+                if j == skip {
+                    return false;
+                }
                 let ocx = ox.round() as i32;
                 let ocy = oy.round() as i32;
                 (cx - ocx).abs() < 2 && (cy - ocy).abs() < 2
@@ -124,8 +124,14 @@ impl App {
                     let nudge = 2.0;
 
                     // Try perpendicular directions: (-dy, dx) and (dy, -dx)
-                    let try1 = (old_pos.0 - dy.signum() * nudge, old_pos.1 + dx.signum() * nudge);
-                    let try2 = (old_pos.0 + dy.signum() * nudge, old_pos.1 - dx.signum() * nudge);
+                    let try1 = (
+                        old_pos.0 - dy.signum() * nudge,
+                        old_pos.1 + dx.signum() * nudge,
+                    );
+                    let try2 = (
+                        old_pos.0 + dy.signum() * nudge,
+                        old_pos.1 - dx.signum() * nudge,
+                    );
 
                     if !check_collision(try1, i) {
                         agent.position = try1;
@@ -157,10 +163,17 @@ impl App {
         });
 
         // Remove desks that no agent references
-        let referenced_desks: std::collections::HashSet<usize> = self.state.agents.iter()
+        let referenced_desks: std::collections::HashSet<usize> = self
+            .state
+            .agents
+            .iter()
             .filter_map(|a| a.assigned_desk)
             .collect();
-        let occupied_indices: Vec<usize> = self.state.floor.desks.iter()
+        let occupied_indices: Vec<usize> = self
+            .state
+            .floor
+            .desks
+            .iter()
             .enumerate()
             .filter(|(i, _)| referenced_desks.contains(i))
             .map(|(i, _)| i)
@@ -174,7 +187,8 @@ impl App {
             }
 
             // Keep only occupied desks
-            let new_desks: Vec<_> = occupied_indices.iter()
+            let new_desks: Vec<_> = occupied_indices
+                .iter()
                 .map(|&i| self.state.floor.desks[i].clone())
                 .collect();
 
@@ -185,7 +199,9 @@ impl App {
                     for c in 0..w {
                         let gy = (desk.desk_y + r) as usize;
                         let gx = (desk.desk_x + c) as usize;
-                        if gy < self.state.floor.height as usize && gx < self.state.floor.width as usize {
+                        if gy < self.state.floor.height as usize
+                            && gx < self.state.floor.width as usize
+                        {
                             self.state.floor.grid[gy][gx] = crate::game::floor::CellType::Empty;
                         }
                     }
@@ -201,7 +217,9 @@ impl App {
                     for c in 0..w {
                         let gy = (desk.desk_y + r) as usize;
                         let gx = (desk.desk_x + c) as usize;
-                        if gy < self.state.floor.height as usize && gx < self.state.floor.width as usize {
+                        if gy < self.state.floor.height as usize
+                            && gx < self.state.floor.width as usize
+                        {
                             self.state.floor.grid[gy][gx] = crate::game::floor::CellType::Desk;
                         }
                     }
@@ -224,7 +242,10 @@ impl App {
         let lounge = self.state.floor.lounge;
         let ping_pong = self.state.floor.ping_pong;
         for agent in &mut self.state.agents {
-            if agent.status == AgentStatus::Idle && agent.target_room == Room::Lounge && agent.path.is_empty() {
+            if agent.status == AgentStatus::Idle
+                && agent.target_room == Room::Lounge
+                && agent.path.is_empty()
+            {
                 // Occasionally pick a new wander target near furniture
                 if self.tick_count % 90 == (agent.sprite_color.0 as u64 * 13) % 90 {
                     let targets = [
@@ -240,7 +261,8 @@ impl App {
                         (5, lounge.1 + lounge.3 - 5),
                         (9, lounge.1 + lounge.3 - 5),
                     ];
-                    let pick = (self.tick_count / 90 + agent.sprite_color.0 as u64) as usize % targets.len();
+                    let pick = (self.tick_count / 90 + agent.sprite_color.0 as u64) as usize
+                        % targets.len();
                     let (tx, ty) = targets[pick];
                     agent.path = vec![(tx, ty)];
                 }
@@ -258,7 +280,10 @@ fn get_rss_mb() -> f64 {
     {
         use std::process::Command;
         let pid = std::process::id();
-        if let Ok(output) = Command::new("ps").args(["-o", "rss=", "-p", &pid.to_string()]).output() {
+        if let Ok(output) = Command::new("ps")
+            .args(["-o", "rss=", "-p", &pid.to_string()])
+            .output()
+        {
             if let Ok(s) = String::from_utf8(output.stdout) {
                 if let Ok(kb) = s.trim().parse::<f64>() {
                     return kb / 1024.0;

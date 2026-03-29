@@ -48,6 +48,8 @@ cargo run -- --demo --extreme    # 10x speed
 
 - **Always clean up dead code** — run `cargo build` and fix all warnings before committing. No unused constants, functions, variables, or imports.
 - **Run `cargo test`** before committing to ensure nothing is broken.
+- **Run `cargo fmt`** and **`cargo clippy -- -D warnings`** before committing.
+- **Always check CI after push** — if CI fails, fix it immediately before moving on.
 
 ## Testing
 
