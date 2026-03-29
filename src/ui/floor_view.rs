@@ -351,7 +351,9 @@ impl<'a> FloorView<'a> {
             });
 
             let (row0, row1, row2, screen_cols): (&[char], &[char], &[char], &[usize]) = match desk.variant {
-                DeskVariant::Dual => (&sprites::DESK2_ROW0, &sprites::DESK2_ROW1, &sprites::DESK2_ROW2, sprites::DESK2_SCREEN_COLS),
+                DeskVariant::Single => (&sprites::DESK1_ROW0, &sprites::DESK1_ROW1, &sprites::DESK1_ROW2, sprites::DESK1_SCREEN_COLS),
+                DeskVariant::Dual   => (&sprites::DESK2_ROW0, &sprites::DESK2_ROW1, &sprites::DESK2_ROW2, sprites::DESK2_SCREEN_COLS),
+                DeskVariant::Triple => (&sprites::DESK3_ROW0, &sprites::DESK3_ROW1, &sprites::DESK3_ROW2, sprites::DESK3_SCREEN_COLS),
             };
 
             let rows: [(&[char], u16); 3] = [(row0, 0), (row1, 1), (row2, 2)];

@@ -58,11 +58,23 @@ pub const DESK_SCREEN_OFF_COLOR: Color = Color::Rgb(35, 40, 50);  // dark blue-g
 
 // Desk variants — clean boxes, no stand/line
 // 1 monitor (4w × 3h):
-// Desk sprite (7w × 3h):
+// 1 monitor (4w × 3h):
+pub const DESK1_ROW0: [char; 4] = ['┌', '─', '─', '┐'];
+pub const DESK1_ROW1: [char; 4] = ['│', '▓', '▓', '│'];
+pub const DESK1_ROW2: [char; 4] = ['└', '─', '─', '┘'];
+pub const DESK1_SCREEN_COLS: &[usize] = &[1, 2];
+
+// 2 monitors (7w × 3h):
 pub const DESK2_ROW0: [char; 7] = ['┌', '─', '─', '─', '─', '─', '┐'];
 pub const DESK2_ROW1: [char; 7] = ['│', '▓', '▓', '▓', '▓', '▓', '│'];
 pub const DESK2_ROW2: [char; 7] = ['└', '─', '─', '─', '─', '─', '┘'];
 pub const DESK2_SCREEN_COLS: &[usize] = &[1, 2, 3, 4, 5];
+
+// 3 monitors (10w × 3h):
+pub const DESK3_ROW0: [char; 10] = ['┌', '─', '─', '─', '─', '─', '─', '─', '─', '┐'];
+pub const DESK3_ROW1: [char; 10] = ['│', '▓', '▓', '▓', '▓', '▓', '▓', '▓', '▓', '│'];
+pub const DESK3_ROW2: [char; 10] = ['└', '─', '─', '─', '─', '─', '─', '─', '─', '┘'];
+pub const DESK3_SCREEN_COLS: &[usize] = &[1, 2, 3, 4, 5, 6, 7, 8];
 
 // Workspace floor — two-shade brick pattern
 pub const WORKSPACE_FLOOR_BG_EVEN: Color = Color::Rgb(150, 115, 70);  // lighter brick

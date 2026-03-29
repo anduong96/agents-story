@@ -22,18 +22,32 @@ pub enum CellType {
 
 pub const MIN_DESKS: usize = 0;
 pub const DESK_HEIGHT: u16 = 3;
-pub const DESK_SPACING_X: u16 = 9;
+pub const DESK_SPACING_X: u16 = 12;  // accommodate widest (3 monitors = 10)
 pub const DESK_SPACING_Y: u16 = 5;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DeskVariant {
-    Dual,
+    Single,  // 1 monitor, 4 wide
+    Dual,    // 2 monitors, 7 wide
+    Triple,  // 3 monitors, 10 wide
 }
 
 impl DeskVariant {
     pub fn width(self) -> u16 {
         match self {
+            DeskVariant::Single => 4,
             DeskVariant::Dual => 7,
+            DeskVariant::Triple => 10,
+        }
+    }
+
+    /// Pick variant from agent name (deterministic)
+    pub fn from_name(name: &str) -> Self {
+        let hash: u32 = name.bytes().fold(0u32, |acc, b| acc.wrapping_mul(31).wrapping_add(b as u32));
+        match hash % 3 {
+            0 => DeskVariant::Single,
+            1 => DeskVariant::Dual,
+            _ => DeskVariant::Triple,
         }
     }
 }
@@ -296,7 +310,7 @@ impl Floor {
         }
     }
 
-    pub fn assign_desk(&mut self) -> Option<usize> {
+    pub fn assign_desk(&mut self, agent_name: &str) -> Option<usize> {
         for (i, desk) in self.desks.iter_mut().enumerate() {
             if !desk.occupied {
                 desk.occupied = true;
@@ -304,8 +318,9 @@ impl Floor {
             }
         }
         // All occupied — add one desk and relayout the grid evenly
+        let variant = DeskVariant::from_name(agent_name);
         let new_count = self.desks.len() + 1;
-        self.relayout_desks(new_count);
+        self.relayout_desks(new_count, Some(variant));
         let idx = self.desks.len() - 1;
         self.desks[idx].occupied = true;
         Some(idx)
@@ -320,13 +335,14 @@ impl Floor {
 
     pub fn ensure_minimum_desks(&mut self) {
         if self.desks.len() < MIN_DESKS {
-            self.relayout_desks(MIN_DESKS);
+            self.relayout_desks(MIN_DESKS, None);
         }
     }
 
     /// Clear all desk cells from the grid, then re-place `count` desks
     /// in an evenly distributed centered grid using ceil(sqrt(n)) columns.
-    fn relayout_desks(&mut self, count: usize) {
+    /// If `new_variant` is Some, the last (new) desk uses that variant.
+    fn relayout_desks(&mut self, count: usize, new_variant: Option<DeskVariant>) {
         // Clear old desk cells from grid
         for desk in &self.desks {
             let w = desk.variant.width();
@@ -341,10 +357,10 @@ impl Floor {
             }
         }
 
-        // Preserve occupied state and agent_color for existing desks
-        let old_states: Vec<(bool, Option<SpriteColor>)> = self.desks
+        // Preserve existing desk state
+        let old_desks: Vec<(bool, Option<SpriteColor>, DeskVariant)> = self.desks
             .iter()
-            .map(|d| (d.occupied, d.agent_color))
+            .map(|d| (d.occupied, d.agent_color, d.variant))
             .collect();
 
         // Calculate grid dimensions: ceil(sqrt(n)) columns
@@ -368,10 +384,16 @@ impl Floor {
 
         // Place desks
         self.desks.clear();
-        let variant = DeskVariant::Dual;
-        let w = variant.width();
 
         for i in 0..count {
+            // Reuse old variant, or use new_variant for the last desk, or default to Dual
+            let variant = if let Some(&(_, _, v)) = old_desks.get(i) {
+                v
+            } else {
+                new_variant.unwrap_or(DeskVariant::Dual)
+            };
+            let w = variant.width();
+
             let col = i as u16 % cols;
             let row = i as u16 / cols;
             let dx = start_x + col * DESK_SPACING_X;
@@ -388,8 +410,9 @@ impl Floor {
                 }
             }
 
-            // Restore state from old desk at this index if it existed
-            let (occupied, agent_color) = old_states.get(i).copied().unwrap_or((false, None));
+            let (occupied, agent_color) = old_desks.get(i)
+                .map(|&(o, ac, _)| (o, ac))
+                .unwrap_or((false, None));
 
             self.desks.push(DeskSlot {
                 desk_x: dx,
@@ -529,8 +552,8 @@ mod tests {
     #[test]
     fn test_desk_assignment() {
         let mut floor = Floor::generate(80, 30);
-        let first = floor.assign_desk();
-        let second = floor.assign_desk();
+        let first = floor.assign_desk("test");
+        let second = floor.assign_desk("test");
         assert_eq!(first, Some(0));
         assert_eq!(second, Some(1));
     }
@@ -538,10 +561,10 @@ mod tests {
     #[test]
     fn test_desk_free_and_reassign() {
         let mut floor = Floor::generate(80, 30);
-        let first = floor.assign_desk();
+        let first = floor.assign_desk("test");
         assert_eq!(first, Some(0));
         floor.free_desk(0);
-        let reassigned = floor.assign_desk();
+        let reassigned = floor.assign_desk("test");
         assert_eq!(reassigned, Some(0));
     }
 
