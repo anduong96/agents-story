@@ -109,6 +109,12 @@ impl Floor {
             grid[y][width as usize - 1] = CellType::Wall;
         }
 
+        // Exit door at top wall of workspace (centered)
+        let exit_door_x = width / 2 - 2;
+        for i in 0..4u16 {
+            grid[0][(exit_door_x + i) as usize] = CellType::Door;
+        }
+
         // Horizontal divider at workspace_h
         #[allow(clippy::needless_range_loop)]
         for x in 0..width as usize {
@@ -312,7 +318,8 @@ impl Floor {
                 grid[exit_y as usize][ex] = CellType::Door;
             }
         }
-        let exit_pos = (exit_x, exit_y);
+        // Use top workspace door as exit for temp agents
+        let exit_pos = (exit_door_x + 2, 0);
 
         let workspace = (0, 0, width, workspace_h);
         let lounge = (0, workspace_h, lounge_w, bottom_h);

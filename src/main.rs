@@ -434,22 +434,21 @@ fn handle_stream_event(app: &mut App, session_id: &str, event: StreamEvent) {
                 // Staff returns to lounge as idle
                 transition_agent(app, &agent_id, AgentStatus::Idle);
             } else {
-                // Temp leaves via exit door
-                transition_agent(app, &agent_id, AgentStatus::Finished);
-                // Override path to exit door instead of lounge center
+                // Temp leaves via top exit door in workspace
                 let exit = app.state.floor.exit_pos;
-                if let Some(agent) = app.state.agents.iter_mut().find(|a| a.id == agent_id) {
-                    let from_x = agent.position.0 as u16;
-                    let from_y = agent.position.1 as u16;
-                    agent.path = compute_path(
-                        from_x,
-                        from_y,
-                        Room::Workspace,
-                        Room::Lounge,
-                        exit.0,
-                        exit.1,
-                        &app.state.floor,
-                    );
+                let idx = app.state.agents.iter().position(|a| a.id == agent_id);
+                if let Some(i) = idx {
+                    let agent = &mut app.state.agents[i];
+                    agent.status = AgentStatus::Finished;
+                    agent.target_room = Room::Workspace;
+                    // Walk straight to exit (same room, no door needed)
+                    agent.path = vec![(exit.0, exit.1)];
+                    // Free desk
+                    if let Some(desk_idx) = agent.assigned_desk.take() {
+                        app.state.floor.free_desk(desk_idx);
+                    }
+                    app.bubbles
+                        .trigger_status_change(&agent_id, BubbleAgentStatus::Finished);
                 }
             }
 
