@@ -103,6 +103,7 @@ pub struct Agent {
     pub assigned_desk: Option<usize>,
     pub sprite_color: SpriteColor,
     pub facing: Direction,
+    pub is_permanent: bool,
 }
 
 impl Agent {
@@ -130,6 +131,7 @@ impl Agent {
             assigned_desk: None,
             sprite_color: SpriteColor::from_index(color_index),
             facing: Direction::Right,
+            is_permanent: false,
         }
     }
 

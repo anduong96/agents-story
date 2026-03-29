@@ -88,6 +88,9 @@ async fn run(
     let floor_h = floor_h.max(DEFAULT_FLOOR_HEIGHT);
     let mut app = App::new(floor_w, floor_h);
 
+    // Create 6 permanent staff agents, idle in the lounge
+    create_staff_agents(&mut app);
+
     let (tx, mut rx) = mpsc::channel::<ReaderMessage>(256);
 
     // Spawn demo producer if --demo flag was set.
@@ -269,59 +272,83 @@ fn handle_stream_event(app: &mut App, session_id: &str, event: StreamEvent) {
             name,
             description,
         } => {
-            let color_index = app.state.next_color_index;
-            app.state.next_color_index += 1;
-
-            let session = SessionInfo {
-                session_id: session_id.to_string(),
-                repo: "agents-story".to_string(),
-                branch: "main".to_string(),
-                worktree: None,
-            };
-
-            let mut agent = Agent::new(
-                agent_id.clone(),
-                name,
-                app.state.stats.model.clone(),
-                session,
-                color_index,
-            );
-            agent.task = Some(description);
-
-            // Assign a desk and compute the path from the nearest door to the desk.
-            if let Some(desk_idx) = app.state.floor.assign_desk(&agent.name) {
-                agent.assigned_desk = Some(desk_idx);
-                app.state.floor.desks[desk_idx].agent_color = Some(agent.sprite_color);
-                let desk = &app.state.floor.desks[desk_idx];
-                let target_x = desk.chair_x;
-                let target_y = desk.chair_y;
-
-                // Spawn at the first workspace-lounge door.
-                let spawn_door = app.state.floor.doors.first();
-                let (start_x, start_y) = spawn_door
-                    .map(|d| (d.x, d.y.saturating_sub(1)))
-                    .unwrap_or((1, 1));
-
-                agent.position = (start_x as f32, start_y as f32);
-                agent.path = compute_path(
-                    start_x,
-                    start_y,
-                    Room::Workspace,
-                    Room::Workspace,
-                    target_x,
-                    target_y,
-                    &app.state.floor,
-                );
-            }
-
-            agent.status = AgentStatus::Working;
             app.state.stats.total_tasks += 1;
 
-            // Trigger bubble
-            app.bubbles
-                .trigger_status_change(&agent_id, BubbleAgentStatus::Spawning);
+            // Try to assign an idle staff agent first
+            let idle_idx = app.state.agents.iter().position(|a| a.status == AgentStatus::Idle);
 
-            app.state.agents.push(agent);
+            if let Some(idx) = idle_idx {
+                // Reuse idle staff agent
+                let agent = &mut app.state.agents[idx];
+                agent.id = agent_id.clone();
+                agent.task = Some(description);
+                agent.session.session_id = session_id.to_string();
+                agent.status = AgentStatus::Working;
+                agent.current_tool = None;
+                agent.tokens = 0;
+                agent.cost = 0.0;
+                agent.started_at = std::time::Instant::now();
+
+                // Assign desk and path from current position to desk
+                let agent_name = agent.name.clone();
+                let sprite_color = agent.sprite_color;
+                let from_x = agent.position.0 as u16;
+                let from_y = agent.position.1 as u16;
+
+                if let Some(desk_idx) = app.state.floor.assign_desk(&agent_name) {
+                    app.state.agents[idx].assigned_desk = Some(desk_idx);
+                    app.state.floor.desks[desk_idx].agent_color = Some(sprite_color);
+                    let desk = &app.state.floor.desks[desk_idx];
+                    let target_x = desk.chair_x;
+                    let target_y = desk.chair_y;
+                    let path = compute_path(from_x, from_y, Room::Lounge, Room::Workspace, target_x, target_y, &app.state.floor);
+                    app.state.agents[idx].path = path;
+                    app.state.agents[idx].target_room = Room::Workspace;
+                }
+
+                app.bubbles.trigger_status_change(&agent_id, BubbleAgentStatus::Working);
+            } else {
+                // Hire a new temp agent
+                let color_index = app.state.next_color_index;
+                app.state.next_color_index += 1;
+
+                let session = SessionInfo {
+                    session_id: session_id.to_string(),
+                    repo: "agents-story".to_string(),
+                    branch: "main".to_string(),
+                    worktree: None,
+                };
+
+                let mut agent = Agent::new(
+                    agent_id.clone(),
+                    name,
+                    app.state.stats.model.clone(),
+                    session,
+                    color_index,
+                );
+                agent.task = Some(description);
+                agent.is_permanent = false;
+
+                if let Some(desk_idx) = app.state.floor.assign_desk(&agent.name) {
+                    agent.assigned_desk = Some(desk_idx);
+                    app.state.floor.desks[desk_idx].agent_color = Some(agent.sprite_color);
+                    let desk = &app.state.floor.desks[desk_idx];
+                    let target_x = desk.chair_x;
+                    let target_y = desk.chair_y;
+
+                    let spawn_door = app.state.floor.doors.first();
+                    let (start_x, start_y) = spawn_door
+                        .map(|d| (d.x, d.y.saturating_sub(1)))
+                        .unwrap_or((1, 1));
+
+                    agent.position = (start_x as f32, start_y as f32);
+                    agent.path = compute_path(start_x, start_y, Room::Workspace, Room::Workspace, target_x, target_y, &app.state.floor);
+                }
+
+                agent.status = AgentStatus::Working;
+                app.bubbles.trigger_status_change(&agent_id, BubbleAgentStatus::Spawning);
+                app.state.agents.push(agent);
+            }
         }
 
         StreamEvent::ToolUse { tool, args_hint } => {
@@ -344,16 +371,29 @@ fn handle_stream_event(app: &mut App, session_id: &str, event: StreamEvent) {
         }
 
         StreamEvent::AgentResult { agent_id } => {
-            transition_agent(app, &agent_id, AgentStatus::Finished);
             app.state.stats.completed_tasks += 1;
 
-            // Check if all agents are now finished.
-            let all_done = app
-                .state
-                .agents
-                .iter()
-                .all(|a| matches!(a.status, AgentStatus::Finished | AgentStatus::Error));
-            if all_done && !app.state.agents.is_empty() {
+            // Check if agent is permanent staff or temp
+            let is_permanent = app.state.agents.iter()
+                .find(|a| a.id == agent_id)
+                .map(|a| a.is_permanent)
+                .unwrap_or(false);
+
+            if is_permanent {
+                // Staff returns to lounge as idle
+                transition_agent(app, &agent_id, AgentStatus::Idle);
+            } else {
+                // Temp leaves — transition to Finished, then remove when done animating
+                transition_agent(app, &agent_id, AgentStatus::Finished);
+            }
+
+            // Check if all working agents are done
+            let all_done = app.state.agents.iter()
+                .filter(|a| !a.is_permanent)
+                .all(|a| matches!(a.status, AgentStatus::Finished | AgentStatus::Error | AgentStatus::Idle));
+            let any_working = app.state.agents.iter()
+                .any(|a| matches!(a.status, AgentStatus::Working | AgentStatus::Spawning));
+            if all_done && !any_working && app.state.stats.total_tasks > 0 {
                 app.state.ceo_status = game::state::CeoStatus::AllComplete;
             }
         }
@@ -445,6 +485,44 @@ fn to_bubble_status(status: &AgentStatus) -> BubbleAgentStatus {
         AgentStatus::Finished => BubbleAgentStatus::Finished,
         AgentStatus::Error => BubbleAgentStatus::Error,
     }
+}
+
+const STAFF_NAMES: [&str; 6] = ["Alice", "Bob", "Carol", "Dave", "Eve", "Frank"];
+
+/// Create 6 permanent staff agents, idle in the lounge.
+fn create_staff_agents(app: &mut App) {
+    let floor = &app.state.floor;
+    let lounge_center = floor.room_center(Room::Lounge);
+
+    for (i, name) in STAFF_NAMES.iter().enumerate() {
+        let session = SessionInfo {
+            session_id: "staff".to_string(),
+            repo: String::new(),
+            branch: String::new(),
+            worktree: None,
+        };
+
+        let mut agent = Agent::new(
+            format!("staff-{}", i),
+            name.to_string(),
+            String::new(),
+            session,
+            i,
+        );
+        agent.is_permanent = true;
+        agent.status = AgentStatus::Idle;
+        agent.target_room = Room::Lounge;
+
+        // Scatter around lounge center
+        let offset_x = (i as i16 % 3 - 1) * 4;
+        let offset_y = (i as i16 / 3) * 3;
+        let px = (lounge_center.0 as i16 + offset_x).max(2) as f32;
+        let py = (lounge_center.1 as i16 + offset_y).max(2) as f32;
+        agent.position = (px, py);
+
+        app.state.agents.push(agent);
+    }
+    app.state.next_color_index = STAFF_NAMES.len();
 }
 
 /// Shorten model names: strip "claude-" prefix and trailing date suffixes like "-20260301".
