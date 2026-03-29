@@ -46,6 +46,7 @@ const MAX_HEIGHT: u16 = 50;
 #[tokio::main]
 async fn main() -> io::Result<()> {
     let demo_mode = std::env::args().any(|a| a == "--demo");
+    let speed = if std::env::args().any(|a| a == "--fast") { 5.0 } else { 1.0 };
 
     // Terminal setup
     enable_raw_mode()?;
@@ -55,7 +56,7 @@ async fn main() -> io::Result<()> {
     let mut terminal = Terminal::new(backend)?;
 
     // Run the app
-    let res = run(demo_mode, &mut terminal).await;
+    let res = run(demo_mode, speed, &mut terminal).await;
 
     // Terminal teardown
     disable_raw_mode()?;
@@ -79,6 +80,7 @@ async fn main() -> io::Result<()> {
 
 async fn run(
     demo_mode: bool,
+    speed: f32,
     terminal: &mut Terminal<CrosstermBackend<io::Stdout>>,
 ) -> io::Result<()> {
     // Get initial terminal size for floor dimensions
@@ -120,7 +122,7 @@ async fn run(
         let now = Instant::now();
         let delta = now.duration_since(last_tick);
         last_tick = now;
-        app.tick(delta.as_secs_f32());
+        app.tick(delta.as_secs_f32() * speed);
     }
 
     Ok(())
