@@ -246,12 +246,12 @@ impl Floor {
             desk_x: ceo_desk_x,
             desk_y: ceo_desk_y,
             chair_x: ceo_desk_x + (ceo_desk_w - 2) / 2,
-            chair_y: ceo_desk_y + DESK_HEIGHT,
+            chair_y: ceo_desk_y + DESK_HEIGHT - 1,
             occupied: true,  // CEO always at desk
             agent_color: None,
             variant: DeskVariant::Single,
         });
-        let ceo_chair = (ceo_desk_x + (ceo_desk_w - 2) / 2, ceo_desk_y + DESK_HEIGHT);
+        let ceo_chair = (ceo_desk_x + (ceo_desk_w - 2) / 2, ceo_desk_y + DESK_HEIGHT - 1);
 
         // Bulletin board: 4×2, on the right wall of CEO office
         let bb_x = lounge_w + ceo_w - 6;
@@ -433,7 +433,7 @@ impl Floor {
                 desk_x: dx,
                 desk_y: dy,
                 chair_x: dx + (w - 2) / 2,  // center 2-wide agent in 10-wide desk
-                chair_y: dy + DESK_HEIGHT,   // head just below desk bottom
+                chair_y: dy + DESK_HEIGHT - 1, // head overlaps desk bottom row
                 occupied,
                 agent_color,
                 variant,
@@ -529,9 +529,9 @@ mod tests {
         let mut floor = Floor::generate(80, 30);
         let idx = floor.assign_desk("test").unwrap();
         let desk = &floor.desks[idx];
-        // Chair Y should be exactly DESK_HEIGHT below desk top
-        assert_eq!(desk.chair_y, desk.desk_y + DESK_HEIGHT,
-            "Agent head (chair_y={}) should be at desk_y({}) + DESK_HEIGHT({})",
+        // Chair Y: head overlaps desk bottom row
+        assert_eq!(desk.chair_y, desk.desk_y + DESK_HEIGHT - 1,
+            "Agent head (chair_y={}) should be at desk_y({}) + DESK_HEIGHT({}) - 1",
             desk.chair_y, desk.desk_y, DESK_HEIGHT);
     }
 
@@ -581,9 +581,9 @@ mod tests {
         // Every desk (except CEO at index 0) should have consistent positioning
         for desk in &floor.desks {
             let w = desk.variant.width();
-            assert_eq!(desk.chair_y, desk.desk_y + DESK_HEIGHT,
+            assert_eq!(desk.chair_y, desk.desk_y + DESK_HEIGHT - 1,
                 "Desk at ({},{}) has chair_y={}, expected {}",
-                desk.desk_x, desk.desk_y, desk.chair_y, desk.desk_y + DESK_HEIGHT);
+                desk.desk_x, desk.desk_y, desk.chair_y, desk.desk_y + DESK_HEIGHT - 1);
             assert_eq!(desk.chair_x, desk.desk_x + (w - 2) / 2,
                 "Desk at ({},{}) has chair_x={}, expected {}",
                 desk.desk_x, desk.desk_y, desk.chair_x, desk.desk_x + (w - 2) / 2);
