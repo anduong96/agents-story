@@ -19,7 +19,9 @@ pub enum CellType {
     CoffeeTable,
     VendingMachine,
     BulletinBoard,
-    Plant,
+    Plant,      // small potted plant ♣
+    TreeSmall,  // small tree ▲
+    TreeLarge,  // large tree ♠
     Bookshelf,
 }
 
@@ -273,24 +275,30 @@ impl Floor {
             }
         }
 
-        // Plants/trees in every room corners
-        let plant_positions = [
-            // Workspace corners
-            (2u16, 1u16),
-            (width - 3, 1),
-            (2, workspace_h - 2),
-            (width - 3, workspace_h - 2),
-            // Lounge corners
-            (2, workspace_h + 2),
-            (lounge_w - 3, workspace_h + bottom_h - 2),
-            // CEO office corners
-            (lounge_w + 2, workspace_h + 2),
-            (width - 3, workspace_h + bottom_h - 2),
+        // Plants and trees — (x, y, type)
+        let decorations: Vec<(u16, u16, CellType)> = vec![
+            // Workspace — potted plants in corners, small trees along walls
+            (2, 1, CellType::Plant),
+            (width - 3, 1, CellType::TreeSmall),
+            (2, workspace_h - 2, CellType::TreeSmall),
+            (width - 3, workspace_h - 2, CellType::Plant),
+            (width / 3, 1, CellType::TreeLarge),
+            (width * 2 / 3, 1, CellType::TreeLarge),
+            // Lounge — mix of trees and plants
+            (2, workspace_h + 2, CellType::TreeLarge),
+            (lounge_w - 3, workspace_h + 2, CellType::TreeSmall),
+            (2, workspace_h + bottom_h - 2, CellType::Plant),
+            (lounge_w - 3, workspace_h + bottom_h - 2, CellType::TreeLarge),
+            (lounge_w / 3, workspace_h + bottom_h - 2, CellType::Plant),
+            // CEO office — elegant plants
+            (lounge_w + 2, workspace_h + 2, CellType::TreeSmall),
+            (width - 3, workspace_h + 2, CellType::Plant),
+            (width - 3, workspace_h + bottom_h - 2, CellType::TreeSmall),
         ];
-        for (px, py) in plant_positions {
+        for (px, py, cell) in decorations {
             if (py as usize) < height as usize && (px as usize) < width as usize {
                 if grid[py as usize][px as usize] == CellType::Empty {
-                    grid[py as usize][px as usize] = CellType::Plant;
+                    grid[py as usize][px as usize] = cell;
                 }
             }
         }

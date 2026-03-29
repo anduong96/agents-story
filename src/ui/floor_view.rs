@@ -125,6 +125,8 @@ impl<'a> Widget for FloorView<'a> {
                         ('▐', sprites::BOOKSHELF_BOOK_COLORS[book_idx], sprites::BOOKSHELF_COLOR)
                     }
                     CellType::Plant => ('♣', sprites::PLANT_COLOR, sprites::PLANT_POT_COLOR),
+                    CellType::TreeSmall => ('▲', sprites::TREE_SMALL_COLOR, sprites::TREE_SMALL_TRUNK),
+                    CellType::TreeLarge => ('♠', sprites::TREE_LARGE_COLOR, sprites::TREE_LARGE_TRUNK),
                     CellType::Couch => ('▀', sprites::COUCH_COLOR, sprites::COUCH_FRAME_COLOR),
                     CellType::CoffeeTable => ('▬', sprites::COFFEE_TABLE_COLOR, bg),
                     CellType::VendingMachine => ('▀', sprites::VENDING_MACHINE_COLOR, sprites::VENDING_LIGHT_COLOR),

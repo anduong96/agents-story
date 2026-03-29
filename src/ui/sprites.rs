@@ -48,6 +48,10 @@ pub const BOOKSHELF_BOOK_COLORS: [Color; 4] = [
 
 pub const PLANT_COLOR: Color = Color::Rgb(60, 180, 60);
 pub const PLANT_POT_COLOR: Color = Color::Rgb(160, 100, 50);
+pub const TREE_SMALL_COLOR: Color = Color::Rgb(40, 160, 50);
+pub const TREE_SMALL_TRUNK: Color = Color::Rgb(140, 90, 40);
+pub const TREE_LARGE_COLOR: Color = Color::Rgb(30, 140, 40);
+pub const TREE_LARGE_TRUNK: Color = Color::Rgb(120, 75, 35);
 
 
 // Lounge TV
