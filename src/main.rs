@@ -46,7 +46,7 @@ const MAX_HEIGHT: u16 = 50;
 #[tokio::main]
 async fn main() -> io::Result<()> {
     let demo_mode = std::env::args().any(|a| a == "--demo");
-    let speed = if std::env::args().any(|a| a == "--fast") { 5.0 } else { 1.0 };
+    let speed = if std::env::args().any(|a| a == "--fast") { 5.0 } else { 2.0 };
 
     // Terminal setup
     enable_raw_mode()?;
