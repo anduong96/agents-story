@@ -149,23 +149,73 @@ impl App {
             }
         }
 
-        // Remove finished temp agents and free their desks
-        let agents_to_remove: Vec<Option<usize>> = self.state.agents.iter()
-            .filter(|a| {
-                matches!(a.status, AgentStatus::Finished | AgentStatus::Error)
-                    && !a.is_permanent
-                    && !a.is_animating()
-            })
-            .map(|a| a.assigned_desk)
-            .collect();
-        for desk_idx in agents_to_remove.iter().flatten() {
-            self.state.floor.free_desk(*desk_idx);
-        }
+        // Remove finished temp agents
         self.state.agents.retain(|a| {
             !(matches!(a.status, AgentStatus::Finished | AgentStatus::Error)
                 && !a.is_permanent
                 && !a.is_animating())
         });
+
+        // Remove unoccupied desks and remap agent desk indices
+        let occupied_indices: Vec<usize> = self.state.floor.desks.iter()
+            .enumerate()
+            .filter(|(_, d)| d.occupied)
+            .map(|(i, _)| i)
+            .collect();
+
+        if occupied_indices.len() < self.state.floor.desks.len() {
+            // Build index map: old_index -> new_index
+            let mut index_map = vec![None; self.state.floor.desks.len()];
+            for (new_idx, &old_idx) in occupied_indices.iter().enumerate() {
+                index_map[old_idx] = Some(new_idx);
+            }
+
+            // Keep only occupied desks
+            let new_desks: Vec<_> = occupied_indices.iter()
+                .map(|&i| self.state.floor.desks[i].clone())
+                .collect();
+
+            // Clear old desk cells from grid
+            for desk in &self.state.floor.desks {
+                let w = desk.variant.width();
+                for r in 0..3u16 {
+                    for c in 0..w {
+                        let gy = (desk.desk_y + r) as usize;
+                        let gx = (desk.desk_x + c) as usize;
+                        if gy < self.state.floor.height as usize && gx < self.state.floor.width as usize {
+                            self.state.floor.grid[gy][gx] = crate::game::floor::CellType::Empty;
+                        }
+                    }
+                }
+            }
+
+            self.state.floor.desks = new_desks;
+
+            // Re-mark desk cells
+            for desk in &self.state.floor.desks {
+                let w = desk.variant.width();
+                for r in 0..3u16 {
+                    for c in 0..w {
+                        let gy = (desk.desk_y + r) as usize;
+                        let gx = (desk.desk_x + c) as usize;
+                        if gy < self.state.floor.height as usize && gx < self.state.floor.width as usize {
+                            self.state.floor.grid[gy][gx] = crate::game::floor::CellType::Desk;
+                        }
+                    }
+                }
+            }
+
+            // Remap agent desk indices
+            for agent in &mut self.state.agents {
+                if let Some(old_idx) = agent.assigned_desk {
+                    agent.assigned_desk = if old_idx < index_map.len() {
+                        index_map[old_idx]
+                    } else {
+                        None
+                    };
+                }
+            }
+        }
 
         // Idle agents in lounge wander near furniture
         let lounge = self.state.floor.lounge;
