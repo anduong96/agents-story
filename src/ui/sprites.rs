@@ -3,7 +3,6 @@ use ratatui::style::Color;
 // Agents are rendered as name tags (2-3 letter abbreviation in agent color)
 // No sprite struct needed — render_agent handles it directly.
 
-pub const CEO_COLOR: Color = Color::Rgb(255, 215, 0); // Gold
 pub const CEO_SKIN_COLOR: Color = Color::Rgb(220, 180, 130); // CEO skin tone
 
 // Monitor sprite — 2 cells wide × 2 tall
