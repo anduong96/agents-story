@@ -54,9 +54,16 @@ cargo run -- --demo --extreme    # 10x
 | Scroll | Scroll workspace |
 | Click | Select agent |
 
+## Roadmap
+
+- [ ] Homebrew formula (`brew install agents-story`)
+- [ ] Connect to live Claude Code sessions
+- [ ] Water cooler
+- [ ] Meeting room where agents accomplish nothing
+
 ## Contributing
 
-PRs welcome. The office still needs a water cooler and a meeting room where agents accomplish nothing.
+PRs welcome.
 
 ## License
 
