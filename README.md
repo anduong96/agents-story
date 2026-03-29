@@ -1,41 +1,36 @@
 # Agents Story
 
-> Because watching a progress bar wasn't unproductive enough.
+> You've been staring at a stream of text in your terminal for forty minutes. It's fine. Everything is fine.
 
-A pixel-art TUI that visualizes Claude Code agents working in a tiny office. Desks, monitors, a lounge with arcade machines, a CEO doing CEO things. Zero practical value. Immaculate vibes.
+Agents Story replaces the deeply engaging experience of watching Claude Code output scroll past with something marginally more interesting: a pixel-art office where tiny people sit at desks and pretend to be productive. Just like the rest of us.
 
-Setup: 30 seconds. Entertainment value: hours. Productivity lost: incalculable.
+It doesn't make your agents faster. It doesn't make them smarter. It doesn't do anything, really. But at least now when someone walks by your screen, it looks like you're playing a game instead of waiting for a build to finish. Which is arguably a lateral move.
 
 ![Rust](https://img.shields.io/badge/rust-1.70%2B-orange)
-![Usefulness](https://img.shields.io/badge/usefulness-0%25-red)
+![Usefulness](https://img.shields.io/badge/usefulness-negligible-red)
 ![Vibes](https://img.shields.io/badge/vibes-immaculate-brightgreen)
+![Status](https://img.shields.io/badge/status-it%20compiles-yellow)
 
 ![Demo Screenshot](docs/demo.png)
 
-## Why does this exist?
+## The Problem
 
-Your agents are already running. Why not watch them work?
+Claude Code agents work in your terminal. They read files, edit code, run tests. Important stuff. And the way you experience all of this is: text. Scrolling. Forever.
 
-Built during a Claude Code session that should have been spent shipping features.
+You could read it. You could also not read it and watch pixel people walk to their desks instead. We're not here to judge.
 
-## Features
+## What You Get
 
-- 6 permanent staff agents who idle in the lounge until you give them something to do
-- Temp agents get hired when your staff is overwhelmed, then unceremoniously escorted out the exit door
-- Desks with 1-3 monitors that light up with animated rainbow pixels (the agents are definitely not just on Reddit)
-- A CEO sitting alone in a dark blue office with a bookshelf and a bulletin board, doing CEO things
-- Arcade machines in the lounge that only turn on when someone walks up to them
-- Collision avoidance so your agents don't awkwardly phase through each other
-- A ping pong table that nobody plays but everyone walks around
-- Real-time FPS and RAM stats, because you need to monitor the performance of your monitor
-
-## Prerequisites
-
-- [Rust](https://rustup.rs/) 1.70+
-- A mass of free time
-- Questionable priorities
+- **6 permanent employees** who hang out in the lounge until you give them something to do. They wander near the arcade machines. They stand near the ping pong table. They do not play ping pong.
+- **Temp contractors** who show up when your staff can't keep up, do their job, and leave through the top door without saying goodbye.
+- **A CEO** who sits alone in a blue office with a bookshelf and a bulletin board. When a new task arrives, the CEO sprints to the whiteboard and yells. This is the most realistic part of the simulation.
+- **Desks with monitors** that display animated rainbow pixels. Your agents are definitely working and not browsing Reddit.
+- **Collision avoidance** so agents don't walk through each other. We have standards.
+- **Real-time FPS and RAM stats** in the status bar, because you should absolutely be monitoring the performance of your monitoring tool.
 
 ## Setup
+
+You need [Rust](https://rustup.rs/) 1.70+ and a tolerance for whimsy.
 
 ```bash
 git clone https://github.com/anduong96/agents-story.git
@@ -43,69 +38,55 @@ cd agents-story
 cargo build --release
 ```
 
+That's it. We didn't say it was hard. We said it was pointless.
+
 ## Usage
 
-### Demo mode (watch fake agents do fake work)
-
 ```bash
-cargo run -- --demo
-```
-
-### Dev mode (hot reload for when you're iterating on the vibes)
-
-```bash
-./dev.sh
-```
-
-### Speed options (for the impatient procrastinator)
-
-```bash
-cargo run -- --demo          # 2x speed (default)
-cargo run -- --demo --fast   # 5x speed (things to do)
-cargo run -- --demo --extreme # 10x speed (places to be)
+cargo run -- --demo              # Watch fake agents do fake work
+cargo run -- --demo --fast       # Same thing, but faster
+cargo run -- --demo --extreme    # You're in a hurry to waste time
+./dev.sh                         # Hot reload. For the craftsperson.
 ```
 
 ## Controls
 
-| Key | Action |
-|-----|--------|
-| `q` | Return to productivity |
-| `?` | Toggle help (you'll need it) |
-| `Tab` | Cycle focus (floor / agent panel) |
-| `j` / `Down` | Select next agent |
-| `k` / `Up` | Select previous agent |
-| `Enter` | Expand agent details (they're very interesting, trust me) |
-| Mouse scroll | Scroll workspace (for when you have too many agents) |
-| Click | Select agent in panel |
+| Key | What it does |
+|-----|-------------|
+| `q` | Leave. Go be productive. We won't stop you. |
+| `?` | Help. You need it. |
+| `Tab` | Switch between the floor view and the agent list |
+| `j` / `k` | Navigate agents. Like vim, but less useful. |
+| `Enter` | Expand agent details. Model, tokens, cost. Things that matter, rendered in a context where they don't. |
+| Scroll | Scroll the workspace when you've hired too many people |
+| Click | Select an agent. Yes, we support mouse input. We're not animals. |
 
-## Project Structure
+## The Office
 
 ```
-src/
-  main.rs        # Where the magic (waste of time) begins
-  app.rs         # Tick loop, collision avoidance, existential dread
-  demo.rs        # Synthetic agents doing synthetic work
-  input.rs       # Keyboard and mouse, because we're fancy
-  game/
-    floor.rs     # Rooms, desks, furniture nobody uses
-    agent.rs     # Agents with names, feelings (not really), and skin tones
-    state.rs     # The state of things
-    pathfinding.rs # So agents don't walk through walls (usually)
-  ui/
-    floor_view.rs  # 500 lines of rendering you'll never appreciate
-    sprites.rs     # Colors. So many colors.
-    agent_panel.rs # A list of agents pretending to be useful
-    stats_bar.rs   # Numbers that go up
-    bubbles.rs     # Status indicators that disappear too fast to read
-  stream/
-    protocol.rs  # How we talk to Claude Code
-    reader.rs    # How we listen
+┌─────────────────────────────────────┐
+│  ♠  Workspace                   ♠  │
+│     ┌────────┐  ┌────────┐         │
+│     │▓▓▓▓▓▓▓▓│  │ ▓▓▓▓▓▓ │    ░   │
+│     └────────┘  └────────┘    ░░   │
+│       ██  ██      ██  ██     ░░░   │
+│       ██  ██      ██  ██    ░░░░   │
+│   ♣                         ░░░░░  │  ← whiteboard
+├────────────────────┬────────────────┤
+│  Lounge       ▒▒▒│▒▒  │  CEO      │
+│  ♠   ██  ██   ▒▒▒│▒▒  │  ┌──────┐ │
+│      ██  ██        │  ██  │  ▓▓  │ │
+│  █▓█▓             │  ██  │      │ │
+│  █▓█▓  ♣          │      └──────┘ │
+└─────────┴──────────┴────────────────┘
 ```
+
+The workspace has desks, trees, and a whiteboard. The lounge has a ping pong table (decorative), arcade machines (functional when someone stands near them), and plants (also decorative). The CEO has a bookshelf and opinions.
 
 ## Contributing
 
-If you want to add a water cooler, a bathroom, or a meeting room where agents waste even more time — PRs welcome.
+The office needs a water cooler. It needs a bathroom. It needs a meeting room where four agents can sit for an hour and accomplish nothing. If any of this speaks to you, PRs are open.
 
 ## License
 
-MIT — because even pointless software deserves freedom.
+MIT — because restricting access to something this unnecessary felt wrong.
