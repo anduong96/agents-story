@@ -95,12 +95,9 @@ impl BubbleManager {
             None => return,
         };
 
-        // Show symbol 1 row above agent
-        if agent_y == 0 {
-            return;
-        }
+        // Show symbol 2 rows below agent (below the 2-tall sprite)
         let sx = area.x + agent_x;
-        let sy = area.y + agent_y - 1;
+        let sy = area.y + agent_y + 2;
 
         if sx < area.x + area.width && sy >= area.y && sy < area.y + area.height {
             if let Some(cell) = buf.cell_mut((sx, sy)) {
