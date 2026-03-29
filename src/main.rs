@@ -160,10 +160,22 @@ fn render(frame: &mut Frame, app: &mut App) {
     // Resize floor to fill available pane (clamped by centered layout)
     app.resize_floor(floor_area.width.min(MAX_WIDTH), floor_area.height.min(MAX_HEIGHT));
 
+    // Auto-scroll: if floor is taller than view, scroll to keep workspace desks visible
+    let floor_h = app.state.floor.height;
+    if floor_h > floor_area.height {
+        // Keep the workspace area in view by default
+        // If there are working agents, scroll to show them
+        let max_scroll = floor_h.saturating_sub(floor_area.height);
+        app.floor_scroll_y = app.floor_scroll_y.min(max_scroll);
+    } else {
+        app.floor_scroll_y = 0;
+    }
+
     // 1. Floor view
     let floor_view = FloorView::new(&app.state)
         .with_highlight(app.highlighted_room)
-        .with_tick(app.tick_count);
+        .with_tick(app.tick_count)
+        .with_scroll(app.floor_scroll_y);
     frame.render_widget(floor_view, floor_area);
 
     // 2. Bubbles (rendered on top of floor)

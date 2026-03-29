@@ -14,6 +14,7 @@ pub struct FloorView<'a> {
     pub state: &'a GameState,
     pub highlighted_room: Option<Room>,
     pub tick: u64,
+    pub scroll_y: u16,
 }
 
 impl<'a> FloorView<'a> {
@@ -22,6 +23,7 @@ impl<'a> FloorView<'a> {
             state,
             highlighted_room: None,
             tick: 0,
+            scroll_y: 0,
         }
     }
 
@@ -32,6 +34,11 @@ impl<'a> FloorView<'a> {
 
     pub fn with_tick(mut self, tick: u64) -> Self {
         self.tick = tick;
+        self
+    }
+
+    pub fn with_scroll(mut self, scroll_y: u16) -> Self {
+        self.scroll_y = scroll_y;
         self
     }
 }
@@ -98,11 +105,13 @@ impl<'a> Widget for FloorView<'a> {
         let grid_w = floor.width as usize;
         let grid_h = floor.height as usize;
 
-        // Render each grid cell
-        for gy in 0..grid_h {
+        let scroll = self.scroll_y as usize;
+
+        // Render each grid cell (with vertical scroll offset)
+        for gy in scroll..grid_h {
             for gx in 0..grid_w {
                 let screen_x = area.x + gx as u16;
-                let screen_y = area.y + gy as u16;
+                let screen_y = area.y + (gy - scroll) as u16;
 
                 // Bounds check
                 if screen_x >= area.x + area.width || screen_y >= area.y + area.height {
@@ -364,7 +373,9 @@ impl<'a> FloorView<'a> {
 
             let rows: [(&[char], u16); 3] = [(row0, 0), (row1, 1), (row2, 2)];
             for &(row, row_off) in &rows {
-                let sy = area.y + desk.desk_y + row_off;
+                let gy = desk.desk_y + row_off;
+                if gy < self.scroll_y { continue; }
+                let sy = area.y + gy - self.scroll_y;
                 if sy >= area.y + area.height { continue; }
                 for (col, &ch) in row.iter().enumerate() {
                     let sx = area.x + desk.desk_x + col as u16;
@@ -456,7 +467,8 @@ impl<'a> FloorView<'a> {
         // Row 0: ██  head (unique skin tone per agent)
         // Row 1: ██  body (agent color)
         let skin = agent.sprite_color.skin_color();
-        let sy0 = area.y + ay;
+        if ay < self.scroll_y { return; }
+        let sy0 = area.y + ay - self.scroll_y;
         if sy0 < area.y + area.height {
             for col in 0..2u16 {
                 let sx = area.x + ax + col;
@@ -468,7 +480,7 @@ impl<'a> FloorView<'a> {
                 }
             }
         }
-        let sy1 = area.y + ay + 1;
+        let sy1 = area.y + ay + 1 - self.scroll_y;
         if sy1 < area.y + area.height {
             for col in 0..2u16 {
                 let sx = area.x + ax + col;
@@ -486,7 +498,8 @@ impl<'a> FloorView<'a> {
         let (cx, cy) = self.state.floor.ceo_chair;
 
         // 8-bit CEO
-        let sy0 = area.y + cy;
+        if cy < self.scroll_y { return; }
+        let sy0 = area.y + cy - self.scroll_y;
         if sy0 < area.y + area.height {
             for col in 0..2u16 {
                 let sx = area.x + cx + col;
@@ -498,7 +511,8 @@ impl<'a> FloorView<'a> {
                 }
             }
         }
-        let sy1 = area.y + cy + 1;
+        if cy + 1 < self.scroll_y { return; }
+        let sy1 = area.y + cy + 1 - self.scroll_y;
         if sy1 < area.y + area.height {
             for col in 0..2u16 {
                 let sx = area.x + cx + col;

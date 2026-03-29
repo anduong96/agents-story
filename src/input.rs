@@ -51,25 +51,31 @@ fn handle_key(app: &mut App, key: KeyEvent) {
 }
 
 fn handle_mouse(app: &mut App, mouse: MouseEvent) {
-    if let MouseEventKind::Down(_) = mouse.kind {
-        let y = mouse.row;
-        // Check if click is in the agent panel area
-        // The panel starts after the floor (65%) and stats bar (1 line)
-        // Each agent row is 1 line, with a border at top
-        if let Some(panel_y) = app.panel_top {
-            if y > panel_y {
-                let row = (y - panel_y - 1) as usize; // -1 for border
-                let agent_count = app.state.agents.len();
-                if row < agent_count {
-                    app.focus = Focus::AgentPanel;
-                    if app.agent_panel.selected == Some(row) {
-                        app.agent_panel.toggle_expand();
-                    } else {
-                        app.agent_panel.selected = Some(row);
-                        app.agent_panel.expanded = None;
+    match mouse.kind {
+        MouseEventKind::Down(_) => {
+            let y = mouse.row;
+            if let Some(panel_y) = app.panel_top {
+                if y > panel_y {
+                    let row = (y - panel_y - 1) as usize;
+                    let agent_count = app.state.agents.len();
+                    if row < agent_count {
+                        app.focus = Focus::AgentPanel;
+                        if app.agent_panel.selected == Some(row) {
+                            app.agent_panel.toggle_expand();
+                        } else {
+                            app.agent_panel.selected = Some(row);
+                            app.agent_panel.expanded = None;
+                        }
                     }
                 }
             }
         }
+        MouseEventKind::ScrollUp => {
+            app.floor_scroll_y = app.floor_scroll_y.saturating_sub(3);
+        }
+        MouseEventKind::ScrollDown => {
+            app.floor_scroll_y += 3;
+        }
+        _ => {}
     }
 }
