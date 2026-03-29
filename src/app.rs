@@ -106,12 +106,44 @@ impl App {
             }
         }
 
-        // Remove finished temp agents that have stopped animating
+        // Remove finished temp agents and their desks
+        let mut desks_to_free: Vec<usize> = Vec::new();
+        for agent in &self.state.agents {
+            if matches!(agent.status, AgentStatus::Finished | AgentStatus::Error)
+                && !agent.is_permanent
+                && !agent.is_animating()
+            {
+                if let Some(desk_idx) = agent.assigned_desk {
+                    desks_to_free.push(desk_idx);
+                }
+            }
+        }
         self.state.agents.retain(|a| {
             !(matches!(a.status, AgentStatus::Finished | AgentStatus::Error)
                 && !a.is_permanent
                 && !a.is_animating())
         });
+        // Free desks and relayout if any were removed
+        if !desks_to_free.is_empty() {
+            for idx in &desks_to_free {
+                self.state.floor.free_desk(*idx);
+            }
+            // Count remaining occupied desks (excluding CEO desk at 0)
+            let occupied_count = self.state.floor.desks.iter()
+                .filter(|d| d.occupied)
+                .count();
+            self.state.floor.relayout_desks(occupied_count, None);
+            // Re-sync seated agents to new positions
+            for agent in &mut self.state.agents {
+                if let Some(desk_idx) = agent.assigned_desk {
+                    if !agent.is_animating() {
+                        if let Some(desk) = self.state.floor.desks.get(desk_idx) {
+                            agent.position = (desk.chair_x as f32, desk.chair_y as f32);
+                        }
+                    }
+                }
+            }
+        }
 
         // Idle agents in lounge wander near furniture
         let lounge = self.state.floor.lounge;

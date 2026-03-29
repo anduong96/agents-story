@@ -362,7 +362,7 @@ impl Floor {
     /// Clear all desk cells from the grid, then re-place `count` desks
     /// in an evenly distributed centered grid using ceil(sqrt(n)) columns.
     /// If `new_variant` is Some, the last (new) desk uses that variant.
-    fn relayout_desks(&mut self, count: usize, new_variant: Option<DeskVariant>) {
+    pub fn relayout_desks(&mut self, count: usize, new_variant: Option<DeskVariant>) {
         // Clear old desk cells from grid
         for desk in &self.desks {
             let w = desk.variant.width();
