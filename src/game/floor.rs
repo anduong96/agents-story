@@ -24,7 +24,7 @@ pub enum CellType {
 pub const MIN_DESKS: usize = 0;
 pub const DESK_HEIGHT: u16 = 3;
 pub const DESK_SPACING_X: u16 = 12;  // accommodate widest (3 monitors = 10)
-pub const DESK_SPACING_Y: u16 = 7; // desk(3) + agent(2) + gap(2)
+pub const DESK_SPACING_Y: u16 = 5; // desk(3) + agent(2), no gap
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DeskVariant {
@@ -249,7 +249,7 @@ impl Floor {
             agent_color: None,
             variant: DeskVariant::Single,
         });
-        let ceo_chair = (ceo_desk_x + ceo_desk_w / 2, ceo_desk_y + DESK_HEIGHT - 1);
+        let ceo_chair = (ceo_desk_x + ceo_desk_w / 2, ceo_desk_y + DESK_HEIGHT);
 
         // Bulletin board: 4×2, on the right wall of CEO office
         let bb_x = lounge_w + ceo_w - 6;
@@ -390,13 +390,8 @@ impl Floor {
         let total_w = cols * DESK_SPACING_X;
         let start_x = 1 + usable_w.saturating_sub(total_w) / 2;
 
-        // Center vertically in workspace
+        // Center vertically in workspace (never grow — protect lounge height)
         let total_h = rows * DESK_SPACING_Y;
-
-        // Grow workspace if needed
-        while total_h + 2 > self.workspace.3.saturating_sub(2) {
-            self.grow_workspace(DESK_SPACING_Y);
-        }
         let workspace_inner = self.workspace.3.saturating_sub(2);
         let start_y = 1 + workspace_inner.saturating_sub(total_h) / 2;
 
@@ -436,7 +431,7 @@ impl Floor {
                 desk_x: dx,
                 desk_y: dy,
                 chair_x: dx + w / 2,
-                chair_y: dy + DESK_HEIGHT - 1,
+                chair_y: dy + DESK_HEIGHT,
                 occupied,
                 agent_color,
                 variant,
