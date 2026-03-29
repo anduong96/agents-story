@@ -120,16 +120,17 @@ impl<'a> Widget for FloorView<'a> {
                     CellType::PingPongTable => ('▒', sprites::PING_PONG_COLOR, bg),
                     CellType::PingPongNet => ('│', sprites::PING_PONG_NET_COLOR, sprites::PING_PONG_COLOR),
                     CellType::Arcade => {
-                        // Top row = animated screen, bottom row = cabinet body
-                        let is_screen_row = gy % 2 == 0;
-                        if is_screen_row {
-                            // Screen: half-block with 2 animated neon colors
+                        // Check if this is the top or bottom row of the 2×2 arcade
+                        let above_is_arcade = gy > 0 && floor.grid[gy - 1][gx] == CellType::Arcade;
+                        let below_is_arcade = gy + 1 < grid_h && floor.grid[gy + 1][gx] == CellType::Arcade;
+                        if !above_is_arcade && below_is_arcade {
+                            // Top row: animated neon screen
                             let len = sprites::ARCADE_SCREEN_COLORS.len();
                             let p1 = ((self.tick / 8) as usize + gx * 5) % len;
                             let p2 = ((self.tick / 8) as usize + gx * 5 + 3) % len;
                             ('▀', sprites::ARCADE_SCREEN_COLORS[p1], sprites::ARCADE_SCREEN_COLORS[p2])
                         } else {
-                            // Cabinet body with trim
+                            // Bottom row: dark cabinet
                             ('▄', sprites::ARCADE_TRIM_COLOR, sprites::ARCADE_CABINET_COLOR)
                         }
                     }

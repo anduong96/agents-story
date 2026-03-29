@@ -156,10 +156,13 @@ impl App {
                 && !a.is_animating())
         });
 
-        // Remove unoccupied desks and remap agent desk indices
+        // Remove desks that no agent references
+        let referenced_desks: std::collections::HashSet<usize> = self.state.agents.iter()
+            .filter_map(|a| a.assigned_desk)
+            .collect();
         let occupied_indices: Vec<usize> = self.state.floor.desks.iter()
             .enumerate()
-            .filter(|(_, d)| d.occupied)
+            .filter(|(i, _)| referenced_desks.contains(i))
             .map(|(i, _)| i)
             .collect();
 
