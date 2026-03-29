@@ -14,7 +14,7 @@ Setup: 30 seconds. Entertainment value: hours. Productivity lost: incalculable.
 
 ## Why does this exist?
 
-Your agents are already running. You're already paying for tokens. Why not watch them work?
+Your agents are already running. Why not watch them work?
 
 Built during a Claude Code session that should have been spent shipping features.
 

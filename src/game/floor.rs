@@ -360,7 +360,7 @@ impl Floor {
     }
 
     pub fn ensure_minimum_desks(&mut self) {
-        if self.desks.len() < MIN_DESKS {
+        if MIN_DESKS > 0 && self.desks.len() < MIN_DESKS {
             self.relayout_desks(MIN_DESKS, None);
         }
     }
