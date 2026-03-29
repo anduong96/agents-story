@@ -320,6 +320,7 @@ fn handle_stream_event(app: &mut App, session_id: &str, event: StreamEvent) {
                     app.state.agents[idx].target_room = Room::Workspace;
                 }
 
+                sync_agent_positions(app);
                 app.bubbles.trigger_status_change(&agent_id, BubbleAgentStatus::Working);
             } else {
                 // Hire a new temp agent
@@ -362,6 +363,7 @@ fn handle_stream_event(app: &mut App, session_id: &str, event: StreamEvent) {
                 agent.status = AgentStatus::Working;
                 app.bubbles.trigger_status_change(&agent_id, BubbleAgentStatus::Spawning);
                 app.state.agents.push(agent);
+                sync_agent_positions(app);
             }
         }
 
@@ -502,6 +504,19 @@ fn to_bubble_status(status: &AgentStatus) -> BubbleAgentStatus {
 }
 
 const STAFF_NAMES: [&str; 6] = ["Alice", "Bob", "Carol", "Dave", "Eve", "Frank"];
+
+/// After relayout, snap all seated agents to their (possibly moved) desk positions.
+fn sync_agent_positions(app: &mut App) {
+    for agent in &mut app.state.agents {
+        if let Some(desk_idx) = agent.assigned_desk {
+            if !agent.is_animating() {
+                if let Some(desk) = app.state.floor.desks.get(desk_idx) {
+                    agent.position = (desk.chair_x as f32, desk.chair_y as f32);
+                }
+            }
+        }
+    }
+}
 
 /// Create 6 permanent staff agents, idle in the lounge.
 fn create_staff_agents(app: &mut App) {
