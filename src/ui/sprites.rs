@@ -52,13 +52,16 @@ pub const TREE_SMALL_COLOR: Color = Color::Rgb(40, 160, 50);
 pub const TREE_SMALL_TRUNK: Color = Color::Rgb(140, 90, 40);
 pub const TREE_LARGE_COLOR: Color = Color::Rgb(30, 140, 40);
 pub const TREE_LARGE_TRUNK: Color = Color::Rgb(120, 75, 35);
-// Arcade machines
-pub const ARCADE_BODY_COLOR: Color = Color::Rgb(50, 50, 60);
-pub const ARCADE_SCREEN_COLORS: [Color; 4] = [
-    Color::Rgb(255, 80, 80),
-    Color::Rgb(80, 255, 80),
-    Color::Rgb(80, 80, 255),
-    Color::Rgb(255, 255, 80),
+// Arcade machines — neon retro style
+pub const ARCADE_CABINET_COLOR: Color = Color::Rgb(30, 30, 40);
+pub const ARCADE_TRIM_COLOR: Color = Color::Rgb(60, 50, 80);
+pub const ARCADE_SCREEN_COLORS: [Color; 6] = [
+    Color::Rgb(255, 50, 100),   // neon pink
+    Color::Rgb(50, 255, 150),   // neon green
+    Color::Rgb(100, 100, 255),  // neon blue
+    Color::Rgb(255, 220, 50),   // neon yellow
+    Color::Rgb(255, 120, 0),    // neon orange
+    Color::Rgb(180, 50, 255),   // neon purple
 ];
 
 // Room wall/door colors

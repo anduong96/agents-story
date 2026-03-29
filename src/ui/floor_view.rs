@@ -120,9 +120,18 @@ impl<'a> Widget for FloorView<'a> {
                     CellType::PingPongTable => ('▒', sprites::PING_PONG_COLOR, bg),
                     CellType::PingPongNet => ('│', sprites::PING_PONG_NET_COLOR, sprites::PING_PONG_COLOR),
                     CellType::Arcade => {
-                        // Animated arcade screen — shifts color based on tick + position
-                        let phase = ((self.tick / 10) as usize + gx * 3 + gy * 7) % sprites::ARCADE_SCREEN_COLORS.len();
-                        ('▓', sprites::ARCADE_SCREEN_COLORS[phase], sprites::ARCADE_BODY_COLOR)
+                        // Top row = animated screen, bottom row = cabinet body
+                        let is_screen_row = gy % 2 == 0;
+                        if is_screen_row {
+                            // Screen: half-block with 2 animated neon colors
+                            let len = sprites::ARCADE_SCREEN_COLORS.len();
+                            let p1 = ((self.tick / 8) as usize + gx * 5) % len;
+                            let p2 = ((self.tick / 8) as usize + gx * 5 + 3) % len;
+                            ('▀', sprites::ARCADE_SCREEN_COLORS[p1], sprites::ARCADE_SCREEN_COLORS[p2])
+                        } else {
+                            // Cabinet body with trim
+                            ('▄', sprites::ARCADE_TRIM_COLOR, sprites::ARCADE_CABINET_COLOR)
+                        }
                     }
                     CellType::Bookshelf => {
                         let book_idx = (gx * 3 + gy * 5) % 4;
