@@ -56,21 +56,29 @@ pub const DESK_FRAME_COLOR: Color = Color::Rgb(80, 85, 100);      // blue-gray m
 pub const DESK_SURFACE_COLOR: Color = Color::Rgb(210, 205, 195);   // off-white desk surface
 pub const DESK_SCREEN_OFF_COLOR: Color = Color::Rgb(35, 40, 50);  // dark blue-gray off screen
 
-// Desk variants — clean boxes, no stand/line
-// 1 monitor (4w × 3h):
-// 1 monitor (4w × 3h):
-pub const DESK1_ROW0: [char; 4] = ['┌', '─', '─', '┐'];
-pub const DESK1_ROW1: [char; 4] = ['│', '▓', '▓', '│'];
-pub const DESK1_ROW2: [char; 4] = ['└', '─', '─', '┘'];
-pub const DESK1_SCREEN_COLS: &[usize] = &[1, 2];
+// All desks same width (10w × 3h), monitor count varies inside
+// 1 monitor — centered small screen:
+//  ┌────────┐
+//  │   ▓▓   │
+//  └────────┘
+pub const DESK1_ROW0: [char; 10] = ['┌', '─', '─', '─', '─', '─', '─', '─', '─', '┐'];
+pub const DESK1_ROW1: [char; 10] = ['│', ' ', ' ', ' ', '▓', '▓', ' ', ' ', ' ', '│'];
+pub const DESK1_ROW2: [char; 10] = ['└', '─', '─', '─', '─', '─', '─', '─', '─', '┘'];
+pub const DESK1_SCREEN_COLS: &[usize] = &[4, 5];
 
-// 2 monitors (7w × 3h):
-pub const DESK2_ROW0: [char; 7] = ['┌', '─', '─', '─', '─', '─', '┐'];
-pub const DESK2_ROW1: [char; 7] = ['│', '▓', '▓', '▓', '▓', '▓', '│'];
-pub const DESK2_ROW2: [char; 7] = ['└', '─', '─', '─', '─', '─', '┘'];
-pub const DESK2_SCREEN_COLS: &[usize] = &[1, 2, 3, 4, 5];
+// 2 monitors — two screens with gap:
+//  ┌────────┐
+//  │ ▓▓ ▓▓  │
+//  └────────┘
+pub const DESK2_ROW0: [char; 10] = ['┌', '─', '─', '─', '─', '─', '─', '─', '─', '┐'];
+pub const DESK2_ROW1: [char; 10] = ['│', ' ', '▓', '▓', ' ', ' ', '▓', '▓', ' ', '│'];
+pub const DESK2_ROW2: [char; 10] = ['└', '─', '─', '─', '─', '─', '─', '─', '─', '┘'];
+pub const DESK2_SCREEN_COLS: &[usize] = &[2, 3, 6, 7];
 
-// 3 monitors (10w × 3h):
+// 3 monitors — full width screens:
+//  ┌────────┐
+//  │▓▓▓▓▓▓▓▓│
+//  └────────┘
 pub const DESK3_ROW0: [char; 10] = ['┌', '─', '─', '─', '─', '─', '─', '─', '─', '┐'];
 pub const DESK3_ROW1: [char; 10] = ['│', '▓', '▓', '▓', '▓', '▓', '▓', '▓', '▓', '│'];
 pub const DESK3_ROW2: [char; 10] = ['└', '─', '─', '─', '─', '─', '─', '─', '─', '┘'];

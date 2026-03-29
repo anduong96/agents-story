@@ -34,11 +34,7 @@ pub enum DeskVariant {
 
 impl DeskVariant {
     pub fn width(self) -> u16 {
-        match self {
-            DeskVariant::Single => 4,
-            DeskVariant::Dual => 7,
-            DeskVariant::Triple => 10,
-        }
+        10 // all desks same width
     }
 
     /// Pick variant from agent name (deterministic)
