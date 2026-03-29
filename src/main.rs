@@ -83,9 +83,9 @@ async fn run(
 ) -> io::Result<()> {
     // Get initial terminal size for floor dimensions
     let term_size = terminal.size()?;
-    let floor_w = term_size.width.max(DEFAULT_FLOOR_WIDTH);
+    let floor_w = term_size.width.max(DEFAULT_FLOOR_WIDTH).min(MAX_WIDTH);
     let floor_h = (term_size.height as f32 * 0.65) as u16;
-    let floor_h = floor_h.max(DEFAULT_FLOOR_HEIGHT);
+    let floor_h = floor_h.max(DEFAULT_FLOOR_HEIGHT).min(MAX_HEIGHT);
     let mut app = App::new(floor_w, floor_h);
 
     // Create 6 permanent staff agents, idle in the lounge
@@ -154,8 +154,8 @@ fn render(frame: &mut Frame, app: &mut App) {
     let stats_area = chunks[1];
     let panel_area = chunks[2];
 
-    // Resize floor to fill available pane
-    app.resize_floor(floor_area.width, floor_area.height);
+    // Resize floor to fill available pane (clamped by centered layout)
+    app.resize_floor(floor_area.width.min(MAX_WIDTH), floor_area.height.min(MAX_HEIGHT));
 
     // 1. Floor view
     let floor_view = FloorView::new(&app.state)
