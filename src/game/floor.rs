@@ -24,7 +24,7 @@ pub enum CellType {
 pub const MIN_DESKS: usize = 0;
 pub const DESK_HEIGHT: u16 = 3;
 pub const DESK_SPACING_X: u16 = 12;  // accommodate widest (3 monitors = 10)
-pub const DESK_SPACING_Y: u16 = 5;
+pub const DESK_SPACING_Y: u16 = 7; // desk(3) + agent(2) + gap(2)
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DeskVariant {
