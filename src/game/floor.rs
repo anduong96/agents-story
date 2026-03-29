@@ -20,6 +20,7 @@ pub enum CellType {
     TreeLarge,
     Bookshelf,
     Arcade,
+    Bush,
 }
 
 pub const MIN_DESKS: usize = 0;
@@ -267,17 +268,31 @@ impl Floor {
 
         // Plants and trees — (x, y, type)
         let decorations: Vec<(u16, u16, CellType)> = vec![
-            // Workspace — potted plants in corners, small trees along walls
-            (2, 1, CellType::Plant),
-            (width - 3, 1, CellType::TreeSmall),
+            // Workspace — corners and along walls
+            (2, 1, CellType::TreeLarge),
+            (width - 3, 1, CellType::TreeLarge),
             (2, workspace_h - 2, CellType::TreeSmall),
-            (width - 3, workspace_h - 2, CellType::Plant),
-            (width / 3, 1, CellType::TreeLarge),
-            (width * 2 / 3, 1, CellType::TreeLarge),
-            // CEO office — elegant plants
+            (width - 3, workspace_h - 2, CellType::TreeSmall),
+            (width / 3, 1, CellType::Plant),
+            (width * 2 / 3, 1, CellType::Plant),
+            // Workspace — bushes along bottom wall
+            (width / 4, workspace_h - 2, CellType::Bush),
+            (width / 4 + 1, workspace_h - 2, CellType::Bush),
+            (width * 3 / 4, workspace_h - 2, CellType::Bush),
+            (width * 3 / 4 + 1, workspace_h - 2, CellType::Bush),
+            // Workspace — mid-wall accents
+            (2, workspace_h / 2, CellType::Plant),
+            (width - 3, workspace_h / 2, CellType::Plant),
+            // Lounge — extra greenery
+            (lounge_w / 4, workspace_h + 2, CellType::Bush),
+            (lounge_w / 4 + 1, workspace_h + 2, CellType::Bush),
+            (lounge_w / 4 + 2, workspace_h + 2, CellType::Bush),
+            // CEO office — elegant mix
             (lounge_w + 2, workspace_h + 2, CellType::TreeSmall),
-            (width - 3, workspace_h + 2, CellType::Plant),
-            (width - 3, workspace_h + bottom_h - 2, CellType::TreeSmall),
+            (width - 3, workspace_h + 2, CellType::TreeLarge),
+            (width - 3, workspace_h + bottom_h - 2, CellType::Plant),
+            (lounge_w + 2, workspace_h + bottom_h - 2, CellType::Bush),
+            (lounge_w + 3, workspace_h + bottom_h - 2, CellType::Bush),
         ];
         for (px, py, cell) in decorations {
             if (py as usize) < height as usize

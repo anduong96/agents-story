@@ -85,7 +85,11 @@ fn floor_texture(floor: &Floor, gx: usize, gy: usize) -> (char, Color, Color) {
         let tile_w = 6;
         let tile_h = 2;
         let row_group = gy / tile_h;
-        let offset = if row_group.is_multiple_of(2) { 0 } else { tile_w / 2 };
+        let offset = if row_group.is_multiple_of(2) {
+            0
+        } else {
+            tile_w / 2
+        };
         let tile_idx = ((gx + offset) / tile_w + row_group) % 2;
         if tile_idx == 0 {
             (
@@ -198,6 +202,7 @@ impl<'a> Widget for FloorView<'a> {
                     CellType::TreeSmall => {
                         ('▲', sprites::TREE_SMALL_COLOR, sprites::TREE_SMALL_TRUNK)
                     }
+                    CellType::Bush => ('▓', sprites::BUSH_COLOR, sprites::BUSH_BG_COLOR),
                     CellType::TreeLarge => {
                         ('♠', sprites::TREE_LARGE_COLOR, sprites::TREE_LARGE_TRUNK)
                     }
