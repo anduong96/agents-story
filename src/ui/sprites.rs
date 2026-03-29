@@ -57,23 +57,23 @@ pub const DESK_SURFACE_COLOR: Color = Color::Rgb(210, 205, 195);   // off-white 
 pub const DESK_SCREEN_OFF_COLOR: Color = Color::Rgb(35, 40, 50);  // dark blue-gray off screen
 
 // All desks same width (10w × 3h), monitor count varies inside
-// 1 monitor — centered small screen:
+// 1 monitor — centered:
 //  ┌────────┐
-//  │   ▓▓   │
+//  │  ▓▓▓▓  │
 //  └────────┘
 pub const DESK1_ROW0: [char; 10] = ['┌', '─', '─', '─', '─', '─', '─', '─', '─', '┐'];
-pub const DESK1_ROW1: [char; 10] = ['│', ' ', ' ', ' ', '▓', '▓', ' ', ' ', ' ', '│'];
+pub const DESK1_ROW1: [char; 10] = ['│', ' ', ' ', '▓', '▓', '▓', '▓', ' ', ' ', '│'];
 pub const DESK1_ROW2: [char; 10] = ['└', '─', '─', '─', '─', '─', '─', '─', '─', '┘'];
-pub const DESK1_SCREEN_COLS: &[usize] = &[4, 5];
+pub const DESK1_SCREEN_COLS: &[usize] = &[3, 4, 5, 6];
 
-// 2 monitors — two screens with gap:
+// 2 monitors — side by side:
 //  ┌────────┐
-//  │ ▓▓ ▓▓  │
+//  │ ▓▓▓▓▓▓ │
 //  └────────┘
 pub const DESK2_ROW0: [char; 10] = ['┌', '─', '─', '─', '─', '─', '─', '─', '─', '┐'];
-pub const DESK2_ROW1: [char; 10] = ['│', ' ', '▓', '▓', ' ', ' ', '▓', '▓', ' ', '│'];
+pub const DESK2_ROW1: [char; 10] = ['│', ' ', '▓', '▓', '▓', '▓', '▓', '▓', ' ', '│'];
 pub const DESK2_ROW2: [char; 10] = ['└', '─', '─', '─', '─', '─', '─', '─', '─', '┘'];
-pub const DESK2_SCREEN_COLS: &[usize] = &[2, 3, 6, 7];
+pub const DESK2_SCREEN_COLS: &[usize] = &[2, 3, 4, 5, 6, 7];
 
 // 3 monitors — full width screens:
 //  ┌────────┐
