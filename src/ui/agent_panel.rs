@@ -63,13 +63,14 @@ impl AgentPanelState {
     }
 }
 
-fn status_indicator(status: &AgentStatus) -> (&'static str, Color) {
+/// Returns (indicator_char, use_agent_color). If use_agent_color is false, use the returned color.
+fn status_indicator(status: &AgentStatus) -> (&'static str, bool) {
     match status {
-        AgentStatus::Working => ("●", Color::Green),
-        AgentStatus::Error => ("●", Color::Red),
-        AgentStatus::Idle => ("○", Color::Gray),
-        AgentStatus::Finished => ("◌", Color::Gray),
-        AgentStatus::Spawning => ("◐", Color::Yellow),
+        AgentStatus::Working => ("●", true),   // filled, agent color
+        AgentStatus::Spawning => ("●", true),   // filled, agent color
+        AgentStatus::Error => ("●", false),     // filled, red
+        AgentStatus::Idle => ("○", true),       // outline, agent color
+        AgentStatus::Finished => ("○", true),   // outline, agent color
     }
 }
 
@@ -148,7 +149,12 @@ impl<'a> StatefulWidget for AgentPanel<'a> {
                 "  "
             };
 
-            let (indicator, indicator_color) = status_indicator(&agent.status);
+            let (indicator, use_agent_color) = status_indicator(&agent.status);
+            let indicator_color = if use_agent_color {
+                agent.sprite_color.to_color()
+            } else {
+                Color::Red
+            };
             let label = status_label(&agent.status);
             let label_color = status_label_color(&agent.status);
 
