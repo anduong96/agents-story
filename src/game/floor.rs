@@ -195,25 +195,29 @@ impl Floor {
         };
         let ping_pong = (pp_x, pp_y, pp_w, pp_h);
 
-        // --- Zone 1: TV + Sofa area (top-left) ---
+        // --- Zone 1: TV + Sofa area (top-left, must stay above ping pong) ---
         let tv_w: u16 = 8;
         let tv_x = 4u16;
+        let zone1_max_y = pp_y.saturating_sub(2); // stay 2 rows above ping pong
         for tx in tv_x..tv_x + tv_w {
             place(lounge_top, tx, CellType::TV);
         }
         let sofa_y1 = lounge_top + 2;
-        let sofa_y2 = lounge_top + 4;
-        for sx in tv_x..tv_x + 6 {
-            place(sofa_y1, sx, CellType::Couch);
-            place(sofa_y2, sx, CellType::Couch);
-        }
-        for sx in (tv_x + 1)..(tv_x + 5) {
-            place(sofa_y1 + 1, sx, CellType::CoffeeTable);
+        if sofa_y1 <= zone1_max_y {
+            for sx in tv_x..tv_x + 6 {
+                place(sofa_y1, sx, CellType::Couch);
+            }
+            if sofa_y1 + 1 <= zone1_max_y {
+                for sx in (tv_x + 1)..(tv_x + 5) {
+                    place(sofa_y1 + 1, sx, CellType::CoffeeTable);
+                }
+            }
         }
 
-        // --- Zone 3: Lunch area (bottom-right of lounge) ---
+        // --- Zone 3: Lunch area (bottom-right, must stay below ping pong) ---
+        let zone3_min_y = pp_y + pp_h + 2; // stay 2 rows below ping pong
         let lunch_x = lounge_w / 2;
-        let lunch_y = lounge_bot - 3;
+        let lunch_y = lounge_bot.saturating_sub(3).max(zone3_min_y);
         let lunch_w: u16 = 6;
         for lx in lunch_x..lunch_x + lunch_w {
             place(lunch_y, lx, CellType::CoffeeTable);
