@@ -97,6 +97,18 @@ impl App {
             .map(|a| a.position)
             .collect();
 
+        // Check if a position collides with any other agent
+        let check_collision = |pos: (f32, f32), skip: usize| -> bool {
+            let cx = pos.0.round() as i32;
+            let cy = pos.1.round() as i32;
+            positions.iter().enumerate().any(|(j, &(ox, oy))| {
+                if j == skip { return false; }
+                let ocx = ox.round() as i32;
+                let ocy = oy.round() as i32;
+                (cx - ocx).abs() < 2 && (cy - ocy).abs() < 2
+            })
+        };
+
         // Advance agents with collision avoidance
         for i in 0..self.state.agents.len() {
             let agent = &mut self.state.agents[i];
@@ -105,24 +117,30 @@ impl App {
 
                 advance_along_path(&mut agent.position, &mut agent.path, 4.0, delta_secs);
 
-                let new_cell = (agent.position.0.round() as i32, agent.position.1.round() as i32);
+                if check_collision(agent.position, i) {
+                    // Try nudging perpendicular to path direction
+                    let dx = agent.position.0 - old_pos.0;
+                    let dy = agent.position.1 - old_pos.1;
+                    let nudge = 2.0;
 
-                // Check collision against snapshot of other agents
-                let collides = positions.iter().enumerate().any(|(j, &(ox, oy))| {
-                    if j == i { return false; }
-                    let ocx = ox.round() as i32;
-                    let ocy = oy.round() as i32;
-                    (new_cell.0 - ocx).abs() < 2 && (new_cell.1 - ocy).abs() < 2
-                });
+                    // Try perpendicular directions: (-dy, dx) and (dy, -dx)
+                    let try1 = (old_pos.0 - dy.signum() * nudge, old_pos.1 + dx.signum() * nudge);
+                    let try2 = (old_pos.0 + dy.signum() * nudge, old_pos.1 - dx.signum() * nudge);
 
-                if collides {
-                    agent.position = old_pos;
-                } else {
-                    if agent.position.0 > old_pos.0 {
-                        agent.facing = Direction::Right;
-                    } else if agent.position.0 < old_pos.0 {
-                        agent.facing = Direction::Left;
+                    if !check_collision(try1, i) {
+                        agent.position = try1;
+                    } else if !check_collision(try2, i) {
+                        agent.position = try2;
+                    } else {
+                        // Both sides blocked — wait
+                        agent.position = old_pos;
                     }
+                }
+
+                if agent.position.0 > old_pos.0 {
+                    agent.facing = Direction::Right;
+                } else if agent.position.0 < old_pos.0 {
+                    agent.facing = Direction::Left;
                 }
             } else if let Some(desk_idx) = agent.assigned_desk {
                 if let Some(desk) = self.state.floor.desks.get(desk_idx) {

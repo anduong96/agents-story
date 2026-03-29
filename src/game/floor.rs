@@ -10,19 +10,14 @@ pub enum CellType {
     Monitor,
     PingPongTable,
     PingPongNet,
-    TV,
     #[allow(dead_code)]
     CeoDesk,
     #[allow(dead_code)]
     CeoMonitor,
-    Couch,
-    CoffeeTable,
-    VendingMachine,
     BulletinBoard,
-    Plant,      // small potted plant ♣
-    TreeSmall,  // small tree ▲
-    TreeLarge,  // large tree ♠
-    Chair,      // lunch table chair
+    Plant,
+    TreeSmall,
+    TreeLarge,
     Bookshelf,
 }
 

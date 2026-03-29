@@ -52,15 +52,7 @@ pub const TREE_SMALL_COLOR: Color = Color::Rgb(40, 160, 50);
 pub const TREE_SMALL_TRUNK: Color = Color::Rgb(140, 90, 40);
 pub const TREE_LARGE_COLOR: Color = Color::Rgb(30, 140, 40);
 pub const TREE_LARGE_TRUNK: Color = Color::Rgb(120, 75, 35);
-pub const CHAIR_COLOR: Color = Color::Rgb(100, 80, 55);
-pub const CHAIR_SEAT_COLOR: Color = Color::Rgb(140, 110, 70);
-
-
-// Lounge TV
-pub const TV_FRAME_COLOR: Color = Color::Rgb(40, 40, 45);
-pub const TV_SCREEN_COLOR: Color = Color::Rgb(60, 120, 200);
-
-// Room wall/door colors — Kairosoft uses LIGHT cream/beige walls, not dark gray
+// Room wall/door colors
 pub const WALL_COLOR: Color = Color::Rgb(190, 185, 170);     // cream/beige walls
 pub const DOOR_COLOR: Color = Color::Rgb(180, 130, 70);      // warm wood door
 
@@ -129,14 +121,7 @@ pub const SCREEN_PIXELS: [Color; 10] = [
     Color::Rgb(255, 170, 210),   // light pink
 ];
 
-// Lounge furniture — warm, inviting Kairosoft colors
-pub const COUCH_COLOR: Color = Color::Rgb(180, 120, 60);       // warm leather brown
-pub const COUCH_FRAME_COLOR: Color = Color::Rgb(140, 90, 45);  // darker wood frame
-pub const COFFEE_TABLE_COLOR: Color = Color::Rgb(160, 110, 55);
-pub const VENDING_MACHINE_COLOR: Color = Color::Rgb(100, 150, 220);   // cheerful blue
-pub const VENDING_LIGHT_COLOR: Color = Color::Rgb(140, 220, 140);     // bright green
-
-// CEO office — premium feel
+// CEO office
 pub const BULLETIN_PIN_COLORS: [Color; 4] = [
     Color::Rgb(255, 70, 70),     // red
     Color::Rgb(70, 210, 70),     // green
