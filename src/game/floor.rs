@@ -154,7 +154,7 @@ impl Floor {
         ];
 
         // Desks start empty — ensure_minimum_desks() adds the initial rows
-        let mut desks = Vec::new();
+        let desks = Vec::new();
 
         // Ping pong table (6x2) centered in lounge
         let lounge_center_x = lounge_w / 2;
