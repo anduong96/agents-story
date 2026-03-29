@@ -62,6 +62,19 @@ impl SpriteColor {
     pub fn to_color(self) -> Color {
         Self::PALETTE[self.0 as usize % 8]
     }
+
+    pub const SKIN_TONES: [Color; 6] = [
+        Color::Rgb(240, 200, 150),  // light
+        Color::Rgb(220, 180, 130),  // fair
+        Color::Rgb(190, 150, 100),  // medium
+        Color::Rgb(160, 120, 80),   // olive
+        Color::Rgb(130, 90, 60),    // brown
+        Color::Rgb(90, 60, 40),     // dark
+    ];
+
+    pub fn skin_color(self) -> Color {
+        Self::SKIN_TONES[self.0 as usize % Self::SKIN_TONES.len()]
+    }
 }
 
 #[derive(Debug, Clone)]

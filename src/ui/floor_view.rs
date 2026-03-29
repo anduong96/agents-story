@@ -445,8 +445,9 @@ impl<'a> FloorView<'a> {
         };
 
         // 8-bit style: 2×2 solid blocks
-        // Row 0: ██  head (skin color)
+        // Row 0: ██  head (unique skin tone per agent)
         // Row 1: ██  body (agent color)
+        let skin = agent.sprite_color.skin_color();
         let sy0 = area.y + ay;
         if sy0 < area.y + area.height {
             for col in 0..2u16 {
@@ -454,7 +455,7 @@ impl<'a> FloorView<'a> {
                 if sx < area.x + area.width {
                     if let Some(cell) = buf.cell_mut((sx, sy0)) {
                         cell.set_char('█');
-                        cell.set_style(Style::default().fg(sprites::SKIN_COLOR));
+                        cell.set_style(Style::default().fg(skin));
                     }
                 }
             }
@@ -498,7 +499,7 @@ impl<'a> FloorView<'a> {
                 if sx < area.x + area.width {
                     if let Some(cell) = buf.cell_mut((sx, sy0)) {
                         cell.set_char('█');
-                        cell.set_style(Style::default().fg(sprites::SKIN_COLOR));
+                        cell.set_style(Style::default().fg(sprites::CEO_SKIN_COLOR));
                     }
                 }
             }

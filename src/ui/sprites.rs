@@ -4,7 +4,7 @@ use ratatui::style::Color;
 // No sprite struct needed — render_agent handles it directly.
 
 pub const CEO_COLOR: Color = Color::Rgb(255, 215, 0); // Gold
-pub const SKIN_COLOR: Color = Color::Rgb(240, 200, 150); // light skin tone
+pub const CEO_SKIN_COLOR: Color = Color::Rgb(220, 180, 130); // CEO skin tone
 
 // Monitor sprite — 2 cells wide × 2 tall
 #[allow(dead_code)]
