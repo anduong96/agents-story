@@ -11,7 +11,9 @@ pub enum CellType {
     PingPongTable,
     PingPongNet,
     TV,
+    #[allow(dead_code)]
     CeoDesk,
+    #[allow(dead_code)]
     CeoMonitor,
     Couch,
     CoffeeTable,
@@ -436,82 +438,6 @@ impl Floor {
                 agent_color,
                 variant,
             });
-        }
-    }
-
-    fn grow_workspace(&mut self, extra_rows: u16) {
-        let insert_y = self.workspace.3 as usize;
-
-        for _ in 0..extra_rows {
-            self.grid.insert(insert_y, vec![CellType::Empty; self.width as usize]);
-        }
-
-        self.height += extra_rows;
-        self.workspace.3 += extra_rows;
-        self.lounge.1 += extra_rows;
-        self.ceo_office.1 += extra_rows;
-
-        for door in &mut self.doors {
-            if door.y >= insert_y as u16 {
-                door.y += extra_rows;
-            }
-        }
-
-        let new_div_y = self.workspace.3 as usize;
-        for x in 0..self.width as usize {
-            if new_div_y < self.grid.len() {
-                self.grid[new_div_y][x] = CellType::Wall;
-            }
-        }
-        for x in 0..self.width as usize {
-            if self.grid[insert_y][x] == CellType::Wall {
-                self.grid[insert_y][x] = CellType::Empty;
-            }
-        }
-
-        for door in &mut self.doors {
-            let dx = door.x as usize;
-            let dy = door.y as usize;
-            if dy < self.grid.len() {
-                for i in 0..8 {
-                    if dx + i < self.width as usize {
-                        self.grid[dy][dx + i] = CellType::Door;
-                    }
-                }
-            }
-        }
-
-        for y in insert_y..insert_y + extra_rows as usize {
-            if y < self.grid.len() {
-                self.grid[y][0] = CellType::Wall;
-                self.grid[y][self.width as usize - 1] = CellType::Wall;
-            }
-        }
-
-        self.ceo_chair.1 += extra_rows;
-        self.ping_pong.1 += extra_rows;
-
-        let pp = self.ping_pong;
-        for py in pp.1..pp.1 + pp.3 {
-            for px in pp.0..pp.0 + pp.2 {
-                if (py as usize) < self.height as usize && (px as usize) < self.width as usize {
-                    self.grid[py as usize][px as usize] = CellType::PingPongTable;
-                }
-            }
-        }
-
-        let (cx, cy) = self.ceo_chair;
-        let ceo_desk_y = cy.saturating_sub(1);
-        if (ceo_desk_y as usize) < self.height as usize && (cx as usize) < self.width as usize {
-            self.grid[ceo_desk_y as usize][cx as usize] = CellType::CeoDesk;
-        }
-        if (ceo_desk_y as usize) < self.height as usize && (cx as usize + 1) < self.width as usize {
-            self.grid[ceo_desk_y as usize][cx as usize + 1] = CellType::CeoMonitor;
-        }
-
-        let bot = self.height as usize - 1;
-        for x in 0..self.width as usize {
-            self.grid[bot][x] = CellType::Wall;
         }
     }
 
