@@ -1,36 +1,29 @@
 # Agents Story
 
-> You've been staring at a stream of text in your terminal for forty minutes. It's fine. Everything is fine.
-
-Agents Story replaces the deeply engaging experience of watching Claude Code output scroll past with something marginally more interesting: a pixel-art office where tiny people sit at desks and pretend to be productive. Just like the rest of us.
-
-It doesn't make your agents faster. It doesn't make them smarter. It doesn't do anything, really. But at least now when someone walks by your screen, it looks like you're playing a game instead of waiting for a build to finish. Which is arguably a lateral move.
+A pixel-art TUI that turns Claude Code agent sessions into a tiny office simulation. Does nothing useful. Entertaining anyway.
 
 ![Rust](https://img.shields.io/badge/rust-1.70%2B-orange)
-![Usefulness](https://img.shields.io/badge/usefulness-negligible-red)
 ![Vibes](https://img.shields.io/badge/vibes-immaculate-brightgreen)
-![Status](https://img.shields.io/badge/status-it%20compiles-yellow)
 
 ![Demo Screenshot](docs/demo.png)
 
-## The Problem
+## What is this
 
-Claude Code agents work in your terminal. They read files, edit code, run tests. Important stuff. And the way you experience all of this is: text. Scrolling. Forever.
+Your Claude Code agents read files, write code, run tests. You experience this as scrolling text. This replaces that with pixel people walking to desks and sitting down.
 
-You could read it. You could also not read it and watch pixel people walk to their desks instead. We're not here to judge.
+It won't make your agents faster or smarter. It's a screensaver with opinions.
 
-## What You Get
+## Features
 
-- **6 permanent employees** who hang out in the lounge until you give them something to do. They wander near the arcade machines. They stand near the ping pong table. They do not play ping pong.
-- **Temp contractors** who show up when your staff can't keep up, do their job, and leave through the top door without saying goodbye.
-- **A CEO** who sits alone in a blue office with a bookshelf and a bulletin board. When a new task arrives, the CEO sprints to the whiteboard and yells. This is the most realistic part of the simulation.
-- **Desks with monitors** that display animated rainbow pixels. Your agents are definitely working and not browsing Reddit.
-- **Collision avoidance** so agents don't walk through each other. We have standards.
-- **Real-time FPS and RAM stats** in the status bar, because you should absolutely be monitoring the performance of your monitoring tool.
+- **6 staff agents** idle in the lounge until assigned work. They wander near the arcade machines.
+- **Temp contractors** appear when demand exceeds headcount. They leave through the top door when done.
+- **A CEO** who sprints to the whiteboard and yells when a new task arrives.
+- **Desks with animated monitors** showing rainbow pixels. Definitely not Reddit.
+- **Arcade machines** that light up when someone walks near them.
+- **Collision avoidance.** Standards.
+- **FPS and RAM stats.** For monitoring the performance of your monitoring tool.
 
 ## Setup
-
-You need [Rust](https://rustup.rs/) 1.70+ and a tolerance for whimsy.
 
 ```bash
 git clone https://github.com/anduong96/agents-story.git
@@ -38,33 +31,33 @@ cd agents-story
 cargo build --release
 ```
 
-That's it. We didn't say it was hard. We said it was pointless.
+Requires [Rust](https://rustup.rs/) 1.70+.
 
 ## Usage
 
 ```bash
-cargo run -- --demo              # Watch fake agents do fake work
-cargo run -- --demo --fast       # Same thing, but faster
-cargo run -- --demo --extreme    # You're in a hurry to waste time
-./dev.sh                         # Hot reload. For the craftsperson.
+cargo run -- --demo              # demo mode
+cargo run -- --demo --fast       # 5x
+cargo run -- --demo --extreme    # 10x
+./dev.sh                         # hot reload
 ```
 
 ## Controls
 
-| Key | What it does |
-|-----|-------------|
-| `q` | Leave. Go be productive. We won't stop you. |
-| `?` | Help. You need it. |
-| `Tab` | Switch between the floor view and the agent list |
-| `j` / `k` | Navigate agents. Like vim, but less useful. |
-| `Enter` | Expand agent details. Model, tokens, cost. Things that matter, rendered in a context where they don't. |
-| Scroll | Scroll the workspace when you've hired too many people |
-| Click | Select an agent. Yes, we support mouse input. We're not animals. |
+| Key | Action |
+|-----|--------|
+| `q` | Quit |
+| `?` | Help |
+| `Tab` | Switch floor / agent panel |
+| `j` / `k` | Navigate agents |
+| `Enter` | Expand agent details |
+| Scroll | Scroll workspace |
+| Click | Select agent |
 
 ## Contributing
 
-The office needs a water cooler. It needs a bathroom. It needs a meeting room where four agents can sit for an hour and accomplish nothing. If any of this speaks to you, PRs are open.
+PRs welcome. The office still needs a water cooler and a meeting room where agents accomplish nothing.
 
 ## License
 
-MIT — because restricting access to something this unnecessary felt wrong.
+MIT
