@@ -407,8 +407,18 @@ fn handle_stream_event(app: &mut App, session_id: &str, event: StreamEvent) {
                 // Staff returns to lounge as idle
                 transition_agent(app, &agent_id, AgentStatus::Idle);
             } else {
-                // Temp leaves — transition to Finished, then remove when done animating
+                // Temp leaves via exit door
                 transition_agent(app, &agent_id, AgentStatus::Finished);
+                // Override path to exit door instead of lounge center
+                let exit = app.state.floor.exit_pos;
+                if let Some(agent) = app.state.agents.iter_mut().find(|a| a.id == agent_id) {
+                    let from_x = agent.position.0 as u16;
+                    let from_y = agent.position.1 as u16;
+                    agent.path = compute_path(
+                        from_x, from_y, Room::Workspace, Room::Lounge,
+                        exit.0, exit.1, &app.state.floor,
+                    );
+                }
             }
 
             // Check if all working agents are done

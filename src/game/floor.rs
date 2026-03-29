@@ -80,6 +80,7 @@ pub struct Floor {
     pub ceo_desk: Option<DeskSlot>,
     pub doors: Vec<DoorPos>,
     pub ceo_chair: (u16, u16),
+    pub exit_pos: (u16, u16),
     #[allow(dead_code)]
     pub ping_pong: (u16, u16, u16, u16),
 }
@@ -276,6 +277,17 @@ impl Floor {
             }
         }
 
+        // Exit door at bottom wall of lounge (centered)
+        let exit_x = lounge_w / 2;
+        let exit_y = height - 1;
+        for i in 0..4u16 {
+            let ex = (exit_x - 1 + i) as usize;
+            if ex < width as usize {
+                grid[exit_y as usize][ex] = CellType::Door;
+            }
+        }
+        let exit_pos = (exit_x, exit_y);
+
         let workspace = (0, 0, width, workspace_h);
         let lounge = (0, workspace_h, lounge_w, bottom_h);
         let ceo_office = (lounge_w, workspace_h, ceo_w, bottom_h);
@@ -291,6 +303,7 @@ impl Floor {
             ceo_desk,
             doors,
             ceo_chair,
+            exit_pos,
             ping_pong,
         }
     }
