@@ -474,20 +474,6 @@ impl<'a> FloorView<'a> {
                 }
             }
         }
-        // Name label below
-        let sy2 = area.y + ay + 2;
-        if sy2 < area.y + area.height {
-            let tag: String = agent.name.chars().take(2).collect::<String>().to_uppercase();
-            for (i, ch) in tag.chars().enumerate() {
-                let sx = area.x + ax + i as u16;
-                if sx < area.x + area.width {
-                    if let Some(cell) = buf.cell_mut((sx, sy2)) {
-                        cell.set_char(ch);
-                        cell.set_style(Style::default().fg(color));
-                    }
-                }
-            }
-        }
     }
 
     fn render_ceo(&self, _floor: &Floor, area: Rect, buf: &mut Buffer) {
