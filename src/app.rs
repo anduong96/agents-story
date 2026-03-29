@@ -195,7 +195,14 @@ impl App {
                 && !a.is_animating())
         });
 
-        // Remove desks that no agent references
+        // Remove desks that no agent references (only when no one is animating)
+        let anyone_animating = self.state.agents.iter().any(|a| a.is_animating());
+        if anyone_animating {
+            // Skip cleanup — agents are still moving, desk indices could be stale
+            self.bubbles.tick();
+            self.state.update_stats();
+            return;
+        }
         let referenced_desks: std::collections::HashSet<usize> = self
             .state
             .agents
