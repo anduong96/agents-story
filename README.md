@@ -61,28 +61,6 @@ cargo run -- --demo --extreme    # You're in a hurry to waste time
 | Scroll | Scroll the workspace when you've hired too many people |
 | Click | Select an agent. Yes, we support mouse input. We're not animals. |
 
-## The Office
-
-```
-┌─────────────────────────────────────┐
-│  ♠  Workspace                   ♠  │
-│     ┌────────┐  ┌────────┐         │
-│     │▓▓▓▓▓▓▓▓│  │ ▓▓▓▓▓▓ │    ░   │
-│     └────────┘  └────────┘    ░░   │
-│       ██  ██      ██  ██     ░░░   │
-│       ██  ██      ██  ██    ░░░░   │
-│   ♣                         ░░░░░  │  ← whiteboard
-├────────────────────┬────────────────┤
-│  Lounge       ▒▒▒│▒▒  │  CEO      │
-│  ♠   ██  ██   ▒▒▒│▒▒  │  ┌──────┐ │
-│      ██  ██        │  ██  │  ▓▓  │ │
-│  █▓█▓             │  ██  │      │ │
-│  █▓█▓  ♣          │      └──────┘ │
-└─────────┴──────────┴────────────────┘
-```
-
-The workspace has desks, trees, and a whiteboard. The lounge has a ping pong table (decorative), arcade machines (functional when someone stands near them), and plants (also decorative). The CEO has a bookshelf and opinions.
-
 ## Contributing
 
 The office needs a water cooler. It needs a bathroom. It needs a meeting room where four agents can sit for an hour and accomplish nothing. If any of this speaks to you, PRs are open.
