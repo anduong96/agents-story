@@ -246,12 +246,12 @@ impl Floor {
             desk_x: ceo_desk_x,
             desk_y: ceo_desk_y,
             chair_x: ceo_desk_x + (ceo_desk_w - 2) / 2,
-            chair_y: ceo_desk_y + 1,
+            chair_y: ceo_desk_y + DESK_HEIGHT,
             occupied: true,  // CEO always at desk
             agent_color: None,
             variant: DeskVariant::Single,
         });
-        let ceo_chair = (ceo_desk_x + (ceo_desk_w - 2) / 2, ceo_desk_y + 1);
+        let ceo_chair = (ceo_desk_x + (ceo_desk_w - 2) / 2, ceo_desk_y + DESK_HEIGHT);
 
         // Bulletin board: 4×2, on the right wall of CEO office
         let bb_x = lounge_w + ceo_w - 6;
@@ -432,8 +432,8 @@ impl Floor {
             self.desks.push(DeskSlot {
                 desk_x: dx,
                 desk_y: dy,
-                chair_x: dx + (w - 2) / 2,  // center 2-wide agent in desk
-                chair_y: dy + 1,             // head at screen row (middle of desk)
+                chair_x: dx + (w - 2) / 2,  // center 2-wide agent in 10-wide desk
+                chair_y: dy + DESK_HEIGHT,   // head just below desk bottom
                 occupied,
                 agent_color,
                 variant,
@@ -522,5 +522,71 @@ mod tests {
         let floor = Floor::generate(80, 30);
         // 75% of 80 = 60
         assert_eq!(floor.lounge.2, 60);
+    }
+
+    #[test]
+    fn test_chair_is_below_desk() {
+        let mut floor = Floor::generate(80, 30);
+        let idx = floor.assign_desk("test").unwrap();
+        let desk = &floor.desks[idx];
+        // Chair Y should be exactly DESK_HEIGHT below desk top
+        assert_eq!(desk.chair_y, desk.desk_y + DESK_HEIGHT,
+            "Agent head (chair_y={}) should be at desk_y({}) + DESK_HEIGHT({})",
+            desk.chair_y, desk.desk_y, DESK_HEIGHT);
+    }
+
+    #[test]
+    fn test_chair_centered_horizontally() {
+        let mut floor = Floor::generate(80, 30);
+        let idx = floor.assign_desk("test").unwrap();
+        let desk = &floor.desks[idx];
+        let w = desk.variant.width();
+        // Agent is 2 cells wide, should be centered in desk
+        let expected_x = desk.desk_x + (w - 2) / 2;
+        assert_eq!(desk.chair_x, expected_x,
+            "Agent left edge (chair_x={}) should be at desk_x({}) + ({}-2)/2 = {}",
+            desk.chair_x, desk.desk_x, w, expected_x);
+    }
+
+    #[test]
+    fn test_agent_fits_between_desk_rows() {
+        let mut floor = Floor::generate(80, 30);
+        floor.assign_desk("a1").unwrap();
+        floor.assign_desk("a2").unwrap();
+        floor.assign_desk("a3").unwrap();
+        floor.assign_desk("a4").unwrap();
+        floor.assign_desk("a5").unwrap();
+
+        // For desks in different rows, verify agent doesn't overlap next desk
+        for (i, desk) in floor.desks.iter().enumerate() {
+            let agent_bottom = desk.chair_y + 2; // agent is 2 rows tall
+            // Find next desk in same column
+            for other in floor.desks.iter().skip(i + 1) {
+                if other.desk_x == desk.desk_x && other.desk_y > desk.desk_y {
+                    assert!(agent_bottom <= other.desk_y,
+                        "Agent at desk {} (bottom={}) overlaps desk at y={}",
+                        i, agent_bottom, other.desk_y);
+                    break;
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_all_desks_consistent_chair_position() {
+        let mut floor = Floor::generate(80, 30);
+        for i in 0..6 {
+            floor.assign_desk(&format!("agent-{}", i)).unwrap();
+        }
+        // Every desk (except CEO at index 0) should have consistent positioning
+        for desk in &floor.desks {
+            let w = desk.variant.width();
+            assert_eq!(desk.chair_y, desk.desk_y + DESK_HEIGHT,
+                "Desk at ({},{}) has chair_y={}, expected {}",
+                desk.desk_x, desk.desk_y, desk.chair_y, desk.desk_y + DESK_HEIGHT);
+            assert_eq!(desk.chair_x, desk.desk_x + (w - 2) / 2,
+                "Desk at ({},{}) has chair_x={}, expected {}",
+                desk.desk_x, desk.desk_y, desk.chair_x, desk.desk_x + (w - 2) / 2);
+        }
     }
 }
