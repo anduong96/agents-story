@@ -75,10 +75,26 @@ fn handle_mouse(app: &mut App, mouse: MouseEvent) {
             }
         }
         MouseEventKind::ScrollUp => {
-            app.floor_scroll_y = app.floor_scroll_y.saturating_sub(3);
+            if let Some(panel_y) = app.panel_top {
+                if mouse.row >= panel_y {
+                    app.agent_panel.scroll_up();
+                } else {
+                    app.floor_scroll_y = app.floor_scroll_y.saturating_sub(3);
+                }
+            } else {
+                app.floor_scroll_y = app.floor_scroll_y.saturating_sub(3);
+            }
         }
         MouseEventKind::ScrollDown => {
-            app.floor_scroll_y += 3;
+            if let Some(panel_y) = app.panel_top {
+                if mouse.row >= panel_y {
+                    app.agent_panel.scroll_down();
+                } else {
+                    app.floor_scroll_y += 3;
+                }
+            } else {
+                app.floor_scroll_y += 3;
+            }
         }
         _ => {}
     }
