@@ -35,7 +35,21 @@ Requires [Rust](https://rustup.rs/) 1.70+.
 
 ## Usage
 
-Live session mode (connecting to real Claude Code sessions) is not yet implemented — see [Roadmap](#roadmap). For now, use demo mode to see the office in action:
+### Live mode
+
+Just run the app — it automatically discovers the latest `.jsonl` session file in `~/.claude/` and tails it:
+
+```bash
+cargo run
+```
+
+You can also pipe JSONL events directly via stdin:
+
+```bash
+tail -f path/to/stream.jsonl | cargo run
+```
+
+### Demo mode
 
 ```bash
 cargo run -- --demo              # demo mode (2x speed)
@@ -60,7 +74,7 @@ cargo run -- --demo --extreme    # 10x speed
 
 ### Event Pipeline
 
-A discovery module polls the watch directory every 2 seconds for `.jsonl` session files. Each file gets an async reader that streams lines into an mpsc channel. Lines are parsed into `StreamEvent` variants (`AgentSpawn`, `ToolUse`, `AgentResult`, `SessionEnd`) which the game loop consumes to create, update, and retire agents. In demo mode (`--demo`), synthetic events simulate a full session instead.
+Events arrive as JSONL lines from stdin (live mode) or from the built-in demo producer. Lines are parsed into `StreamEvent` variants (`AgentSpawn`, `ToolUse`, `AgentResult`, `SessionEnd`) and sent through an async mpsc channel. The game loop drains the channel each frame to create, update, and retire agents.
 
 ### Tick Loop
 
@@ -87,7 +101,7 @@ The floor is drawn in a single pass with textured backgrounds per room using [ra
 
 ```mermaid
 graph LR
-    A[Stream Events] --> B[App Layer<br/>tick loop + input]
+    A[stdin JSONL / demo] --> B[App Layer<br/>tick loop + input]
     B --> C[Game Layer<br/>state, agents, floor]
     C --> D[UI Layer<br/>ratatui rendering]
     D --> E[Terminal]
@@ -96,7 +110,7 @@ graph LR
 ## Roadmap
 
 - [ ] Homebrew formula (`brew install agents-story`)
-- [ ] Connect to live Claude Code sessions
+- [x] Connect to live Claude Code sessions (stdin pipe)
 - [ ] Custom office themes (dark mode, neon, corporate beige)
 - [ ] Name your agents
 - [ ] Choose your floor plan

@@ -100,11 +100,13 @@ async fn run(
 
     let (tx, mut rx) = mpsc::channel::<ReaderMessage>(256);
 
-    // Spawn event producer: demo mode or live stdin pipe.
+    // Spawn event producer: demo, stdin pipe, or auto-discover.
     if demo_mode {
         tokio::spawn(demo::run_demo(tx));
     } else if !io::stdin().is_terminal() {
         tokio::spawn(stream::stdin_reader::read_stdin(tx));
+    } else {
+        tokio::spawn(stream::watcher::watch_sessions(tx));
     }
 
     let mut last_tick = Instant::now();
