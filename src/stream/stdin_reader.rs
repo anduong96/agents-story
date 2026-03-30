@@ -18,6 +18,7 @@ pub async fn read_stdin(tx: mpsc::Sender<ReaderMessage>) {
             let _ = tx
                 .send(ReaderMessage::Event {
                     session_id: session_id.clone(),
+                    project: "stdin".to_string(),
                     event,
                 })
                 .await;
@@ -46,6 +47,7 @@ mod tests {
                 let _ = tx
                     .send(ReaderMessage::Event {
                         session_id: session_id.clone(),
+                        project: "stdin".to_string(),
                         event,
                     })
                     .await;
@@ -74,7 +76,7 @@ mod tests {
 
         assert_eq!(msgs.len(), 2); // 1 event + SessionEnded
         match &msgs[0] {
-            ReaderMessage::Event { session_id, event } => {
+            ReaderMessage::Event { session_id, event, .. } => {
                 assert_eq!(session_id, "live");
                 match event {
                     StreamEvent::SessionInit { model, .. } => {

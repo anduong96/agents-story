@@ -116,6 +116,23 @@ impl<'a> AgentPanel<'a> {
     }
 }
 
+/// Collect unique project names in the order they first appear.
+fn project_order(agents: &[Agent]) -> Vec<String> {
+    let mut seen = std::collections::HashSet::new();
+    let mut order = Vec::new();
+    for agent in agents {
+        let proj = if agent.session.repo.is_empty() {
+            "Staff".to_string()
+        } else {
+            agent.session.repo.clone()
+        };
+        if seen.insert(proj.clone()) {
+            order.push(proj);
+        }
+    }
+    order
+}
+
 impl<'a> StatefulWidget for AgentPanel<'a> {
     type State = AgentPanelState;
 
@@ -129,143 +146,165 @@ impl<'a> StatefulWidget for AgentPanel<'a> {
             return;
         }
 
+        let projects = project_order(self.agents);
         let mut y = inner.top();
 
-        for (idx, agent) in self.agents.iter().enumerate() {
+        for project in &projects {
             if y >= inner.bottom() {
                 break;
             }
 
-            let is_selected = state.selected == Some(idx);
-            let is_expanded = state.expanded == Some(idx);
-
-            let arrow = if is_expanded {
-                "▼ "
-            } else if is_selected {
-                "▶ "
-            } else {
-                "  "
-            };
-
-            let (indicator, use_agent_color) = status_indicator(&agent.status);
-            let indicator_color = if use_agent_color {
-                agent.sprite_color.to_color()
-            } else {
-                Color::Red
-            };
-            let label = status_label(&agent.status);
-            let label_color = status_label_color(&agent.status);
-
-            let location = {
-                let base = format!("{} @ {}", agent.session.branch, agent.session.repo);
-                if let Some(ref wt) = agent.session.worktree {
-                    format!("{} ({})", base, wt)
-                } else {
-                    base
-                }
-            };
-
-            let task_text = agent
-                .task
-                .as_deref()
-                .map(|t| format!(" \"{}\"", t))
-                .unwrap_or_default();
-
-            // Build the collapsed line
-            let name_style = if is_selected {
+            // Project header
+            let header = Line::from(vec![Span::styled(
+                format!("── {} ──", project),
                 Style::default()
-                    .fg(Color::White)
-                    .add_modifier(Modifier::BOLD)
-            } else {
-                Style::default().fg(Color::White)
-            };
-
-            let collapsed_line = Line::from(vec![
-                Span::raw(arrow),
-                Span::styled(indicator, Style::default().fg(indicator_color)),
-                Span::raw(" "),
-                Span::styled(agent.name.clone(), name_style),
-                Span::raw(" "),
-                Span::styled(label, Style::default().fg(label_color)),
-                Span::raw(task_text),
-                Span::raw(" "),
-                Span::styled(location, Style::default().fg(Color::DarkGray)),
-            ]);
-
-            let row_area = Rect {
+                    .fg(Color::Cyan)
+                    .add_modifier(Modifier::BOLD),
+            )]);
+            let header_area = Rect {
                 x: inner.x,
                 y,
                 width: inner.width,
                 height: 1,
             };
-            collapsed_line.render(row_area, buf);
+            header.render(header_area, buf);
             y += 1;
 
-            // Expanded detail lines
-            if is_expanded {
-                // Line 1: Model / Tokens / Cost
-                if y < inner.bottom() {
-                    let detail1 = Line::from(vec![
-                        Span::raw("    "),
-                        Span::styled("Model: ", Style::default().fg(Color::DarkGray)),
-                        Span::styled(agent.model.clone(), Style::default().fg(Color::Cyan)),
-                        Span::raw("  "),
-                        Span::styled("Tokens: ", Style::default().fg(Color::DarkGray)),
-                        Span::styled(
-                            crate::ui::stats_bar::format_tokens(agent.tokens),
-                            Style::default().fg(Color::Cyan),
-                        ),
-                        Span::raw("  "),
-                        Span::styled("Cost: ", Style::default().fg(Color::DarkGray)),
-                        Span::styled(
-                            format!("${:.4}", agent.cost),
-                            Style::default().fg(crate::ui::stats_bar::cost_color(agent.cost)),
-                        ),
-                    ]);
-                    let detail1_area = Rect {
-                        x: inner.x,
-                        y,
-                        width: inner.width,
-                        height: 1,
-                    };
-                    detail1.render(detail1_area, buf);
-                    y += 1;
+            // Agents in this project
+            for (idx, agent) in self.agents.iter().enumerate() {
+                let agent_project = if agent.session.repo.is_empty() {
+                    "Staff"
+                } else {
+                    &agent.session.repo
+                };
+                if agent_project != project {
+                    continue;
                 }
 
-                // Line 2: Current tool
-                if y < inner.bottom() {
-                    let tool_text = agent.current_tool.as_deref().unwrap_or("(none)");
-                    let detail2 = Line::from(vec![
-                        Span::raw("    "),
-                        Span::styled("Tool: ", Style::default().fg(Color::DarkGray)),
-                        Span::styled(tool_text, Style::default().fg(Color::Magenta)),
-                    ]);
-                    let detail2_area = Rect {
-                        x: inner.x,
-                        y,
-                        width: inner.width,
-                        height: 1,
-                    };
-                    detail2.render(detail2_area, buf);
-                    y += 1;
+                if y >= inner.bottom() {
+                    break;
                 }
 
-                // Line 3: Duration
-                if y < inner.bottom() {
-                    let elapsed = agent.started_at.elapsed();
-                    let detail3 = Line::from(vec![
-                        Span::raw("    "),
-                        Span::styled("Duration: ", Style::default().fg(Color::DarkGray)),
-                        Span::styled(format_duration(elapsed), Style::default().fg(Color::White)),
-                    ]);
-                    let detail3_area = Rect {
-                        x: inner.x,
-                        y,
-                        width: inner.width,
-                        height: 1,
-                    };
-                    detail3.render(detail3_area, buf);
-                    y += 1;
+                let is_selected = state.selected == Some(idx);
+                let is_expanded = state.expanded == Some(idx);
+
+                let arrow = if is_expanded {
+                    "  ▼ "
+                } else if is_selected {
+                    "  ▶ "
+                } else {
+                    "    "
+                };
+
+                let (indicator, use_agent_color) = status_indicator(&agent.status);
+                let indicator_color = if use_agent_color {
+                    agent.sprite_color.to_color()
+                } else {
+                    Color::Red
+                };
+                let label = status_label(&agent.status);
+                let label_color = status_label_color(&agent.status);
+
+                let task_text = agent
+                    .task
+                    .as_deref()
+                    .map(|t| format!(" \"{}\"", t))
+                    .unwrap_or_default();
+
+                let name_style = if is_selected {
+                    Style::default()
+                        .fg(Color::White)
+                        .add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default().fg(Color::White)
+                };
+
+                let collapsed_line = Line::from(vec![
+                    Span::raw(arrow),
+                    Span::styled(indicator, Style::default().fg(indicator_color)),
+                    Span::raw(" "),
+                    Span::styled(agent.name.clone(), name_style),
+                    Span::raw(" "),
+                    Span::styled(label, Style::default().fg(label_color)),
+                    Span::raw(task_text),
+                ]);
+
+                let row_area = Rect {
+                    x: inner.x,
+                    y,
+                    width: inner.width,
+                    height: 1,
+                };
+                collapsed_line.render(row_area, buf);
+                y += 1;
+
+                // Expanded detail lines
+                if is_expanded {
+                    if y < inner.bottom() {
+                        let detail1 = Line::from(vec![
+                            Span::raw("      "),
+                            Span::styled("Model: ", Style::default().fg(Color::DarkGray)),
+                            Span::styled(agent.model.clone(), Style::default().fg(Color::Cyan)),
+                            Span::raw("  "),
+                            Span::styled("Tokens: ", Style::default().fg(Color::DarkGray)),
+                            Span::styled(
+                                crate::ui::stats_bar::format_tokens(agent.tokens),
+                                Style::default().fg(Color::Cyan),
+                            ),
+                            Span::raw("  "),
+                            Span::styled("Cost: ", Style::default().fg(Color::DarkGray)),
+                            Span::styled(
+                                format!("${:.4}", agent.cost),
+                                Style::default()
+                                    .fg(crate::ui::stats_bar::cost_color(agent.cost)),
+                            ),
+                        ]);
+                        let detail1_area = Rect {
+                            x: inner.x,
+                            y,
+                            width: inner.width,
+                            height: 1,
+                        };
+                        detail1.render(detail1_area, buf);
+                        y += 1;
+                    }
+
+                    if y < inner.bottom() {
+                        let tool_text = agent.current_tool.as_deref().unwrap_or("(none)");
+                        let detail2 = Line::from(vec![
+                            Span::raw("      "),
+                            Span::styled("Tool: ", Style::default().fg(Color::DarkGray)),
+                            Span::styled(tool_text, Style::default().fg(Color::Magenta)),
+                        ]);
+                        let detail2_area = Rect {
+                            x: inner.x,
+                            y,
+                            width: inner.width,
+                            height: 1,
+                        };
+                        detail2.render(detail2_area, buf);
+                        y += 1;
+                    }
+
+                    if y < inner.bottom() {
+                        let elapsed = agent.started_at.elapsed();
+                        let detail3 = Line::from(vec![
+                            Span::raw("      "),
+                            Span::styled("Duration: ", Style::default().fg(Color::DarkGray)),
+                            Span::styled(
+                                format_duration(elapsed),
+                                Style::default().fg(Color::White),
+                            ),
+                        ]);
+                        let detail3_area = Rect {
+                            x: inner.x,
+                            y,
+                            width: inner.width,
+                            height: 1,
+                        };
+                        detail3.render(detail3_area, buf);
+                        y += 1;
+                    }
                 }
             }
         }

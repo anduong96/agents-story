@@ -9,6 +9,7 @@ async fn send(tx: &mpsc::Sender<ReaderMessage>, session_id: &str, event: StreamE
     let _ = tx
         .send(ReaderMessage::Event {
             session_id: session_id.to_string(),
+            project: "agents-story".to_string(),
             event,
         })
         .await;

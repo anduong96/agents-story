@@ -81,8 +81,6 @@ impl SpriteColor {
 pub struct SessionInfo {
     pub session_id: String,
     pub repo: String,
-    pub branch: String,
-    pub worktree: Option<String>,
 }
 
 #[derive(Debug, Clone)]

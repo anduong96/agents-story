@@ -11,6 +11,7 @@ use crate::stream::protocol::{parse_line, StreamEvent};
 pub enum ReaderMessage {
     Event {
         session_id: String,
+        project: String,
         event: StreamEvent,
     },
     SessionEnded {
@@ -63,6 +64,7 @@ impl SessionReader {
                             let _ = tx
                                 .send(ReaderMessage::Event {
                                     session_id: self.session_id.clone(),
+                                    project: String::new(),
                                     event,
                                 })
                                 .await;

@@ -259,8 +259,12 @@ fn render_bubbles(frame: &mut Frame, app: &App, floor_area: Rect) {
 
 fn handle_stream_message(app: &mut App, msg: ReaderMessage) {
     match msg {
-        ReaderMessage::Event { session_id, event } => {
-            handle_stream_event(app, &session_id, event);
+        ReaderMessage::Event {
+            session_id,
+            project,
+            event,
+        } => {
+            handle_stream_event(app, &session_id, &project, event);
         }
         ReaderMessage::SessionEnded { session_id } => {
             // Mark all agents from this session as Finished.
@@ -295,7 +299,7 @@ fn handle_stream_message(app: &mut App, msg: ReaderMessage) {
     }
 }
 
-fn handle_stream_event(app: &mut App, session_id: &str, event: StreamEvent) {
+fn handle_stream_event(app: &mut App, session_id: &str, project: &str, event: StreamEvent) {
     match event {
         StreamEvent::SessionInit { model, .. } => {
             app.state.stats.model = shorten_model(&model);
@@ -380,9 +384,7 @@ fn handle_stream_event(app: &mut App, session_id: &str, event: StreamEvent) {
 
                 let session = SessionInfo {
                     session_id: session_id.to_string(),
-                    repo: "agents-story".to_string(),
-                    branch: "main".to_string(),
-                    worktree: None,
+                    repo: project.to_string(),
                 };
 
                 let mut agent = Agent::new(
@@ -614,8 +616,6 @@ fn create_staff_agents(app: &mut App) {
         let session = SessionInfo {
             session_id: "staff".to_string(),
             repo: String::new(),
-            branch: String::new(),
-            worktree: None,
         };
 
         let mut agent = Agent::new(
