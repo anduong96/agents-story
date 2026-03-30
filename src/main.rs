@@ -5,7 +5,7 @@ mod input;
 mod stream;
 mod ui;
 
-use std::io;
+use std::io::{self, IsTerminal};
 use std::time::Instant;
 
 use crossterm::{
@@ -100,9 +100,11 @@ async fn run(
 
     let (tx, mut rx) = mpsc::channel::<ReaderMessage>(256);
 
-    // Spawn demo producer if --demo flag was set.
+    // Spawn event producer: demo mode or live stdin pipe.
     if demo_mode {
         tokio::spawn(demo::run_demo(tx));
+    } else if !io::stdin().is_terminal() {
+        tokio::spawn(stream::stdin_reader::read_stdin(tx));
     }
 
     let mut last_tick = Instant::now();
