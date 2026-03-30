@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
-use std::time::{Duration as StdDuration, SystemTime};
+use std::time::{Duration as StdDuration, Instant, SystemTime};
 
-use tokio::io::{AsyncBufReadExt, BufReader};
+use tokio::io::{AsyncBufReadExt, AsyncSeekExt, BufReader};
 use tokio::sync::mpsc;
 use tokio::time::{sleep, Duration};
 
@@ -11,6 +11,9 @@ use crate::stream::reader::ReaderMessage;
 
 /// How recently a file must have been modified to be considered active.
 const ACTIVE_THRESHOLD: StdDuration = StdDuration::from_secs(60);
+
+/// Stop tailing a file after this long with no new content.
+const INACTIVITY_TIMEOUT: StdDuration = StdDuration::from_secs(600);
 
 /// Recursively find `.jsonl` files under `base` that were modified recently.
 fn find_active_jsonl(base: &Path) -> Vec<PathBuf> {
@@ -65,8 +68,8 @@ pub async fn watch_sessions(tx: mpsc::Sender<ReaderMessage>) {
     }
 }
 
-/// Tail a file, sending parsed events through the channel.
-/// On EOF, polls for new data every 200ms (the file may still be written to).
+/// Tail a file from EOF, only processing new content.
+/// Polls for new data every second. Stops after 10 minutes of inactivity.
 async fn tail_file(path: PathBuf, project: String, tx: mpsc::Sender<ReaderMessage>) {
     let session_id = session_id_from_path(&path);
 
@@ -84,16 +87,33 @@ async fn tail_file(path: PathBuf, project: String, tx: mpsc::Sender<ReaderMessag
     };
 
     let mut reader = BufReader::new(file);
+
+    // Seek to end — only process new content written after we start watching.
+    if let Ok(end) = reader.seek(std::io::SeekFrom::End(0)).await {
+        // If file is non-empty, we're skipping history intentionally.
+        let _ = end;
+    }
+
     let mut line = String::new();
+    let mut last_activity = Instant::now();
 
     loop {
         line.clear();
         match reader.read_line(&mut line).await {
             Ok(0) => {
-                // EOF — file may still be written to, poll for new data.
-                sleep(Duration::from_millis(200)).await;
+                // EOF — check inactivity timeout.
+                if last_activity.elapsed() > INACTIVITY_TIMEOUT {
+                    let _ = tx
+                        .send(ReaderMessage::SessionEnded {
+                            session_id,
+                        })
+                        .await;
+                    break;
+                }
+                sleep(Duration::from_secs(1)).await;
             }
             Ok(_) => {
+                last_activity = Instant::now();
                 if let Some(event) = parse_line(&line) {
                     let _ = tx
                         .send(ReaderMessage::Event {
