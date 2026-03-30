@@ -56,44 +56,68 @@ cargo run -- --demo --extreme    # 10x
 
 ## How it works
 
-Claude Code emits stream events when agents spawn, use tools, and finish tasks. This app listens to those events and translates them into office activity.
+### Event Pipeline
 
-```
-Claude Code session
-  │
-  ├── AgentSpawn    →  CEO runs to whiteboard, idle staff walks to desk
-  ├── ToolUse       →  Status indicator appears (◇ read, ✎ edit, ▸ bash)
-  ├── AgentResult   →  Staff returns to lounge / temp exits through top door
-  └── SessionEnd    →  Everyone goes back to the lounge
-```
+A discovery module polls the watch directory every 2 seconds for `.jsonl` session files. Each file gets an async reader that streams lines into an mpsc channel. Lines are parsed into `StreamEvent` variants (`AgentSpawn`, `ToolUse`, `AgentResult`, `SessionEnd`) which the game loop consumes to create, update, and retire agents. In demo mode (`--demo`), synthetic events simulate a full session instead.
 
-In demo mode (`--demo`), synthetic events simulate a full session with 6 staff and 3 temp agents.
+### Tick Loop
+
+The app runs at **15 FPS** when animating, dropping to **2 FPS** when idle. Each tick:
+
+1. **Move agents** — `advance_along_path()` consumes waypoints at 4.0 tiles/sec (CEO at 6.0). Remaining movement carries into the next waypoint within the same frame.
+2. **Collision avoidance** — Snapshot all positions, check 2-cell bounding boxes, apply a perpendicular nudge (2.0 tiles) or revert if blocked.
+3. **Lounge wandering** — Idle agents pick from 7 deterministic targets using `(tick_count/90 + sprite_index) % 7`.
+4. **Desk cleanup** — When no agents are animating: free unused desks, remap indices, update grid cells.
+
+### Pathfinding
+
+Waypoint-based routing between three rooms (Workspace, Lounge, CEO Office). Adjacent rooms route through the nearest door with waypoints on both sides. Non-adjacent rooms (Lounge ↔ CEO Office) chain through the Workspace center as an intermediate.
+
+### Desk Allocation
+
+Desks are created on demand when an agent needs one and freed when they leave. The grid uses `ceil(sqrt(n))` columns to keep an even layout. Desk variants (Single/Dual/Triple monitors) have different widths (1–2 cells, 3 rows tall). The CEO desk is stored separately from the workspace desk vec.
+
+### Rendering
+
+The floor is drawn in a single pass with textured backgrounds per room using [ratatui](https://github.com/ratatui/ratatui). Desks, furniture, and agents are overlaid on top. Monitor screens use half-block characters (`▀`) with fg = top pixel and bg = bottom pixel for 2x vertical color detail, animating with shifting rainbow colors each frame. Agents are 2×2 sprites with an 8-color palette and directional facing (left/right) based on movement delta.
 
 ## Architecture
 
+```mermaid
+graph TD
+    subgraph Input
+        A[Claude Code Session<br/>.jsonl files] -->|poll every 2s| B[stream/discovery.rs]
+        B -->|async reader| C[stream/reader.rs]
+        C -->|mpsc channel| D[stream/protocol.rs]
+        E[demo.rs] -->|synthetic events| D
+    end
+
+    subgraph App Layer
+        D -->|StreamEvent| F[main.rs<br/>event loop]
+        F --> G[app.rs<br/>tick loop]
+        G --> H[collision avoidance]
+        G --> I[lounge wandering]
+        G --> J[desk cleanup]
+    end
+
+    subgraph Game Layer
+        G --> K[game/state.rs<br/>GameState]
+        K --> L[game/floor.rs<br/>rooms, desks, grid]
+        K --> M[game/agent.rs<br/>status machine, sprites]
+        K --> N[game/pathfinding.rs<br/>waypoint routing]
+    end
+
+    subgraph UI Layer
+        K --> O[ui/floor_view.rs<br/>half-block rendering]
+        K --> P[ui/agent_panel.rs<br/>agent list sidebar]
+        K --> Q[ui/stats_bar.rs<br/>FPS, RAM, hotkeys]
+        O --> R[Terminal<br/>ratatui]
+        P --> R
+        Q --> R
+    end
+
+    S[input.rs<br/>keyboard + mouse] --> G
 ```
-┌─────────────────────────────────────────────────────┐
-│  main.rs — event loop, stream handling, agent wiring │
-│                                                      │
-│  ┌─────────────┐     ┌──────────────┐               │
-│  │  game/       │     │  ui/          │               │
-│  │  floor.rs    │────▶│  floor_view.rs│──▶ terminal   │
-│  │  agent.rs    │     │  sprites.rs   │               │
-│  │  state.rs    │     │  agent_panel  │               │
-│  │  pathfinding │     │  stats_bar    │               │
-│  └─────────────┘     │  bubbles      │               │
-│                       └──────────────┘               │
-│  app.rs — tick loop, collision avoidance, CEO logic   │
-│  demo.rs — synthetic events                          │
-│  stream/ — protocol + reader                         │
-└─────────────────────────────────────────────────────┘
-```
-
-**Game layer** (`src/game/`) owns the state: a grid-based floor with rooms, desks, furniture, and agents with positions and status. Desks are created on demand using `ceil(sqrt(n))` columns for an even grid. Agents pathfind between rooms through doors using waypoint-based routing.
-
-**UI layer** (`src/ui/`) renders the state each frame using [ratatui](https://github.com/ratatui/ratatui). The floor is drawn in a single pass with textured backgrounds per room. Desks, agents, and furniture are overlaid on top. Monitor screens animate with half-block characters (`▀`) showing two colors per cell.
-
-**App layer** (`src/app.rs`) runs the tick loop: advances agent positions, handles collision avoidance (perpendicular dodge), removes finished temp agents, cleans up unused desks, and makes idle agents wander in the lounge.
 
 ## Roadmap
 
