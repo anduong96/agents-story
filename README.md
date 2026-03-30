@@ -35,11 +35,13 @@ Requires [Rust](https://rustup.rs/) 1.70+.
 
 ## Usage
 
+Live session mode (connecting to real Claude Code sessions) is not yet implemented — see [Roadmap](#roadmap). For now, use demo mode to see the office in action:
+
 ```bash
-cargo run -- --demo              # demo mode
-cargo run -- --demo --fast       # 5x
-cargo run -- --demo --extreme    # 10x
-./dev.sh                         # hot reload
+cargo run -- --demo              # demo mode (2x speed)
+cargo run -- --demo --fast       # 5x speed
+cargo run -- --demo --extreme    # 10x speed
+./dev.sh                         # hot reload with cargo-watch
 ```
 
 ## Controls
@@ -84,39 +86,11 @@ The floor is drawn in a single pass with textured backgrounds per room using [ra
 ## Architecture
 
 ```mermaid
-graph TD
-    subgraph Input
-        A[Claude Code Session<br/>.jsonl files] -->|poll every 2s| B[stream/discovery.rs]
-        B -->|async reader| C[stream/reader.rs]
-        C -->|mpsc channel| D[stream/protocol.rs]
-        E[demo.rs] -->|synthetic events| D
-    end
-
-    subgraph App Layer
-        D -->|StreamEvent| F[main.rs<br/>event loop]
-        F --> G[app.rs<br/>tick loop]
-        G --> H[collision avoidance]
-        G --> I[lounge wandering]
-        G --> J[desk cleanup]
-    end
-
-    subgraph Game Layer
-        G --> K[game/state.rs<br/>GameState]
-        K --> L[game/floor.rs<br/>rooms, desks, grid]
-        K --> M[game/agent.rs<br/>status machine, sprites]
-        K --> N[game/pathfinding.rs<br/>waypoint routing]
-    end
-
-    subgraph UI Layer
-        K --> O[ui/floor_view.rs<br/>half-block rendering]
-        K --> P[ui/agent_panel.rs<br/>agent list sidebar]
-        K --> Q[ui/stats_bar.rs<br/>FPS, RAM, hotkeys]
-        O --> R[Terminal<br/>ratatui]
-        P --> R
-        Q --> R
-    end
-
-    S[input.rs<br/>keyboard + mouse] --> G
+graph LR
+    A[Stream Events] --> B[App Layer<br/>tick loop + input]
+    B --> C[Game Layer<br/>state, agents, floor]
+    C --> D[UI Layer<br/>ratatui rendering]
+    D --> E[Terminal]
 ```
 
 ## Roadmap
