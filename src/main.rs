@@ -37,7 +37,7 @@ use ui::stats_bar::StatsBar;
 const DEFAULT_FLOOR_WIDTH: u16 = 80;
 const DEFAULT_FLOOR_HEIGHT: u16 = 30;
 const MAX_WIDTH: u16 = 120;
-const MAX_HEIGHT: u16 = 50;
+const MAX_HEIGHT: u16 = 200;
 
 // ---------------------------------------------------------------------------
 // Entry point
@@ -144,20 +144,19 @@ async fn run(
 fn render(frame: &mut Frame, app: &mut App) {
     let size = frame.area();
 
-    // Clamp to max dimensions and center
+    // Clamp width and center horizontally; use full height
     let clamped_w = size.width.min(MAX_WIDTH);
-    let clamped_h = size.height.min(MAX_HEIGHT);
     let offset_x = (size.width.saturating_sub(clamped_w)) / 2;
-    let offset_y = (size.height.saturating_sub(clamped_h)) / 2;
-    let centered = Rect::new(offset_x, offset_y, clamped_w, clamped_h);
+    let centered = Rect::new(offset_x, 0, clamped_w, size.height);
 
-    // Layout: floor (65%) | stats bar (1 line) | agent panel (rest)
+    // Layout: floor (fill) | stats bar (1 line) | agent panel (fixed)
+    let panel_height = 8.min(centered.height.saturating_sub(DEFAULT_FLOOR_HEIGHT + 1));
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Percentage(65),
+            Constraint::Min(DEFAULT_FLOOR_HEIGHT),
             Constraint::Length(1),
-            Constraint::Min(3),
+            Constraint::Length(panel_height),
         ])
         .split(centered);
 
