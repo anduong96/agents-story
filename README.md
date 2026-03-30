@@ -52,9 +52,9 @@ tail -f path/to/stream.jsonl | cargo run
 ### Demo mode
 
 ```bash
-cargo run -- --demo              # demo mode (2x speed)
-cargo run -- --demo --fast       # 5x speed
-cargo run -- --demo --extreme    # 10x speed
+cargo run -- --demo              # demo mode (5x speed)
+cargo run -- --demo --fast       # 10x speed
+cargo run -- --demo --extreme    # 20x speed
 ./dev.sh                         # hot reload with cargo-watch
 ```
 

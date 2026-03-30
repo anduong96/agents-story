@@ -47,11 +47,11 @@ const MAX_HEIGHT: u16 = 50;
 async fn main() -> io::Result<()> {
     let demo_mode = std::env::args().any(|a| a == "--demo");
     let speed = if std::env::args().any(|a| a == "--extreme") {
-        10.0
+        20.0
     } else if std::env::args().any(|a| a == "--fast") {
-        5.0
+        10.0
     } else {
-        2.0
+        5.0
     };
 
     // Terminal setup
