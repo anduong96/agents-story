@@ -86,7 +86,6 @@ pub struct Floor {
     pub ceo_chair: (u16, u16),
     pub exit_pos: (u16, u16),
     pub whiteboard_pos: (u16, u16),
-    #[allow(dead_code)]
     pub ping_pong: (u16, u16, u16, u16),
 }
 

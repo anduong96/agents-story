@@ -7,32 +7,6 @@ pub const CEO_SKIN_COLOR: Color = Color::Rgb(220, 180, 130); // CEO skin tone
 pub const CEO_OUTFIT_COLOR: Color = Color::Rgb(30, 30, 35); // CEO black outfit
 pub const VERTICAL_DIVIDER_COLOR: Color = Color::Rgb(80, 80, 120); // lounge/CEO divider
 
-// Monitor sprite — 2 cells wide × 2 tall
-#[allow(dead_code)]
-pub struct MonitorSprite {
-    pub top: [&'static str; 2],
-    pub bottom: [&'static str; 2],
-}
-
-#[allow(dead_code)]
-pub const MONITOR: MonitorSprite = MonitorSprite {
-    top: ["█▓", "▓█"],
-    bottom: ["▀▀", "▀▀"],
-};
-
-#[allow(dead_code)]
-pub const MONITOR_FLICKER: MonitorSprite = MonitorSprite {
-    top: ["█▒", "▒█"],
-    bottom: ["▀▀", "▀▀"],
-};
-
-// Ping pong table: 6 wide × 2 tall
-#[allow(dead_code)]
-pub const PING_PONG_TABLE: [[&str; 6]; 2] = [
-    ["▄", "▄", "▄", "▄", "▄", "▄"],
-    ["█", "▒", "▒", "▒", "▒", "█"],
-];
-
 pub const PING_PONG_COLOR: Color = Color::Rgb(0, 128, 0);
 pub const PING_PONG_NET_COLOR: Color = Color::Rgb(220, 220, 220);
 

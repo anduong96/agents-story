@@ -76,7 +76,9 @@ mod tests {
 
         assert_eq!(msgs.len(), 2); // 1 event + SessionEnded
         match &msgs[0] {
-            ReaderMessage::Event { session_id, event, .. } => {
+            ReaderMessage::Event {
+                session_id, event, ..
+            } => {
                 assert_eq!(session_id, "live");
                 match event {
                     StreamEvent::SessionInit { model, .. } => {

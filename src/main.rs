@@ -305,203 +305,16 @@ fn handle_stream_event(app: &mut App, session_id: &str, project: &str, event: St
             app.state.stats.model = shorten_model(&model);
             app.state.ceo_status = game::state::CeoStatus::Waiting;
         }
-
         StreamEvent::AgentSpawn {
             agent_id,
             name,
             description,
-        } => {
-            app.state.stats.total_tasks += 1;
-
-            // CEO runs to whiteboard and yells the task
-            if app.ceo_path.is_empty() {
-                let wb = app.state.floor.whiteboard_pos;
-                app.ceo_returning = false;
-                app.ceo_path = compute_path(
-                    app.ceo_pos.0 as u16,
-                    app.ceo_pos.1 as u16,
-                    Room::CeoOffice,
-                    Room::Workspace,
-                    wb.0,
-                    wb.1,
-                    &app.state.floor,
-                );
-                let yell = format!("NEW TASK: {}!", name.to_uppercase());
-                app.bubbles.trigger_ceo_yell(yell);
-            }
-
-            // Try to assign an idle staff agent first
-            let idle_idx = app
-                .state
-                .agents
-                .iter()
-                .position(|a| a.status == AgentStatus::Idle);
-
-            if let Some(idx) = idle_idx {
-                // Reuse idle staff agent
-                let agent = &mut app.state.agents[idx];
-                agent.id = agent_id.clone();
-                agent.task = Some(description);
-                agent.session.session_id = session_id.to_string();
-                agent.status = AgentStatus::Working;
-                agent.current_tool = None;
-                agent.tokens = 0;
-                agent.cost = 0.0;
-                agent.started_at = std::time::Instant::now();
-
-                // Assign desk and path from current position to desk
-                let agent_name = agent.name.clone();
-                let sprite_color = agent.sprite_color;
-                let from_x = agent.position.0 as u16;
-                let from_y = agent.position.1 as u16;
-
-                if let Some(desk_idx) = app.state.floor.assign_desk(&agent_name) {
-                    app.state.agents[idx].assigned_desk = Some(desk_idx);
-                    app.state.floor.desks[desk_idx].agent_color = Some(sprite_color);
-                    let desk = &app.state.floor.desks[desk_idx];
-                    let target_x = desk.chair_x;
-                    let target_y = desk.chair_y;
-                    let path = compute_path(
-                        from_x,
-                        from_y,
-                        Room::Lounge,
-                        Room::Workspace,
-                        target_x,
-                        target_y,
-                        &app.state.floor,
-                    );
-                    app.state.agents[idx].path = path;
-                    app.state.agents[idx].target_room = Room::Workspace;
-                }
-
-                sync_agent_positions(app);
-                app.bubbles
-                    .trigger_status_change(&agent_id, BubbleAgentStatus::Working);
-            } else {
-                // Hire a new temp agent
-                let color_index = app.state.next_color_index;
-                app.state.next_color_index += 1;
-
-                let session = SessionInfo {
-                    session_id: session_id.to_string(),
-                    repo: project.to_string(),
-                };
-
-                let mut agent = Agent::new(
-                    agent_id.clone(),
-                    name,
-                    app.state.stats.model.clone(),
-                    session,
-                    color_index,
-                );
-                agent.task = Some(description);
-                agent.is_permanent = false;
-
-                if let Some(desk_idx) = app.state.floor.assign_desk(&agent.name) {
-                    agent.assigned_desk = Some(desk_idx);
-                    app.state.floor.desks[desk_idx].agent_color = Some(agent.sprite_color);
-                    let desk = &app.state.floor.desks[desk_idx];
-                    let target_x = desk.chair_x;
-                    let target_y = desk.chair_y;
-
-                    let spawn_door = app.state.floor.doors.first();
-                    let (start_x, start_y) = spawn_door
-                        .map(|d| (d.x, d.y.saturating_sub(1)))
-                        .unwrap_or((1, 1));
-
-                    agent.position = (start_x as f32, start_y as f32);
-                    agent.path = compute_path(
-                        start_x,
-                        start_y,
-                        Room::Workspace,
-                        Room::Workspace,
-                        target_x,
-                        target_y,
-                        &app.state.floor,
-                    );
-                }
-
-                agent.status = AgentStatus::Working;
-                app.bubbles
-                    .trigger_status_change(&agent_id, BubbleAgentStatus::Spawning);
-                app.state.agents.push(agent);
-                sync_agent_positions(app);
-            }
-        }
-
+        } => handle_agent_spawn(app, session_id, project, agent_id, name, description),
         StreamEvent::ToolUse { tool, args_hint } => {
-            // Find the most recently added agent for this session that is Working.
-            if let Some(agent) =
-                app.state.agents.iter_mut().rev().find(|a| {
-                    a.session.session_id == session_id && a.status == AgentStatus::Working
-                })
-            {
-                agent.current_tool = Some(tool.clone());
-                app.bubbles
-                    .trigger_tool_use(&agent.id, &tool, args_hint.as_deref());
-            }
+            handle_tool_use(app, session_id, tool, args_hint)
         }
-
-        StreamEvent::ToolResult { .. } => {
-            // No-op for now; tool results don't change visual state.
-        }
-
-        StreamEvent::AgentResult { agent_id } => {
-            app.state.stats.completed_tasks += 1;
-
-            // Check if agent is permanent staff or temp
-            let is_permanent = app
-                .state
-                .agents
-                .iter()
-                .find(|a| a.id == agent_id)
-                .map(|a| a.is_permanent)
-                .unwrap_or(false);
-
-            if is_permanent {
-                // Staff returns to lounge as idle
-                transition_agent(app, &agent_id, AgentStatus::Idle);
-            } else {
-                // Temp leaves via top exit door in workspace
-                let exit = app.state.floor.exit_pos;
-                let idx = app.state.agents.iter().position(|a| a.id == agent_id);
-                if let Some(i) = idx {
-                    let agent = &mut app.state.agents[i];
-                    agent.status = AgentStatus::Finished;
-                    agent.target_room = Room::Workspace;
-                    // Walk straight to exit (same room, no door needed)
-                    agent.path = vec![(exit.0, exit.1)];
-                    // Free desk
-                    if let Some(desk_idx) = agent.assigned_desk.take() {
-                        app.state.floor.free_desk(desk_idx);
-                    }
-                    app.bubbles
-                        .trigger_status_change(&agent_id, BubbleAgentStatus::Finished);
-                }
-            }
-
-            // Check if all working agents are done
-            let all_done = app
-                .state
-                .agents
-                .iter()
-                .filter(|a| !a.is_permanent)
-                .all(|a| {
-                    matches!(
-                        a.status,
-                        AgentStatus::Finished | AgentStatus::Error | AgentStatus::Idle
-                    )
-                });
-            let any_working = app
-                .state
-                .agents
-                .iter()
-                .any(|a| matches!(a.status, AgentStatus::Working | AgentStatus::Spawning));
-            if all_done && !any_working && app.state.stats.total_tasks > 0 {
-                app.state.ceo_status = game::state::CeoStatus::AllComplete;
-            }
-        }
-
+        StreamEvent::ToolResult { .. } => {}
+        StreamEvent::AgentResult { agent_id } => handle_agent_result(app, agent_id),
         StreamEvent::StatsUpdate {
             input_tokens,
             output_tokens,
@@ -510,28 +323,226 @@ fn handle_stream_event(app: &mut App, session_id: &str, project: &str, event: St
             app.state.stats.total_tokens = input_tokens + output_tokens;
             app.state.stats.total_cost = cost;
         }
+        StreamEvent::TextDelta { .. } | StreamEvent::SessionEnd => {}
+        StreamEvent::Error { message: _ } => handle_agent_error(app, session_id),
+    }
+}
 
-        StreamEvent::TextDelta { .. } => {
-            // Text deltas are informational; no visual side-effect for now.
-        }
+fn handle_agent_spawn(
+    app: &mut App,
+    session_id: &str,
+    project: &str,
+    agent_id: String,
+    name: String,
+    description: String,
+) {
+    app.state.stats.total_tasks += 1;
 
-        StreamEvent::SessionEnd => {
-            // Handled by ReaderMessage::SessionEnded.
-        }
+    // CEO runs to whiteboard and yells the task
+    if app.ceo_path.is_empty() {
+        let wb = app.state.floor.whiteboard_pos;
+        app.ceo_returning = false;
+        app.ceo_path = compute_path(
+            app.ceo_pos.0 as u16,
+            app.ceo_pos.1 as u16,
+            Room::CeoOffice,
+            Room::Workspace,
+            wb.0,
+            wb.1,
+            &app.state.floor,
+        );
+        let yell = format!("NEW TASK: {}!", name.to_uppercase());
+        app.bubbles.trigger_ceo_yell(yell);
+    }
 
-        StreamEvent::Error { message: _ } => {
-            // Find the most recently active agent in this session and mark it Error.
-            let agent_id = app
-                .state
-                .agents
-                .iter()
-                .rev()
-                .find(|a| a.session.session_id == session_id && a.status == AgentStatus::Working)
-                .map(|a| a.id.clone());
-            if let Some(id) = agent_id {
-                transition_agent(app, &id, AgentStatus::Error);
+    // Try to assign an idle staff agent first
+    let idle_idx = app
+        .state
+        .agents
+        .iter()
+        .position(|a| a.status == AgentStatus::Idle);
+
+    if let Some(idx) = idle_idx {
+        assign_staff_agent(app, idx, &agent_id, session_id, description);
+    } else {
+        hire_temp_agent(app, &agent_id, session_id, project, name, description);
+    }
+}
+
+fn assign_staff_agent(
+    app: &mut App,
+    idx: usize,
+    agent_id: &str,
+    session_id: &str,
+    description: String,
+) {
+    let agent = &mut app.state.agents[idx];
+    agent.id = agent_id.to_string();
+    agent.task = Some(description);
+    agent.session.session_id = session_id.to_string();
+    agent.status = AgentStatus::Working;
+    agent.current_tool = None;
+    agent.tokens = 0;
+    agent.cost = 0.0;
+    agent.started_at = std::time::Instant::now();
+
+    let agent_name = agent.name.clone();
+    let sprite_color = agent.sprite_color;
+    let from_x = agent.position.0 as u16;
+    let from_y = agent.position.1 as u16;
+
+    if let Some(desk_idx) = app.state.floor.assign_desk(&agent_name) {
+        app.state.agents[idx].assigned_desk = Some(desk_idx);
+        app.state.floor.desks[desk_idx].agent_color = Some(sprite_color);
+        let desk = &app.state.floor.desks[desk_idx];
+        let path = compute_path(
+            from_x,
+            from_y,
+            Room::Lounge,
+            Room::Workspace,
+            desk.chair_x,
+            desk.chair_y,
+            &app.state.floor,
+        );
+        app.state.agents[idx].path = path;
+        app.state.agents[idx].target_room = Room::Workspace;
+    }
+
+    sync_agent_positions(app);
+    app.bubbles
+        .trigger_status_change(agent_id, BubbleAgentStatus::Working);
+}
+
+fn hire_temp_agent(
+    app: &mut App,
+    agent_id: &str,
+    session_id: &str,
+    project: &str,
+    name: String,
+    description: String,
+) {
+    let color_index = app.state.next_color_index;
+    app.state.next_color_index += 1;
+
+    let session = SessionInfo {
+        session_id: session_id.to_string(),
+        repo: project.to_string(),
+    };
+
+    let mut agent = Agent::new(
+        agent_id.to_string(),
+        name,
+        app.state.stats.model.clone(),
+        session,
+        color_index,
+    );
+    agent.task = Some(description);
+    agent.is_permanent = false;
+
+    if let Some(desk_idx) = app.state.floor.assign_desk(&agent.name) {
+        agent.assigned_desk = Some(desk_idx);
+        app.state.floor.desks[desk_idx].agent_color = Some(agent.sprite_color);
+        let desk = &app.state.floor.desks[desk_idx];
+
+        let spawn_door = app.state.floor.doors.first();
+        let (start_x, start_y) = spawn_door
+            .map(|d| (d.x, d.y.saturating_sub(1)))
+            .unwrap_or((1, 1));
+
+        agent.position = (start_x as f32, start_y as f32);
+        agent.path = compute_path(
+            start_x,
+            start_y,
+            Room::Workspace,
+            Room::Workspace,
+            desk.chair_x,
+            desk.chair_y,
+            &app.state.floor,
+        );
+    }
+
+    agent.status = AgentStatus::Working;
+    app.bubbles
+        .trigger_status_change(agent_id, BubbleAgentStatus::Spawning);
+    app.state.agents.push(agent);
+    sync_agent_positions(app);
+}
+
+fn handle_tool_use(app: &mut App, session_id: &str, tool: String, args_hint: Option<String>) {
+    if let Some(agent) = app
+        .state
+        .agents
+        .iter_mut()
+        .rev()
+        .find(|a| a.session.session_id == session_id && a.status == AgentStatus::Working)
+    {
+        agent.current_tool = Some(tool.clone());
+        app.bubbles
+            .trigger_tool_use(&agent.id, &tool, args_hint.as_deref());
+    }
+}
+
+fn handle_agent_result(app: &mut App, agent_id: String) {
+    app.state.stats.completed_tasks += 1;
+
+    let is_permanent = app
+        .state
+        .agents
+        .iter()
+        .find(|a| a.id == agent_id)
+        .map(|a| a.is_permanent)
+        .unwrap_or(false);
+
+    if is_permanent {
+        transition_agent(app, &agent_id, AgentStatus::Idle);
+    } else {
+        // Temp leaves via top exit door
+        let exit = app.state.floor.exit_pos;
+        if let Some(i) = app.state.agents.iter().position(|a| a.id == agent_id) {
+            let agent = &mut app.state.agents[i];
+            agent.status = AgentStatus::Finished;
+            agent.target_room = Room::Workspace;
+            agent.path = vec![(exit.0, exit.1)];
+            if let Some(desk_idx) = agent.assigned_desk.take() {
+                app.state.floor.free_desk(desk_idx);
             }
+            app.bubbles
+                .trigger_status_change(&agent_id, BubbleAgentStatus::Finished);
         }
+    }
+
+    // Check if all working agents are done
+    let all_done = app
+        .state
+        .agents
+        .iter()
+        .filter(|a| !a.is_permanent)
+        .all(|a| {
+            matches!(
+                a.status,
+                AgentStatus::Finished | AgentStatus::Error | AgentStatus::Idle
+            )
+        });
+    let any_working = app
+        .state
+        .agents
+        .iter()
+        .any(|a| matches!(a.status, AgentStatus::Working | AgentStatus::Spawning));
+    if all_done && !any_working && app.state.stats.total_tasks > 0 {
+        app.state.ceo_status = game::state::CeoStatus::AllComplete;
+    }
+}
+
+fn handle_agent_error(app: &mut App, session_id: &str) {
+    let agent_id = app
+        .state
+        .agents
+        .iter()
+        .rev()
+        .find(|a| a.session.session_id == session_id && a.status == AgentStatus::Working)
+        .map(|a| a.id.clone());
+    if let Some(id) = agent_id {
+        transition_agent(app, &id, AgentStatus::Error);
     }
 }
 

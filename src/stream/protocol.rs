@@ -41,8 +41,8 @@ pub struct RawMessage {
     pub extra: HashMap<String, Value>,
 }
 
-#[derive(Debug, Clone)]
 #[allow(dead_code)]
+#[derive(Debug, Clone)]
 pub enum StreamEvent {
     SessionInit {
         session_id: String,
@@ -77,7 +77,6 @@ pub enum StreamEvent {
     },
 }
 
-#[allow(dead_code)]
 pub fn parse_line(line: &str) -> Option<StreamEvent> {
     let trimmed = line.trim();
     if trimmed.is_empty() {

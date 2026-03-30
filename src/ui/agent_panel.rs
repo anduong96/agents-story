@@ -13,8 +13,6 @@ use crate::game::agent::{Agent, AgentStatus};
 pub struct AgentPanelState {
     pub selected: Option<usize>,
     pub expanded: Option<usize>,
-    #[allow(dead_code)]
-    pub scroll_offset: usize,
 }
 
 impl AgentPanelState {
@@ -22,7 +20,6 @@ impl AgentPanelState {
         AgentPanelState {
             selected: None,
             expanded: None,
-            scroll_offset: 0,
         }
     }
 
@@ -255,8 +252,7 @@ impl<'a> StatefulWidget for AgentPanel<'a> {
                             Span::styled("Cost: ", Style::default().fg(Color::DarkGray)),
                             Span::styled(
                                 format!("${:.4}", agent.cost),
-                                Style::default()
-                                    .fg(crate::ui::stats_bar::cost_color(agent.cost)),
+                                Style::default().fg(crate::ui::stats_bar::cost_color(agent.cost)),
                             ),
                         ]);
                         let detail1_area = Rect {

@@ -1,13 +1,6 @@
-use std::path::PathBuf;
-use tokio::fs::File;
-use tokio::io::{AsyncBufReadExt, BufReader};
-use tokio::sync::mpsc;
-use tokio::task::JoinHandle;
-
-use crate::stream::protocol::{parse_line, StreamEvent};
+use crate::stream::protocol::StreamEvent;
 
 #[derive(Debug)]
-#[allow(dead_code)]
 pub enum ReaderMessage {
     Event {
         session_id: String,
@@ -19,77 +12,7 @@ pub enum ReaderMessage {
     },
     ReaderError {
         session_id: String,
+        #[allow(dead_code)]
         error: String,
     },
-}
-
-#[allow(dead_code)]
-pub struct SessionReader {
-    pub session_id: String,
-    pub path: PathBuf,
-}
-
-impl SessionReader {
-    #[allow(dead_code)]
-    pub fn new(session_id: impl Into<String>, path: PathBuf) -> Self {
-        Self {
-            session_id: session_id.into(),
-            path,
-        }
-    }
-
-    #[allow(dead_code)]
-    pub fn spawn(self, tx: mpsc::Sender<ReaderMessage>) -> JoinHandle<()> {
-        tokio::spawn(async move {
-            let file = match File::open(&self.path).await {
-                Ok(f) => f,
-                Err(e) => {
-                    let _ = tx
-                        .send(ReaderMessage::ReaderError {
-                            session_id: self.session_id.clone(),
-                            error: e.to_string(),
-                        })
-                        .await;
-                    return;
-                }
-            };
-
-            let reader = BufReader::new(file);
-            let mut lines = reader.lines();
-
-            loop {
-                match lines.next_line().await {
-                    Ok(Some(line)) => {
-                        if let Some(event) = parse_line(&line) {
-                            let _ = tx
-                                .send(ReaderMessage::Event {
-                                    session_id: self.session_id.clone(),
-                                    project: String::new(),
-                                    event,
-                                })
-                                .await;
-                        }
-                    }
-                    Ok(None) => {
-                        // EOF
-                        let _ = tx
-                            .send(ReaderMessage::SessionEnded {
-                                session_id: self.session_id.clone(),
-                            })
-                            .await;
-                        break;
-                    }
-                    Err(e) => {
-                        let _ = tx
-                            .send(ReaderMessage::ReaderError {
-                                session_id: self.session_id.clone(),
-                                error: e.to_string(),
-                            })
-                            .await;
-                        break;
-                    }
-                }
-            }
-        })
-    }
 }
