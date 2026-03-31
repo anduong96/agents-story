@@ -148,7 +148,8 @@ impl App {
             if agent.is_animating() {
                 let old_pos = agent.position;
 
-                advance_along_path(&mut agent.position, &mut agent.path, 4.0, delta_secs);
+                let speed = if agent.status == AgentStatus::Idle { 2.0 } else { 4.0 };
+                advance_along_path(&mut agent.position, &mut agent.path, speed, delta_secs);
 
                 if check_collision(agent.position, i) {
                     if agent.status == AgentStatus::Idle {
@@ -289,40 +290,79 @@ impl App {
             }
         }
 
-        // Idle agents in lounge wander near furniture
+        // Idle agents in lounge — subtle varied wandering
         let lounge = self.state.floor.lounge;
         let ping_pong = self.state.floor.ping_pong;
+        let tick = self.tick_count;
         for agent in &mut self.state.agents {
-            if agent.status == AgentStatus::Idle
-                && agent.target_room == Room::Lounge
-                && agent.path.is_empty()
+            if agent.status != AgentStatus::Idle
+                || agent.target_room != Room::Lounge
+                || agent.is_animating()
             {
-                // Occasionally pick a new wander target near furniture
-                if self.tick_count % 90 == (agent.sprite_color.0 as u64 * 13) % 90 {
-                    // Inner bounds (2-cell margin for agent sprite)
-                    let min_x = lounge.0 + 2;
-                    let max_x = lounge.0 + lounge.2.saturating_sub(4);
-                    let min_y = lounge.1 + 2;
-                    let max_y = lounge.1 + lounge.3.saturating_sub(4);
+                continue;
+            }
 
-                    let clamp =
-                        |x: u16, y: u16| (x.clamp(min_x, max_x), y.clamp(min_y, max_y));
+            // Each agent has a unique rhythm — different intervals between 80-200 ticks
+            let agent_seed = agent.sprite_color.0 as u64;
+            let interval = 80 + (agent_seed * 17) % 120;
+            let phase = (agent_seed * 31) % interval;
+            if tick % interval != phase {
+                continue;
+            }
 
-                    let targets = [
-                        clamp(ping_pong.0.saturating_sub(1), ping_pong.1 + ping_pong.3 + 1),
+            // Inner bounds (2-cell margin for agent sprite)
+            let min_x = lounge.0 + 2;
+            let max_x = lounge.0 + lounge.2.saturating_sub(4);
+            let min_y = lounge.1 + 2;
+            let max_y = lounge.1 + lounge.3.saturating_sub(4);
+            let clamp = |x: u16, y: u16| (x.clamp(min_x, max_x), y.clamp(min_y, max_y));
+
+            let cur_x = agent.position.0 as u16;
+            let cur_y = agent.position.1 as u16;
+
+            // Mix of behaviors: small fidgets, short strolls, or walk to a landmark
+            let behavior = (tick / interval + agent_seed) % 5;
+            let (tx, ty) = match behavior {
+                // Small fidget — shift 1-2 cells from current position
+                0 | 1 => {
+                    let dx = ((tick + agent_seed * 7) % 5) as i16 - 2; // -2 to +2
+                    let dy = ((tick + agent_seed * 11) % 3) as i16 - 1; // -1 to +1
+                    clamp(
+                        (cur_x as i16 + dx).max(0) as u16,
+                        (cur_y as i16 + dy).max(0) as u16,
+                    )
+                }
+                // Stroll to nearby spot — 3-5 cells away
+                2 => {
+                    let dx = ((tick + agent_seed * 3) % 9) as i16 - 4; // -4 to +4
+                    let dy = ((tick + agent_seed * 5) % 7) as i16 - 3; // -3 to +3
+                    clamp(
+                        (cur_x as i16 + dx).max(0) as u16,
+                        (cur_y as i16 + dy).max(0) as u16,
+                    )
+                }
+                // Walk to a landmark (ping pong, arcade area, center)
+                3 => {
+                    let landmarks = [
+                        clamp(
+                            ping_pong.0.saturating_sub(1),
+                            ping_pong.1 + ping_pong.3 + 1,
+                        ),
                         clamp(ping_pong.0 + ping_pong.2 + 1, ping_pong.1),
-                        clamp(lounge.0 + 3, lounge.1 + 3),
-                        clamp(lounge.0 + lounge.2.saturating_sub(5), lounge.1 + lounge.3.saturating_sub(3)),
                         clamp(lounge.0 + lounge.2 / 2, lounge.1 + lounge.3 / 2),
                         clamp(lounge.0 + 5, lounge.1 + lounge.3.saturating_sub(5)),
                         clamp(lounge.0 + 9, lounge.1 + lounge.3.saturating_sub(5)),
                     ];
-                    let pick = (self.tick_count / 90 + agent.sprite_color.0 as u64) as usize
-                        % targets.len();
-                    let (tx, ty) = targets[pick];
-                    agent.path = vec![(tx, ty)];
+                    let pick = (tick / interval + agent_seed * 3) as usize % landmarks.len();
+                    landmarks[pick]
                 }
-            }
+                // Turn to face a random direction (tiny movement)
+                _ => {
+                    let face_dx = if tick.is_multiple_of(2) { 1i16 } else { -1 };
+                    clamp((cur_x as i16 + face_dx).max(0) as u16, cur_y)
+                }
+            };
+            agent.path = vec![(tx, ty)];
         }
 
         self.bubbles.tick();
