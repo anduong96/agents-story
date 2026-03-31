@@ -303,6 +303,7 @@ fn handle_stream_event(app: &mut App, session_id: &str, project: &str, event: St
         StreamEvent::SessionInit { model, .. } => {
             app.state.stats.model = shorten_model(&model);
             app.state.ceo_status = game::state::CeoStatus::Waiting;
+            ensure_main_agent(app, session_id, project);
         }
         StreamEvent::AgentSpawn {
             agent_id,
@@ -310,7 +311,8 @@ fn handle_stream_event(app: &mut App, session_id: &str, project: &str, event: St
             description,
         } => handle_agent_spawn(app, session_id, project, agent_id, name, description),
         StreamEvent::ToolUse { tool, args_hint } => {
-            handle_tool_use(app, session_id, tool, args_hint)
+            ensure_main_agent(app, session_id, project);
+            handle_tool_use(app, session_id, tool, args_hint);
         }
         StreamEvent::ToolResult { .. } => {}
         StreamEvent::AgentResult { agent_id } => handle_agent_result(app, agent_id),
@@ -325,6 +327,31 @@ fn handle_stream_event(app: &mut App, session_id: &str, project: &str, event: St
         StreamEvent::TextDelta { .. } | StreamEvent::SessionEnd => {}
         StreamEvent::Error { message: _ } => handle_agent_error(app, session_id),
     }
+}
+
+/// Ensure a "main" agent exists for this session. The main agent represents
+/// the primary Claude Code instance (not a sub-agent). It gets assigned a
+/// desk and shows tool activity just like spawned agents.
+fn ensure_main_agent(app: &mut App, session_id: &str, project: &str) {
+    // Check if an agent already exists for this session.
+    let exists = app
+        .state
+        .agents
+        .iter()
+        .any(|a| a.session.session_id == session_id && a.status == AgentStatus::Working);
+    if exists {
+        return;
+    }
+
+    let main_id = format!("main-{}", session_id);
+    handle_agent_spawn(
+        app,
+        session_id,
+        project,
+        main_id,
+        "Claude".to_string(),
+        "Main session".to_string(),
+    );
 }
 
 fn handle_agent_spawn(
