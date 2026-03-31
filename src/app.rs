@@ -151,32 +151,37 @@ impl App {
                 advance_along_path(&mut agent.position, &mut agent.path, 4.0, delta_secs);
 
                 if check_collision(agent.position, i) {
-                    // Try nudging perpendicular to path direction
-                    let dx = agent.position.0 - old_pos.0;
-                    let dy = agent.position.1 - old_pos.1;
-                    let nudge = 2.0;
-
-                    let floor_w = self.state.floor.width as f32 - 3.0;
-                    let floor_h = self.state.floor.height as f32 - 3.0;
-                    let clamp_pos = |p: (f32, f32)| (p.0.clamp(1.0, floor_w), p.1.clamp(1.0, floor_h));
-
-                    // Try perpendicular directions: (-dy, dx) and (dy, -dx)
-                    let try1 = clamp_pos((
-                        old_pos.0 - dy.signum() * nudge,
-                        old_pos.1 + dx.signum() * nudge,
-                    ));
-                    let try2 = clamp_pos((
-                        old_pos.0 + dy.signum() * nudge,
-                        old_pos.1 - dx.signum() * nudge,
-                    ));
-
-                    if !check_collision(try1, i) {
-                        agent.position = try1;
-                    } else if !check_collision(try2, i) {
-                        agent.position = try2;
-                    } else {
-                        // Both sides blocked — wait
+                    if agent.status == AgentStatus::Idle {
+                        // Idle agents just wait — no nudging, pick a new target next cycle
                         agent.position = old_pos;
+                        agent.path.clear();
+                    } else {
+                        // Working agents nudge perpendicular to get past each other
+                        let dx = agent.position.0 - old_pos.0;
+                        let dy = agent.position.1 - old_pos.1;
+                        let nudge = 2.0;
+
+                        let floor_w = self.state.floor.width as f32 - 3.0;
+                        let floor_h = self.state.floor.height as f32 - 3.0;
+                        let clamp_pos =
+                            |p: (f32, f32)| (p.0.clamp(1.0, floor_w), p.1.clamp(1.0, floor_h));
+
+                        let try1 = clamp_pos((
+                            old_pos.0 - dy.signum() * nudge,
+                            old_pos.1 + dx.signum() * nudge,
+                        ));
+                        let try2 = clamp_pos((
+                            old_pos.0 + dy.signum() * nudge,
+                            old_pos.1 - dx.signum() * nudge,
+                        ));
+
+                        if !check_collision(try1, i) {
+                            agent.position = try1;
+                        } else if !check_collision(try2, i) {
+                            agent.position = try2;
+                        } else {
+                            agent.position = old_pos;
+                        }
                     }
                 }
 
