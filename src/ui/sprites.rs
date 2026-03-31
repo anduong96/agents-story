@@ -43,6 +43,13 @@ pub const ARCADE_SCREEN_COLORS: [Color; 6] = [
     Color::Rgb(180, 50, 255),  // neon purple
 ];
 
+// Lounge furniture
+pub const WATER_COOLER_COLOR: Color = Color::Rgb(140, 200, 240); // light blue water
+pub const WATER_COOLER_BODY: Color = Color::Rgb(200, 200, 210); // grey body
+pub const COUCH_COLOR: Color = Color::Rgb(100, 70, 50); // warm brown leather
+pub const COUCH_TRIM: Color = Color::Rgb(70, 50, 35); // darker trim
+pub const COFFEE_TABLE_COLOR: Color = Color::Rgb(140, 110, 70); // wood top
+pub const COFFEE_TABLE_LEG: Color = Color::Rgb(80, 60, 40); // dark wood legs
 // Room wall/door colors
 pub const WALL_COLOR: Color = Color::Rgb(190, 185, 170); // cream/beige walls
 pub const DOOR_COLOR: Color = Color::Rgb(180, 130, 70); // warm wood door

@@ -350,7 +350,7 @@ fn ensure_main_agent(app: &mut App, session_id: &str, project: &str) {
         project,
         main_id,
         "Claude".to_string(),
-        "Main session".to_string(),
+        String::new(),
     );
 }
 
@@ -404,7 +404,11 @@ fn assign_staff_agent(
 ) {
     let agent = &mut app.state.agents[idx];
     agent.id = agent_id.to_string();
-    agent.task = Some(description);
+    agent.task = if description.is_empty() {
+        None
+    } else {
+        Some(description)
+    };
     agent.session.session_id = session_id.to_string();
     agent.status = AgentStatus::Working;
     agent.current_tool = None;
@@ -462,7 +466,11 @@ fn hire_temp_agent(
         session,
         color_index,
     );
-    agent.task = Some(description);
+    agent.task = if description.is_empty() {
+        None
+    } else {
+        Some(description)
+    };
     agent.is_permanent = false;
 
     if let Some(desk_idx) = app.state.floor.assign_desk(&agent.name) {
