@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
 use serde_json::Value;
 
 // ---------------------------------------------------------------------------
@@ -25,9 +25,36 @@ pub struct Usage {
 #[derive(Debug, Deserialize)]
 pub struct MessagePayload {
     pub model: Option<String>,
+    #[serde(default, deserialize_with = "deserialize_content")]
     pub content: Option<Vec<ContentItem>>,
     #[allow(dead_code)]
     pub usage: Option<Usage>,
+}
+
+/// Content can be a string (user messages) or an array of content blocks (assistant messages).
+fn deserialize_content<'de, D>(deserializer: D) -> Result<Option<Vec<ContentItem>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value: Option<Value> = Option::deserialize(deserializer)?;
+    match value {
+        None => Ok(None),
+        Some(Value::Array(arr)) => {
+            let items: Vec<ContentItem> = arr
+                .into_iter()
+                .filter_map(|v| serde_json::from_value(v).ok())
+                .collect();
+            Ok(Some(items))
+        }
+        Some(Value::String(s)) => Ok(Some(vec![ContentItem {
+            item_type: Some("text".to_string()),
+            id: None,
+            name: None,
+            input: None,
+            text: Some(s),
+        }])),
+        Some(_) => Ok(None),
+    }
 }
 
 /// Supports both real Claude Code format and legacy/demo format.
@@ -93,6 +120,9 @@ pub enum StreamEvent {
     TextDelta {
         text: String,
     },
+    UserPrompt {
+        text: String,
+    },
     SessionEnd,
     Error {
         message: String,
@@ -113,6 +143,7 @@ pub fn parse_line(line: &str) -> Option<StreamEvent> {
 
     match msg.msg_type.as_deref() {
         Some("assistant") => parse_assistant(&msg),
+        Some("user") => parse_user(&msg),
         Some("system") => parse_legacy_system(&msg),
         Some("result") => parse_legacy_result(&msg),
         Some("error") => {
@@ -220,6 +251,30 @@ fn parse_content_item(item: &ContentItem) -> Option<StreamEvent> {
     }
 }
 
+/// Parse user message to extract the prompt text.
+/// Content can be a string or an array of content blocks.
+fn parse_user(msg: &RawMessage) -> Option<StreamEvent> {
+    let payload = msg.message.as_ref()?;
+    let content = payload.content.as_ref()?;
+
+    for item in content {
+        if item.item_type.as_deref() == Some("text") || item.item_type.is_none() {
+            if let Some(ref text) = item.text {
+                if !text.is_empty() {
+                    // Truncate to a reasonable length for display
+                    let truncated = if text.len() > 80 {
+                        format!("{}...", &text[..77])
+                    } else {
+                        text.clone()
+                    };
+                    return Some(StreamEvent::UserPrompt { text: truncated });
+                }
+            }
+        }
+    }
+    None
+}
+
 /// Legacy format: `{"type":"system","session_id":"...","model":"..."}`
 fn parse_legacy_system(msg: &RawMessage) -> Option<StreamEvent> {
     let session_id = msg.session_id.clone()?;
@@ -302,9 +357,15 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_real_skips_user_message() {
+    fn test_parse_real_user_prompt() {
         let line = r#"{"type":"user","sessionId":"abc","message":{"role":"user","content":"do stuff"}}"#;
-        assert!(parse_line(line).is_none());
+        let event = parse_line(line).expect("should parse");
+        match event {
+            StreamEvent::UserPrompt { text } => {
+                assert_eq!(text, "do stuff");
+            }
+            _ => panic!("expected UserPrompt, got {:?}", event),
+        }
     }
 
     // --- Legacy format tests (backward compat for demo) ---

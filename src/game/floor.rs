@@ -23,8 +23,6 @@ pub enum CellType {
     Bush,
     Whiteboard,
     WaterCooler,
-    Couch,
-    CoffeeTable,
 }
 
 pub const MIN_DESKS: usize = 6;
@@ -245,26 +243,6 @@ impl Floor {
         let wc_y = (workspace_h + bottom_h / 2) as usize;
         if wc_y < height as usize && wc_x < width as usize && grid[wc_y][wc_x] == CellType::Empty {
             grid[wc_y][wc_x] = CellType::WaterCooler;
-        }
-
-        // Couch — center of lounge, 5 wide × 1 tall
-        let couch_x = (lounge_w / 2 - 2) as usize;
-        let couch_y = (workspace_h + bottom_h / 2 + 2) as usize;
-        for cx in 0..5usize {
-            let x = couch_x + cx;
-            if couch_y < height as usize && x < width as usize && grid[couch_y][x] == CellType::Empty {
-                grid[couch_y][x] = CellType::Couch;
-            }
-        }
-
-        // Coffee table — in front of couch, 3 wide
-        let table_y = (workspace_h + bottom_h / 2 + 4) as usize;
-        let table_x = (lounge_w / 2 - 1) as usize;
-        for tx in 0..3usize {
-            let x = table_x + tx;
-            if table_y < height as usize && x < width as usize && grid[table_y][x] == CellType::Empty {
-                grid[table_y][x] = CellType::CoffeeTable;
-            }
         }
 
         // CEO desk: 10 wide × 3 tall (same as workspace desks), centered in CEO office

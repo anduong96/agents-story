@@ -324,6 +324,18 @@ fn handle_stream_event(app: &mut App, session_id: &str, project: &str, event: St
             app.state.stats.total_tokens = input_tokens + output_tokens;
             app.state.stats.total_cost = cost;
         }
+        StreamEvent::UserPrompt { text } => {
+            // Set the task description on the most recent working agent for this session.
+            if let Some(agent) = app
+                .state
+                .agents
+                .iter_mut()
+                .rev()
+                .find(|a| a.session.session_id == session_id && a.status == AgentStatus::Working)
+            {
+                agent.task = Some(text);
+            }
+        }
         StreamEvent::TextDelta { .. } | StreamEvent::SessionEnd => {}
         StreamEvent::Error { message: _ } => handle_agent_error(app, session_id),
     }

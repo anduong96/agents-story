@@ -232,10 +232,6 @@ impl<'a> Widget for FloorView<'a> {
                     CellType::WaterCooler => {
                         ('▐', sprites::WATER_COOLER_COLOR, sprites::WATER_COOLER_BODY)
                     }
-                    CellType::Couch => ('█', sprites::COUCH_COLOR, sprites::COUCH_TRIM),
-                    CellType::CoffeeTable => {
-                        ('▬', sprites::COFFEE_TABLE_COLOR, sprites::COFFEE_TABLE_LEG)
-                    }
                     CellType::Empty => floor_texture(floor, gx, gy),
                 };
 
