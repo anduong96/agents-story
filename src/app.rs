@@ -290,18 +290,23 @@ impl App {
             {
                 // Occasionally pick a new wander target near furniture
                 if self.tick_count % 90 == (agent.sprite_color.0 as u64 * 13) % 90 {
+                    // Inner bounds (2-cell margin for agent sprite)
+                    let min_x = lounge.0 + 2;
+                    let max_x = lounge.0 + lounge.2.saturating_sub(4);
+                    let min_y = lounge.1 + 2;
+                    let max_y = lounge.1 + lounge.3.saturating_sub(4);
+
+                    let clamp =
+                        |x: u16, y: u16| (x.clamp(min_x, max_x), y.clamp(min_y, max_y));
+
                     let targets = [
-                        // Near ping pong table
-                        (ping_pong.0.saturating_sub(1), ping_pong.1 + ping_pong.3 + 1),
-                        (ping_pong.0 + ping_pong.2 + 1, ping_pong.1),
-                        // Lounge edges
-                        (lounge.0 + 3, lounge.1 + 3),
-                        (lounge.0 + lounge.2 - 5, lounge.1 + lounge.3 - 3),
-                        // Center of lounge
-                        (lounge.0 + lounge.2 / 2, lounge.1 + lounge.3 / 2),
-                        // Arcade machines (bottom-left)
-                        (5, lounge.1 + lounge.3 - 5),
-                        (9, lounge.1 + lounge.3 - 5),
+                        clamp(ping_pong.0.saturating_sub(1), ping_pong.1 + ping_pong.3 + 1),
+                        clamp(ping_pong.0 + ping_pong.2 + 1, ping_pong.1),
+                        clamp(lounge.0 + 3, lounge.1 + 3),
+                        clamp(lounge.0 + lounge.2.saturating_sub(5), lounge.1 + lounge.3.saturating_sub(3)),
+                        clamp(lounge.0 + lounge.2 / 2, lounge.1 + lounge.3 / 2),
+                        clamp(lounge.0 + 5, lounge.1 + lounge.3.saturating_sub(5)),
+                        clamp(lounge.0 + 9, lounge.1 + lounge.3.saturating_sub(5)),
                     ];
                     let pick = (self.tick_count / 90 + agent.sprite_color.0 as u64) as usize
                         % targets.len();
