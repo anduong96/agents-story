@@ -629,9 +629,7 @@ fn to_bubble_status(status: &AgentStatus) -> BubbleAgentStatus {
     }
 }
 
-const STAFF_NAMES: [&str; 10] = [
-    "Alice", "Bob", "Carol", "Dave", "Eve", "Frank", "Grace", "Hank", "Iris", "Jack",
-];
+const STAFF_NAMES: [&str; 6] = ["Alice", "Bob", "Carol", "Dave", "Eve", "Frank"];
 
 /// After relayout, snap all seated agents to their (possibly moved) desk positions.
 fn sync_agent_positions(app: &mut App) {
