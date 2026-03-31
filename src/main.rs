@@ -149,14 +149,14 @@ fn render(frame: &mut Frame, app: &mut App) {
     let offset_x = (size.width.saturating_sub(clamped_w)) / 2;
     let centered = Rect::new(offset_x, 0, clamped_w, size.height);
 
-    // Layout: floor (fill) | stats bar (1 line) | agent panel (fixed)
-    let panel_height = 8.min(centered.height.saturating_sub(DEFAULT_FLOOR_HEIGHT + 1));
+    // Layout: floor (actual height) | stats bar (1 line) | agent panel (rest)
+    let floor_h = app.state.floor.height.max(DEFAULT_FLOOR_HEIGHT);
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Min(DEFAULT_FLOOR_HEIGHT),
+            Constraint::Length(floor_h),
             Constraint::Length(1),
-            Constraint::Length(panel_height),
+            Constraint::Min(3),
         ])
         .split(centered);
 
