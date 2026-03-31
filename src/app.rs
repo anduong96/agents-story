@@ -148,7 +148,7 @@ impl App {
             if agent.is_animating() {
                 let old_pos = agent.position;
 
-                let speed = if agent.status == AgentStatus::Idle { 2.0 } else { 4.0 };
+                let speed = if agent.status == AgentStatus::Idle { 3.0 } else { 4.0 };
                 advance_along_path(&mut agent.position, &mut agent.path, speed, delta_secs);
 
                 if check_collision(agent.position, i) {
@@ -302,9 +302,9 @@ impl App {
                 continue;
             }
 
-            // Each agent moves at their own pace (40-100 ticks between moves)
+            // Each agent moves at their own pace (20-50 ticks between moves)
             let s = agent.sprite_color.0 as u64;
-            let interval = 40 + (s * 17) % 60;
+            let interval = 20 + (s * 17) % 30;
             if tick % interval != (s * 31) % interval {
                 continue;
             }

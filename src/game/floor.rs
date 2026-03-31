@@ -222,12 +222,12 @@ impl Floor {
             }
         }
 
-        // 2 arcade machines (each 2×2) in bottom-left of lounge
+        // 2 arcade machines (each 4×2) in bottom-left of lounge
         let arcade_y = workspace_h + bottom_h - 4;
-        let arcade_positions = [3u16, 6u16]; // 1 cell gap between them
+        let arcade_positions = [3u16, 8u16]; // gap between them
         for ax in arcade_positions {
             for ry in 0..2u16 {
-                for rx in 0..2u16 {
+                for rx in 0..4u16 {
                     let y = (arcade_y + ry) as usize;
                     let x = (ax + rx) as usize;
                     if y < height as usize && x < width as usize && grid[y][x] == CellType::Empty {

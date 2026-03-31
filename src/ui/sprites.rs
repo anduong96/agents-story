@@ -52,6 +52,7 @@ pub const DOOR_COLOR: Color = Color::Rgb(180, 130, 70); // warm wood door
 // Desk sprite colors
 pub const DESK_FRAME_COLOR: Color = Color::Rgb(80, 85, 100); // blue-gray monitor bezel
 pub const DESK_SURFACE_COLOR: Color = Color::Rgb(55, 55, 60); // dark grey desk surface
+pub const CEO_DESK_SURFACE_COLOR: Color = Color::Rgb(210, 205, 195); // off-white CEO desk
 pub const DESK_SCREEN_OFF_COLOR: Color = Color::Rgb(35, 40, 50); // dark blue-gray off screen
 pub const DESK_SCREEN_DIM_COLOR: Color = Color::Rgb(25, 25, 30); // subtle dim variation
 

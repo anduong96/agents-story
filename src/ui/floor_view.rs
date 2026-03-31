@@ -415,11 +415,11 @@ impl<'a> FloorView<'a> {
                 .agents
                 .iter()
                 .any(|a| a.assigned_desk == Some(desk_idx) && !a.is_animating());
-            self.render_single_desk(desk, agent_seated, area, buf);
+            self.render_single_desk(desk, agent_seated, false, area, buf);
         }
         // CEO desk (always on)
         if let Some(ref desk) = floor.ceo_desk {
-            self.render_single_desk(desk, true, area, buf);
+            self.render_single_desk(desk, true, true, area, buf);
         }
     }
 
@@ -427,6 +427,7 @@ impl<'a> FloorView<'a> {
         &self,
         desk: &crate::game::floor::DeskSlot,
         screen_on: bool,
+        is_ceo_desk: bool,
         area: Rect,
         buf: &mut Buffer,
     ) {
@@ -477,10 +478,15 @@ impl<'a> FloorView<'a> {
                     } else {
                         if let Some(cell) = buf.cell_mut((sx, sy)) {
                             cell.set_char(ch);
+                            let surface = if is_ceo_desk {
+                                sprites::CEO_DESK_SURFACE_COLOR
+                            } else {
+                                sprites::DESK_SURFACE_COLOR
+                            };
                             cell.set_style(
                                 Style::default()
                                     .fg(sprites::DESK_FRAME_COLOR)
-                                    .bg(sprites::DESK_SURFACE_COLOR),
+                                    .bg(surface),
                             );
                         }
                     }
