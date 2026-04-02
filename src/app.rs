@@ -148,7 +148,11 @@ impl App {
             if agent.is_animating() {
                 let old_pos = agent.position;
 
-                let speed = if agent.status == AgentStatus::Idle { 3.0 } else { 4.0 };
+                let speed = if agent.status == AgentStatus::Idle {
+                    3.0
+                } else {
+                    4.0
+                };
                 advance_along_path(&mut agent.position, &mut agent.path, speed, delta_secs);
 
                 if check_collision(agent.position, i) {

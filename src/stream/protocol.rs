@@ -210,7 +210,11 @@ fn parse_content_item(item: &ContentItem) -> Option<StreamEvent> {
                 let name = input
                     .and_then(|v| v.get("name"))
                     .and_then(|v| v.as_str())
-                    .or_else(|| input.and_then(|v| v.get("description")).and_then(|v| v.as_str()))
+                    .or_else(|| {
+                        input
+                            .and_then(|v| v.get("description"))
+                            .and_then(|v| v.as_str())
+                    })
                     .unwrap_or("Agent")
                     .to_string();
 
@@ -285,8 +289,7 @@ fn parse_legacy_system(msg: &RawMessage) -> Option<StreamEvent> {
 /// Legacy format: `{"type":"result","cost_usd":0.42,"usage":{...}}`
 fn parse_legacy_result(msg: &RawMessage) -> Option<StreamEvent> {
     let usage = msg.usage.as_ref()?;
-    let input_tokens =
-        usage.input_tokens.unwrap_or(0) + usage.cache_read_input_tokens.unwrap_or(0);
+    let input_tokens = usage.input_tokens.unwrap_or(0) + usage.cache_read_input_tokens.unwrap_or(0);
     let output_tokens = usage.output_tokens.unwrap_or(0);
     let cost = msg.cost_usd.unwrap_or(0.0);
     Some(StreamEvent::StatsUpdate {
@@ -358,7 +361,8 @@ mod tests {
 
     #[test]
     fn test_parse_real_user_prompt() {
-        let line = r#"{"type":"user","sessionId":"abc","message":{"role":"user","content":"do stuff"}}"#;
+        let line =
+            r#"{"type":"user","sessionId":"abc","message":{"role":"user","content":"do stuff"}}"#;
         let event = parse_line(line).expect("should parse");
         match event {
             StreamEvent::UserPrompt { text } => {

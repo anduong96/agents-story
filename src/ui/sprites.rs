@@ -46,7 +46,7 @@ pub const ARCADE_SCREEN_COLORS: [Color; 6] = [
 // Lounge furniture
 pub const WATER_COOLER_COLOR: Color = Color::Rgb(140, 200, 240); // light blue water
 pub const WATER_COOLER_BODY: Color = Color::Rgb(200, 200, 210); // grey body
-// Room wall/door colors
+                                                                // Room wall/door colors
 pub const WALL_COLOR: Color = Color::Rgb(190, 185, 170); // cream/beige walls
 pub const DOOR_COLOR: Color = Color::Rgb(180, 130, 70); // warm wood door
 

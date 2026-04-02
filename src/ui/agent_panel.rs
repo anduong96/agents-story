@@ -158,10 +158,7 @@ fn project_order(agents: &[Agent]) -> Vec<String> {
 
 /// Build all lines for the panel, returning (lines, selected_row).
 /// `selected_row` is the line index of the selected agent's collapsed row.
-fn build_lines<'b>(
-    agents: &'b [Agent],
-    state: &AgentPanelState,
-) -> (Vec<Line<'b>>, Option<usize>) {
+fn build_lines<'b>(agents: &'b [Agent], state: &AgentPanelState) -> (Vec<Line<'b>>, Option<usize>) {
     let mut lines: Vec<Line<'b>> = Vec::new();
     let mut selected_row = None;
     let projects = project_order(agents);
@@ -295,10 +292,7 @@ impl<'a> StatefulWidget for AgentPanel<'a> {
         state.scroll_offset = state.scroll_offset.min(max_scroll);
 
         // Render visible lines.
-        let visible = lines
-            .into_iter()
-            .skip(state.scroll_offset)
-            .take(visible_h);
+        let visible = lines.into_iter().skip(state.scroll_offset).take(visible_h);
 
         for (i, line) in visible.enumerate() {
             let y = inner.top() + i as u16;

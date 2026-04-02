@@ -487,9 +487,7 @@ impl<'a> FloorView<'a> {
                                 sprites::DESK_SURFACE_COLOR
                             };
                             cell.set_style(
-                                Style::default()
-                                    .fg(sprites::DESK_FRAME_COLOR)
-                                    .bg(surface),
+                                Style::default().fg(sprites::DESK_FRAME_COLOR).bg(surface),
                             );
                         }
                     }

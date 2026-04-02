@@ -103,11 +103,7 @@ async fn tail_file(path: PathBuf, project: String, tx: mpsc::Sender<ReaderMessag
             Ok(0) => {
                 // EOF — check inactivity timeout.
                 if last_activity.elapsed() > INACTIVITY_TIMEOUT {
-                    let _ = tx
-                        .send(ReaderMessage::SessionEnded {
-                            session_id,
-                        })
-                        .await;
+                    let _ = tx.send(ReaderMessage::SessionEnded { session_id }).await;
                     break;
                 }
                 sleep(Duration::from_secs(1)).await;

@@ -326,12 +326,10 @@ fn handle_stream_event(app: &mut App, session_id: &str, project: &str, event: St
         }
         StreamEvent::UserPrompt { text } => {
             // Set the task description on the most recent working agent for this session.
-            if let Some(agent) = app
-                .state
-                .agents
-                .iter_mut()
-                .rev()
-                .find(|a| a.session.session_id == session_id && a.status == AgentStatus::Working)
+            if let Some(agent) =
+                app.state.agents.iter_mut().rev().find(|a| {
+                    a.session.session_id == session_id && a.status == AgentStatus::Working
+                })
             {
                 agent.task = Some(text);
             }
